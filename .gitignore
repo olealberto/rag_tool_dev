@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Results and outputs
+*.png
+*.jpg
+*.jpeg
+*.log
+*.csv
+*.json
+*.ipynb
+.ipynb_checkpoints/
+
+# Data directories
+enhanced_phase3_data/
+phase2_output/
+phase3_data/
+phase3_results/
+
+# Large files
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.pt
+*.bin
