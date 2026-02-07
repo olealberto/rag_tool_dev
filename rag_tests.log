@@ -1145,3 +1145,99 @@
     },
     {
       "name": "pri...
+2026-02-07 19:06:44,242 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-07 19:06:44,243 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-07 19:06:44,247 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-07 19:06:44,247 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-07 19:08:00,429 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-07 19:08:00,429 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...

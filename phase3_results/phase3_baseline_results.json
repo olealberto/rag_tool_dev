@@ -1,24 +1,24 @@
 {
   "phase": "phase3_faiss_rag_baseline",
-  "timestamp": "2026-02-07T03:56:51.296777",
+  "timestamp": "2026-02-07T19:20:33.072569",
   "model": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 350, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 768, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n)",
   "dataset_stats": {
-    "total_documents": 250,
-    "fqhc_focused": 53,
-    "synthetic": 50,
+    "total_documents": 260,
+    "fqhc_focused": 62,
+    "synthetic": 0,
     "phase2_nih": 200
   },
   "evaluation_metrics": {
     "precision_at_1": 0.0,
     "precision_at_3": 0.0,
     "precision_at_5": 0.0,
-    "fqhc_alignment": 0.4616502715058794,
-    "retrieval_time": 0.00022994279861450196,
-    "avg_similarity": 0.9084599147240322
+    "fqhc_alignment": 0.6143095906973544,
+    "retrieval_time": 0.0003370046615600586,
+    "avg_similarity": 0.9079188267389935
   },
   "system_info": {
     "vector_dimensions": 768,
-    "faiss_index_size": 250,
+    "faiss_index_size": 260,
     "fqhc_boosting_enabled": true
   },
   "baseline_notes": [
