@@ -1,0 +1,60 @@
+{
+  "phase": "phase2_complete_collection",
+  "timestamp": "2026-02-07T00:06:18.243988",
+  "abstracts_collected": 200,
+  "data_analysis": {
+    "basic_stats": {
+      "total_abstracts": 200,
+      "avg_word_count": 387.345,
+      "avg_abstract_length": 2716.105,
+      "unique_institutes": 1,
+      "year_range": "2023-2024"
+    },
+    "institute_distribution": {
+      "": 200
+    },
+    "year_distribution": {
+      "2023": 100,
+      "2024": 100
+    },
+    "fqhc_analysis": {
+      "with_fqhc_terms": 3,
+      "without_fqhc_terms": 197,
+      "percentage_with_fqhc": 1.5
+    },
+    "institution_distribution": {
+      "UNIVERSITY OF ILLINOIS AT CHICAGO": 40,
+      "UNIVERSITY OF MICHIGAN": 40,
+      "UNIVERSITY OF CHICAGO": 40,
+      "NORTHWESTERN UNIVERSITY": 40,
+      "JOHNS HOPKINS UNIVERSITY": 40
+    }
+  },
+  "validation_results": {
+    "model_name": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 350, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 768, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n)",
+    "validation_score": 0.7498679161071777,
+    "avg_similarity": 0.8517523407936096,
+    "query_relevance": 0.8872130513191223,
+    "fqhc_metrics": {
+      "fqhc_discrimination": 0.5106382966041565,
+      "intra_fqhc_similarity": 0.925965428352356,
+      "intra_non_fqhc_similarity": 0.9035694003105164,
+      "inter_group_similarity": 0.904688835144043,
+      "high_fqhc_count": 2,
+      "low_fqhc_count": 45
+    },
+    "sample_size": 50,
+    "query_count": 10,
+    "embedding_dimensions": 768
+  },
+  "phase3_files": {
+    "abstracts_path": "./phase2_output/nih_research_abstracts.csv",
+    "evaluation_path": "./phase2_output/evaluation_set.json",
+    "model_info_path": "./phase2_output/pubmedbert_info.json"
+  },
+  "recommendations": [
+    "Use PubMedBERT for Phase 3 RAG system",
+    "Dataset contains 200 NIH research abstracts",
+    "Collected from 5 universities"
+  ]
+}

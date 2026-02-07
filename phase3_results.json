@@ -1,0 +1,90 @@
+{
+  "phase": "phase3_document_rag",
+  "timestamp": "2026-02-07T03:48:04.376023",
+  "total_chunks": 20,
+  "total_documents": 4,
+  "evaluation_metrics": {
+    "avg_retrieval_time": 0.10650912920633952,
+    "avg_similarity_score": 0.8982521769636712,
+    "precision_at_k": {
+      "P@1": 0.0,
+      "P@3": 0.0,
+      "P@5": 0.0,
+      "P@10": 0.0
+    },
+    "recall_at_k": {},
+    "diversity_score": 0
+  },
+  "sample_output": {
+    "query": "diabetes prevention in community health centers",
+    "total_chunks_available": 20,
+    "retrieved_chunks": [
+      {
+        "rank": 1,
+        "similarity_score": 0.9001829925284405,
+        "source_document": "sample_doc_2.txt",
+        "text_preview": "Sample grant chunk 9 about FQHC diabetes prevention programs....",
+        "word_count": 66
+      },
+      {
+        "rank": 2,
+        "similarity_score": 0.8991669084314726,
+        "source_document": "sample_doc_2.txt",
+        "text_preview": "Sample grant chunk 8 about FQHC diabetes prevention programs....",
+        "word_count": 64
+      },
+      {
+        "rank": 3,
+        "similarity_score": 0.8986534237841389,
+        "source_document": "sample_doc_3.txt",
+        "text_preview": "Sample grant chunk 12 about FQHC diabetes prevention programs....",
+        "word_count": 72
+      }
+    ]
+  },
+  "config": {
+    "document_chunk_size": 250,
+    "document_overlap": 50,
+    "max_documents": 50,
+    "chunking_method": "paragraph_aware",
+    "embedding_model": "pritamdeka/S-PubMedBert-MS-MARCO",
+    "embedding_dimension": 768,
+    "alternative_models": [
+      {
+        "name": "allenai/specter",
+        "type": "research_paper",
+        "dims": 768
+      },
+      {
+        "name": "all-mpnet-base-v2",
+        "type": "general",
+        "dims": 768
+      },
+      {
+        "name": "nlpie/bio-sbert-nli",
+        "type": "biomedical",
+        "dims": 768
+      }
+    ],
+    "retrieval": {
+      "top_k": 5,
+      "similarity_threshold": 0.5,
+      "chunk_size": 500,
+      "chunk_overlap": 50,
+      "rerank_enabled": false,
+      "rerank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    },
+    "vector_store": {
+      "type": "faiss",
+      "index_path": "./vector_store/faiss_index",
+      "dimension": 768
+    },
+    "llm": {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo",
+      "temperature": 0.1,
+      "max_tokens": 500,
+      "system_prompt": "You are a helpful research assistant specializing in Federally Qualified Health Centers (FQHCs) and community health research. Provide concise, evidence-based answers based on the provided NIH grant abstracts."
+    }
+  }
+}

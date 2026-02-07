@@ -1,0 +1,1147 @@
+2026-02-06 22:48:11,471 - RAG_Tests - INFO - 🚀 Starting Week1_SemanticChunking with config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pritamdeka/S-PubMedBert-MS-MARCO",
+      "dims": 768,
+      "type": "biomedical"
+    },
+    {
+      "name": "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract",
+      "dims": 768,
+      "type": "biomedical"
+    }
+  ],
+  "test_retrieval_strategies": [
+    {
+      "name": "simple_similarity",
+      "params": {}
+    },
+    {
+      "name": "max_marginal_relevance",
+      "params": {
+        "lambda_param": 0.7
+      }
+    },
+    {
+      "name": "hybrid_search",
+      "params": {
+        "alpha": 0.7
+      }
+    }
+  ],
+  "top_k_results": 5,
+  "synthetic_data": {
+    "num_fqhc_grants": 2,
+    "num_general_grants": 3,
+    "min_abstract_length": 200,
+    "max_abstract_length": 1000
+  },
+  "test_queries": [
+    "diabetes prevention in Federally Qualified Health Centers",
+    "community health worker interventions",
+    "behavioral health integration in primary care",
+    "telehealth implementation in rural health centers",
+    "health disparities reduction strategies"
+  ]
+}
+2026-02-06 22:48:11,477 - RAG_Tests - INFO - 🚀 Starting Week2_BiomedicalEmbeddings with config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pritamdeka/S-PubMedBert-MS-MARCO",
+      "dims": 768,
+      "type": "biomedical"
+    },
+    {
+      "name": "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract",
+      "dims": 768,
+      "type": "biomedical"
+    }
+  ],
+  "test_retrieval_strategies": [
+    {
+      "name": "simple_similarity",
+      "params": {}
+    },
+    {
+      "name": "max_marginal_relevance",
+      "params": {
+        "lambda_param": 0.7
+      }
+    },
+    {
+      "name": "hybrid_search",
+      "params": {
+        "alpha": 0.7
+      }
+    }
+  ],
+  "top_k_results": 5,
+  "synthetic_data": {
+    "num_fqhc_grants": 2,
+    "num_general_grants": 3,
+    "min_abstract_length": 200,
+    "max_abstract_length": 1000
+  },
+  "test_queries": [
+    "diabetes prevention in Federally Qualified Health Centers",
+    "community health worker interventions",
+    "behavioral health integration in primary care",
+    "telehealth implementation in rural health centers",
+    "health disparities reduction strategies"
+  ]
+}
+2026-02-06 22:49:27,724 - RAG_Tests - INFO - 🚀 Starting Week3_RetrievalEvaluation with config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pritamdeka/S-PubMedBert-MS-MARCO",
+      "dims": 768,
+      "type": "biomedical"
+    },
+    {
+      "name": "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract",
+      "dims": 768,
+      "type": "biomedical"
+    }
+  ],
+  "test_retrieval_strategies": [
+    {
+      "name": "simple_similarity",
+      "params": {}
+    },
+    {
+      "name": "max_marginal_relevance",
+      "params": {
+        "lambda_param": 0.7
+      }
+    },
+    {
+      "name": "hybrid_search",
+      "params": {
+        "alpha": 0.7
+      }
+    }
+  ],
+  "top_k_results": 5,
+  "synthetic_data": {
+    "num_fqhc_grants": 2,
+    "num_general_grants": 3,
+    "min_abstract_length": 200,
+    "max_abstract_length": 1000
+  },
+  "test_queries": [
+    "diabetes prevention in Federally Qualified Health Centers",
+    "community health worker interventions",
+    "behavioral health integration in primary care",
+    "telehealth implementation in rural health centers",
+    "health disparities reduction strategies"
+  ]
+}
+2026-02-06 22:51:34,772 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 22:51:34,773 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 22:51:34,777 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 22:51:34,777 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 22:52:06,701 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 22:52:06,701 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 22:57:35,684 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 22:57:35,685 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 22:57:35,689 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 22:57:35,689 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 22:58:08,317 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 22:58:08,317 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 22:59:49,841 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 22:59:49,842 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 22:59:49,845 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 22:59:49,846 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:00:24,545 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 23:00:24,545 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:30:44,376 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 23:30:44,377 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:30:44,381 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 23:30:44,381 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:31:23,104 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 23:31:23,105 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:47:46,181 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 23:47:46,181 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:47:46,185 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 23:47:46,185 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:48:20,505 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 23:48:20,505 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:53:05,968 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 23:53:05,968 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:53:05,972 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 23:53:05,972 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:53:40,103 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 23:53:40,103 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:56:01,732 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 23:56:01,733 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:56:01,737 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 23:56:01,738 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:56:34,250 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 23:56:34,251 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:58:29,018 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-06 23:58:29,018 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:58:29,021 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-06 23:58:29,022 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-06 23:59:12,185 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-06 23:59:12,185 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-07 00:04:17,130 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-07 00:04:17,130 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-07 00:04:17,135 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-07 00:04:17,135 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-07 12:25:20,678 - RAG_Tests - INFO - 🚀 Starting experiment: Week1_SemanticChunking
+2026-02-07 12:25:20,679 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-07 12:25:20,681 - RAG_Tests - INFO - 🚀 Starting experiment: Week2_BiomedicalEmbeddings
+2026-02-07 12:25:20,681 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
+2026-02-07 12:25:20,683 - RAG_Tests - INFO - 🚀 Starting experiment: Week3_RetrievalEvaluation
+2026-02-07 12:25:20,683 - RAG_Tests - INFO -    Config: {
+  "test_sample_size": 5,
+  "validation_sample_size": 20,
+  "test_chunk_sizes": [
+    100,
+    250,
+    500
+  ],
+  "test_overlaps": [
+    20,
+    50,
+    100
+  ],
+  "test_embedding_models": [
+    {
+      "name": "all-MiniLM-L6-v2",
+      "dims": 384,
+      "type": "general"
+    },
+    {
+      "name": "all-mpnet-base-v2",
+      "dims": 768,
+      "type": "general"
+    },
+    {
+      "name": "multi-qa-mpnet-base-dot-v1",
+      "dims": 768,
+      "type": "retrieval"
+    },
+    {
+      "name": "pri...
