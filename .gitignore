@@ -1,28 +1,20 @@
-# Python
+# Python temporary files
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+env/
+venv/
 
-# Results and outputs
-*.png
-*.jpg
-*.jpeg
-*.log
-*.csv
-*.json
-*.ipynb
+# Jupyter
 .ipynb_checkpoints/
+*.ipynb
 
-# Data directories
-enhanced_phase3_data/
-phase2_output/
-phase3_data/
-phase3_results/
+# System files
+.DS_Store
+Thumbs.db
 
-# Large files
-*.pkl
-*.pickle
-*.h5
-*.hdf5
-*.pt
-*.bin
+# Large data files (add specific large files you don't want)
+# *.pkl
+# *.h5
