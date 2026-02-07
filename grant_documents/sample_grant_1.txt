@@ -1,0 +1,21 @@
+
+        NIH GRANT PROPOSAL
+        Grant ID: R01MD123456
+        Title: Community Health Worker Intervention for Diabetes Prevention
+        
+        SPECIFIC AIMS
+        Aim 1: Implement diabetes prevention program in 5 urban FQHCs
+        Aim 2: Train 20 community health workers
+        Aim 3: Evaluate cost-effectiveness
+        
+        BACKGROUND
+        Diabetes rates are 50% higher in Latino populations. FQHCs serve as 
+        critical access points but lack prevention resources.
+        
+        METHODS
+        Randomized controlled trial with 500 participants. Intervention includes
+        weekly CHW sessions focusing on nutrition and physical activity.
+        
+        BUDGET JUSTIFICATION
+        $150,000 for CHW training, $75,000 for participant incentives.
+        
