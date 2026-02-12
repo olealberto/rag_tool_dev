@@ -1,0 +1,202 @@
+[
+  {
+    "query_id": "Q001_PROPER",
+    "query": "asthma management in pediatric populations",
+    "relevant_grant_ids": [
+      "5UH3HL151302-05"
+    ],
+    "query_type": "document_based",
+    "source_doc": "5UH3HL151302-05",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q002_PROPER",
+    "query": "Testing Adaptive Interventions to Improve in health centers",
+    "relevant_grant_ids": [
+      "5R01MH125857-04"
+    ],
+    "query_type": "document_based",
+    "source_doc": "5R01MH125857-04",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q003_PROPER",
+    "query": "Implementing A Secure Firearm Storage in health centers",
+    "relevant_grant_ids": [
+      "1R01NR021291-01"
+    ],
+    "query_type": "document_based",
+    "source_doc": "1R01NR021291-01",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q004_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_6380"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_6380",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q005_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_8680"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_8680",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q006_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_5429"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_5429",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q007_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_8675"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_8675",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q008_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_1182"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_1182",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q009_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_3174"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_3174",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q010_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_3031"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_3031",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q011_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_7223"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_7223",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q012_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_3977"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_3977",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q013_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_6041"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_6041",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q014_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_1411"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_1411",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q015_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_2011"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_2011",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q016_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_3817"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_3817",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q017_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_4592"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_4592",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q018_PROPER",
+    "query": "diabetes management in community health settings",
+    "relevant_grant_ids": [
+      "ENH_FQHC_DIABETES_6327"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_DIABETES_6327",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q019_PROPER",
+    "query": "blood pressure control in underserved populations",
+    "relevant_grant_ids": [
+      "ENH_FQHC_HYPERTENSION_7549"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_HYPERTENSION_7549",
+    "notes": "Created from actual document in dataset"
+  },
+  {
+    "query_id": "Q020_PROPER",
+    "query": "blood pressure control in underserved populations",
+    "relevant_grant_ids": [
+      "ENH_FQHC_HYPERTENSION_4708"
+    ],
+    "query_type": "document_based",
+    "source_doc": "ENH_FQHC_HYPERTENSION_4708",
+    "notes": "Created from actual document in dataset"
+  }
+]

@@ -1,0 +1,4 @@
+Recommended model for Phase 3 RAG:
+Model: microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract
+Based on testing with 50 real NIH abstracts
+Test date: 2026-02-07 02:00:38.011983
