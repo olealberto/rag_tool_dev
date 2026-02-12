@@ -1,51 +1,47 @@
 {
   "phase": "phase2_complete_collection",
-  "timestamp": "2026-02-07T19:10:14.324175",
-  "abstracts_collected": 200,
+  "timestamp": "2026-02-12T17:48:54.676218",
+  "abstracts_collected": 1996,
   "data_analysis": {
     "basic_stats": {
-      "total_abstracts": 200,
-      "avg_word_count": 388.68,
-      "avg_abstract_length": 2716.875,
+      "total_abstracts": 1996,
+      "avg_word_count": 389.90380761523045,
+      "avg_abstract_length": 2723.6583166332666,
       "unique_institutes": 1,
       "year_range": "2023-2024"
     },
     "institute_distribution": {
-      "": 200
+      "": 1996
     },
     "year_distribution": {
-      "2023": 100,
-      "2024": 100
+      "2023": 997,
+      "2024": 999
     },
     "fqhc_analysis": {
-      "with_fqhc_terms": 2,
-      "without_fqhc_terms": 198,
-      "percentage_with_fqhc": 1.0
+      "with_fqhc_terms": 15,
+      "without_fqhc_terms": 1981,
+      "percentage_with_fqhc": 0.751503006012024
     },
     "institution_distribution": {
-      "UNIVERSITY OF ILLINOIS AT CHICAGO": 40,
-      "UNIVERSITY OF MICHIGAN": 40,
-      "UNIVERSITY OF CHICAGO": 40,
-      "NORTHWESTERN UNIVERSITY": 40,
-      "JOHNS HOPKINS UNIVERSITY": 40
+      "UNIVERSITY OF MICHIGAN": 400,
+      "NORTHWESTERN UNIVERSITY": 400,
+      "UNIVERSITY OF ILLINOIS AT CHICAGO": 399,
+      "UNIVERSITY OF CHICAGO": 399,
+      "JOHNS HOPKINS UNIVERSITY": 398
     }
   },
   "validation_results": {
-    "model_name": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 256, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 384, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n  (2): Normalize()\n)",
-    "validation_score": 0.3711734712123871,
-    "avg_similarity": 0.10305946320295334,
-    "query_relevance": 0.4092964231967926,
+    "model_name": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 350, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 768, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n)",
+    "validation_score": 0.7420072555541992,
+    "avg_similarity": 0.8490105271339417,
+    "query_relevance": 0.8770112991333008,
     "fqhc_metrics": {
-      "fqhc_discrimination": 0.6011645793914795,
-      "intra_fqhc_similarity": 0.3336840271949768,
-      "intra_non_fqhc_similarity": 0.16885791718959808,
-      "inter_group_similarity": 0.13135482370853424,
-      "high_fqhc_count": 2,
-      "low_fqhc_count": 47
+      "fqhc_discrimination": 0.5,
+      "notes": "Insufficient FQHC/non-FQHC mix"
     },
     "sample_size": 50,
     "query_count": 10,
-    "embedding_dimensions": 384
+    "embedding_dimensions": 768
   },
   "phase3_files": {
     "abstracts_path": "./phase2_output/nih_research_abstracts.csv",
@@ -54,7 +50,7 @@
   },
   "recommendations": [
     "Use PubMedBERT for Phase 3 RAG system",
-    "Dataset contains 200 NIH research abstracts",
+    "Dataset contains 1996 NIH research abstracts",
     "Collected from 5 universities"
   ]
 }

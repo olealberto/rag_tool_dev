@@ -1,44 +1,40 @@
 {
   "phase": "phase3_chunk_based_rag",
-  "timestamp": "2026-02-07T20:04:24.504087",
+  "timestamp": "2026-02-12T19:10:43.211130",
+  "mode": "load_existing",
   "model": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 350, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 768, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n)",
   "dataset_stats": {
-    "total_documents": 260,
-    "total_chunks": 458,
-    "avg_chunks_per_doc": 1.7615384615384615,
-    "fqhc_focused": 62,
-    "synthetic": 0,
-    "phase2_nih": 200
+    "total_documents": 2046,
+    "total_chunks": 4316,
+    "avg_chunks_per_doc": 2.1094819159335287,
+    "fqhc_focused": 67,
+    "synthetic": 50,
+    "phase2_nih": 1996
   },
   "chunk_stats": {
     "chunk_types": {
-      "section": 318,
-      "results": 67,
-      "methods": 33,
-      "aims": 25,
-      "general": 12,
-      "innovation": 3
+      "section": 3438,
+      "results": 314,
+      "aims": 185,
+      "methods": 184,
+      "general": 129,
+      "innovation": 63,
+      "background": 3
     },
-    "avg_chunk_size": 129.30786026200875
+    "avg_chunk_size": 127.2873030583874
   },
   "evaluation_metrics": {
     "precision_at_1": 0.0,
     "precision_at_3": 0.0,
     "precision_at_5": 0.0,
-    "fqhc_alignment": 0.7361992965892908,
-    "retrieval_time": 0.0003893256187438965,
-    "avg_similarity": 0.9071702351172766
+    "fqhc_alignment": 0.48711572187494623,
+    "retrieval_time": 0.0015200734138488769,
+    "avg_similarity": 0.9142688562472662
   },
   "system_info": {
     "vector_dimensions": 768,
-    "faiss_index_size": 458,
-    "chunking_enabled": true,
-    "fqhc_boosting_enabled": true
-  },
-  "notes": [
-    "Chunk-based RAG for RFP matching",
-    "Documents split into sections for precise requirement matching",
-    "Each chunk categorized for RFP response sections",
-    "Use interactive_rfp_matching() for RFP requirement testing"
-  ]
+    "faiss_index_size": 4316,
+    "embeddings_loaded": true,
+    "embeddings_saved": true
+  }
 }

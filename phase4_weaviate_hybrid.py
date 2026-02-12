@@ -259,19 +259,20 @@ def run_phase4():
         print(f"❌ Weaviate failed: {e}")
         print("⚠️  Use mock mode: python phase4_weaviate_hybrid.py --mock")
         return
+    # 2. Load data with PRE-COMPUTED EMBEDDINGS
+    try:
+    # Load your saved embeddings CSV
+        df = pd.read_csv('./phase3_results/document_chunks_with_embeddings.csv')
+        print(f"📊 Loaded {len(df)} chunks with pre-computed embeddings!")
     
-    # 2. Load data
-    df = None
-    for path in ['./phase3_results/document_chunks.csv', 'document_chunks.csv', 'phase3_results.csv']:
-        try:
-            df = pd.read_csv('./phase3_results/document_chunks_with_embeddings.csv')
-            print(f"📊 Loaded {len(df)} chunks from {path}")
-            break
-        except:
-            continue
+    # CRITICAL: Convert string embeddings back to lists
+        import ast
+        df['embedding'] = df['embedding'].apply(ast.literal_eval)
+        print(f"✅ Converted embeddings to vectors (dim: {len(df['embedding'].iloc[0])})")
     
-    if df is None:
-        print("⚠️  No chunk file found, creating sample data")
+    except Exception as e:
+        print(f"⚠️  Could not load embeddings: {e}")
+        print("⚠️  Falling back to sample data")
         df = _create_sample_chunks(100)
     
     # 3. Add embeddings if missing

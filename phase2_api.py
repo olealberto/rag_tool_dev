@@ -29,7 +29,7 @@ except ImportError:
 # Configuration
 RAG_CONFIG = {
     "phase2": {
-        "target_abstract_count": 200,
+        "target_abstract_count": 2000,
         "min_abstract_length": 100
     }
 }
@@ -66,7 +66,7 @@ class NIHAPICollector:
             'primary care'
         ]
     
-    def fetch_university_grants(self, university: str, year: int, limit: int = 100) -> List[Dict]:
+    def fetch_university_grants(self, university: str, year: int, limit: int = 400) -> List[Dict]:
         """Fetch grants for a specific university"""
         payload = {
             "criteria": {
@@ -97,7 +97,7 @@ class NIHAPICollector:
         except:
             return []
     
-    def fetch_abstracts(self, target_count: int = 200) -> pd.DataFrame:
+    def fetch_abstracts(self, target_count: int = 2000) -> pd.DataFrame:
         """Fetch abstracts from multiple universities"""
         print(f"\n🔍 Fetching {target_count} NIH research abstracts...")
         
@@ -112,18 +112,18 @@ class NIHAPICollector:
             uni_grant_count = 0
             
             for year in years:
-                if uni_grant_count >= 40 or len(all_grants) >= target_count:
+                if uni_grant_count >= 400 or len(all_grants) >= target_count:
                     break
                 
                 print(f"  Processing {year}...")
-                grants = self.fetch_university_grants(university, year, limit=50)
+                grants = self.fetch_university_grants(university, year, limit=200)
                 
                 if not grants:
                     continue
                 
                 processed = 0
                 for grant in grants:
-                    if len(all_grants) >= target_count or processed >= 20:
+                    if len(all_grants) >= target_count or processed >= 200:
                         break
                     
                     abstract = grant.get('abstract_text', '')

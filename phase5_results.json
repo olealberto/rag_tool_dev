@@ -1,0 +1,30 @@
+{
+  "phase": "phase5_knowledge_graph",
+  "timestamp": "2026-02-12T19:02:23.752488",
+  "graph_stats": {
+    "nodes": 443,
+    "edges": 44426,
+    "density": 0.453775675924129,
+    "connected_components": 1
+  },
+  "node_types": {
+    "grant": 432,
+    "institute": 7,
+    "year": 3,
+    "fqhc": 1
+  },
+  "edge_types": {
+    "funded_by": 432,
+    "published_in": 432,
+    "same_institute_year": 43363,
+    "is_fqhc_relevant": 20,
+    "both_fqhc_focused": 177,
+    "consecutive_year": 2
+  },
+  "community_structure": {
+    "num_communities": 3,
+    "modularity": 0.4909
+  },
+  "weaviate_connected": true,
+  "grants_in_graph": 432
+}

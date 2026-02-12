@@ -1,11 +1,10 @@
 # ============================================================================
-# 📁 phase3_document_rag.py - FQHC RAG WITH DOCUMENT CHUNKING (COMPLETE)
+# 📁 phase3_document_rag.py - FQHC RAG WITH DOCUMENT CHUNKING (EMBEDDING SAVE/LOAD)
 # ============================================================================
 
 """
 PHASE 3: FQHC-FOCUSED RAG BASELINE WITH DOCUMENT CHUNKING
-This serves as baseline comparison for Phase 4 (Weaviate) and Phase 5 (Knowledge Graph)
-NOW WITH DOCUMENT CHUNKING FOR RFP MATCHING
+NOW WITH EMBEDDING SAVE/LOAD - 90 mins first time, 5 seconds thereafter!
 """
 
 print("="*70)
@@ -100,7 +99,7 @@ class DocumentChunker:
                 })
                 all_chunks.append(chunk)
             
-            if idx % 10 == 0:
+            if (idx + 1) % 100 == 0:
                 print(f"  Chunked {idx+1}/{len(documents_df)} documents...")
         
         print(f"✅ Created {len(all_chunks)} chunks from {len(documents_df)} documents")
@@ -146,7 +145,7 @@ class DocumentChunker:
             end_pos = section_matches[i+1][0] if i+1 < len(section_matches) else len(text)
             section_text = text[start_pos:end_pos].strip()
             
-            if section_text and len(section_text.split()) >= 20:  # Minimum 20 words
+            if section_text and len(section_text.split()) >= 20:
                 chunks.append({
                     'text': section_text,
                     'chunk_type': 'section',
@@ -172,7 +171,6 @@ class DocumentChunker:
             para_words = para.split()
             para_word_count = len(para_words)
             
-            # If paragraph is very long, split by sentences
             if para_word_count > self.chunk_size:
                 sentences = self._split_into_sentences(para)
                 for sentence in sentences:
@@ -183,32 +181,24 @@ class DocumentChunker:
                         current_chunk.append(sentence)
                         current_word_count += sent_word_count
                     else:
-                        # Save current chunk
                         if current_chunk:
                             chunks.append(self._create_semantic_chunk(
                                 current_chunk, current_word_count, grant_id
                             ))
-                        
-                        # Start new chunk with current sentence
                         current_chunk = [sentence]
                         current_word_count = sent_word_count
             else:
-                # Regular paragraph processing
                 if current_word_count + para_word_count <= self.chunk_size:
                     current_chunk.append(para)
                     current_word_count += para_word_count
                 else:
-                    # Save current chunk
                     if current_chunk:
                         chunks.append(self._create_semantic_chunk(
                             current_chunk, current_word_count, grant_id
                         ))
-                    
-                    # Start new chunk with current paragraph
                     current_chunk = [para]
                     current_word_count = para_word_count
         
-        # Add final chunk
         if current_chunk:
             chunks.append(self._create_semantic_chunk(
                 current_chunk, current_word_count, grant_id
@@ -217,16 +207,11 @@ class DocumentChunker:
         return chunks
     
     def _split_into_sentences(self, text: str) -> List[str]:
-        """Simple sentence splitting"""
-        # Split by common sentence endings
         sentences = re.split(r'(?<=[.!?])\s+', text)
         return [s.strip() for s in sentences if s.strip()]
     
     def _create_semantic_chunk(self, text_parts: List[str], word_count: int, grant_id: str) -> Dict:
-        """Create semantic chunk from text parts"""
         chunk_text = '\n\n'.join(text_parts)
-        
-        # Analyze chunk content
         chunk_type = self._classify_chunk_type(chunk_text)
         
         return {
@@ -240,9 +225,7 @@ class DocumentChunker:
         }
     
     def _classify_chunk_type(self, text: str) -> str:
-        """Classify chunk type based on content"""
         text_lower = text.lower()
-        
         if any(word in text_lower for word in ['method', 'approach', 'design', 'procedure']):
             return 'methods'
         elif any(word in text_lower for word in ['result', 'finding', 'outcome', 'data']):
@@ -256,7 +239,8 @@ class DocumentChunker:
         else:
             return 'general'
 
-# ============ ENHANCED FQHC DATASET (Keep from original) ============
+
+# ============ ENHANCED FQHC DATASET ============
 
 class EnhancedFQHCDataset:
     """
@@ -264,52 +248,56 @@ class EnhancedFQHCDataset:
     Combines Phase 2 data with synthetic FQHC examples
     """
     
-    def __init__(self):
+    def __init__(self, phase2_data_path: str = None, force_rebuild: bool = False):
         self.data_processor = DataProcessor()
+        self.phase2_data_path = phase2_data_path or "./phase2_output/nih_research_abstracts.csv"
+        self.force_rebuild = force_rebuild
         
-    def load_or_create_enhanced_dataset(self) -> pd.DataFrame:
+    def load_or_create_enhanced_dataset(self, phase2_path: str = None, force_rebuild: bool = None) -> pd.DataFrame:
         """
         Load enhanced FQHC dataset or create it if not exists
+        force_rebuild=True ignores cached file and rebuilds from scratch
         """
+        if phase2_path:
+            self.phase2_data_path = phase2_path
+        if force_rebuild is not None:
+            self.force_rebuild = force_rebuild
+            
         enhanced_path = "./phase3_data/enhanced_fqhc_dataset.csv"
+        
+        if self.force_rebuild:
+            print("🗑️  Force rebuild enabled - deleting cached dataset")
+            if os.path.exists(enhanced_path):
+                os.remove(enhanced_path)
+            data = self._create_enhanced_dataset()
+            os.makedirs("./phase3_data", exist_ok=True)
+            data.to_csv(enhanced_path, index=False)
+            print(f"💾 Saved enhanced dataset to {enhanced_path}")
+            print(f"✅ Created {len(data)} documents")
+            return data
         
         if os.path.exists(enhanced_path):
             print(f"📂 Loading enhanced dataset from {enhanced_path}")
             data = pd.read_csv(enhanced_path)
             print(f"✅ Loaded {len(data)} documents")
+            return data
         else:
             print("📝 Creating enhanced FQHC dataset...")
             data = self._create_enhanced_dataset()
             os.makedirs("./phase3_data", exist_ok=True)
             data.to_csv(enhanced_path, index=False)
             print(f"💾 Saved enhanced dataset to {enhanced_path}")
-        
-        # Ensure required columns
-        if 'abstract' not in data.columns:
-            print("⚠️  'abstract' column not found. Using 'text' if available.")
-            if 'text' in data.columns:
-                data['abstract'] = data['text']
-            else:
-                print("❌ No text content available")
-                return pd.DataFrame()
-        
-        return data
+            return data
     
     def _create_enhanced_dataset(self) -> pd.DataFrame:
-        """
-        Create enhanced dataset by combining:
-        1. Phase 2 NIH abstracts
-        2. Synthetic FQHC examples
-        3. FQHC-focused metadata
-        """
+        """Create enhanced dataset by combining Phase 2 data + synthetic FQHC examples"""
         all_data = []
         
         # 1. Load Phase 2 data
         try:
-            phase2_data = pd.read_csv("./phase2_output/nih_research_abstracts.csv")
-            print(f"📊 Phase 2 data: {len(phase2_data)} abstracts")
+            phase2_data = pd.read_csv(self.phase2_data_path)
+            print(f"📊 Phase 2 data: {len(phase2_data)} abstracts from {self.phase2_data_path}")
             
-            # Add FQHC detection to Phase 2 data
             phase2_data['is_fqhc_focused'] = phase2_data['abstract'].apply(
                 lambda x: self._detect_fqhc_focus(str(x))
             )
@@ -326,14 +314,11 @@ class EnhancedFQHCDataset:
         synthetic_data = self._create_synthetic_fqhc_data(50)
         all_data.append(synthetic_data)
         
-        # 3. Combine all data
         if all_data:
             enhanced_data = pd.concat(all_data, ignore_index=True)
             
-            # Fill missing columns
             if 'grant_id' not in enhanced_data.columns:
                 enhanced_data['grant_id'] = [f"DOC_{i}" for i in range(len(enhanced_data))]
-            
             if 'title' not in enhanced_data.columns:
                 enhanced_data['title'] = enhanced_data.get('grant_id', 'Untitled')
             
@@ -348,44 +333,36 @@ class EnhancedFQHCDataset:
             return pd.DataFrame()
     
     def _create_synthetic_fqhc_data(self, n: int = 50) -> pd.DataFrame:
-        """
-        Create synthetic FQHC-focused abstracts
-        """
+        """Create synthetic FQHC-focused abstracts"""
         print(f"🧪 Creating {n} synthetic FQHC abstracts...")
         
-        templates = [
-            {
-                "title": "Community Health Worker Program for {condition} Management in {population} {setting}",
-                "abstract": """This {study_type} evaluates a community health worker-led {condition} management program 
-                for {population} patients at {setting}. The intervention includes {components} with focus on 
-                {focus_area}. {design} with {participants} participants across {num_clinics} clinics. 
-                Primary outcomes include {outcomes}. Results show {results}.""",
-                "conditions": ["diabetes", "hypertension", "depression", "asthma", "HIV"],
-                "populations": ["Latino", "African American", "low-income", "Medicaid", "rural", "older adult"],
-                "settings": ["Federally Qualified Health Centers", "community health centers", "safety-net clinics"],
-                "study_types": ["randomized controlled trial", "implementation study", "pragmatic trial"],
-                "components": ["culturally-adapted education", "regular health screenings", "medication adherence support", "telehealth follow-ups"],
-                "focus_areas": ["health disparities reduction", "chronic disease management", "preventive care", "behavioral health integration"],
-                "designs": ["Mixed-methods design", "Stepped-wedge design", "Cluster randomized design"],
-                "participants": ["200", "500", "1000", "1500"],
-                "num_clinics": ["5", "10", "15", "20"],
-                "outcomes": ["HbA1c levels", "blood pressure control", "depression scores", "healthcare utilization"],
-                "results": ["significant improvements in clinical outcomes", "high patient satisfaction", "cost-effective intervention", "sustainable model for other clinics"]
-            }
-        ]
+        templates = [{
+            "title": "Community Health Worker Program for {condition} Management in {population} {setting}",
+            "abstract": """This {study_type} evaluates a community health worker-led {condition} management program 
+            for {population} patients at {setting}. The intervention includes {components} with focus on 
+            {focus_area}. {design} with {participants} participants across {num_clinics} clinics. 
+            Primary outcomes include {outcomes}. Results show {results}.""",
+            "conditions": ["diabetes", "hypertension", "depression", "asthma", "HIV"],
+            "populations": ["Latino", "African American", "low-income", "Medicaid", "rural", "older adult"],
+            "settings": ["Federally Qualified Health Centers", "community health centers", "safety-net clinics"],
+            "study_types": ["randomized controlled trial", "implementation study", "pragmatic trial"],
+            "components": ["culturally-adapted education", "regular health screenings", "medication adherence support", "telehealth follow-ups"],
+            "focus_areas": ["health disparities reduction", "chronic disease management", "preventive care", "behavioral health integration"],
+            "designs": ["Mixed-methods design", "Stepped-wedge design", "Cluster randomized design"],
+            "participants": ["200", "500", "1000", "1500"],
+            "num_clinics": ["5", "10", "15", "20"],
+            "outcomes": ["HbA1c levels", "blood pressure control", "depression scores", "healthcare utilization"],
+            "results": ["significant improvements in clinical outcomes", "high patient satisfaction", "cost-effective intervention", "sustainable model for other clinics"]
+        }]
         
         synthetic_docs = []
-        
         for i in range(n):
-            template = templates[i % len(templates)]
-            
-            # Fill template
+            template = templates[0]
             title = template["title"].format(
                 condition=np.random.choice(template["conditions"]),
                 population=np.random.choice(template["populations"]),
                 setting=np.random.choice(template["settings"])
             )
-            
             abstract = template["abstract"].format(
                 study_type=np.random.choice(template["study_types"]),
                 condition=np.random.choice(template["conditions"]),
@@ -399,8 +376,6 @@ class EnhancedFQHCDataset:
                 outcomes=np.random.choice(template["outcomes"]),
                 results=np.random.choice(template["results"])
             )
-            
-            # Clean up whitespace
             abstract = ' '.join(abstract.split())
             
             synthetic_docs.append({
@@ -421,51 +396,34 @@ class EnhancedFQHCDataset:
         return pd.DataFrame(synthetic_docs)
     
     def _detect_fqhc_focus(self, text: str) -> bool:
-        """Detect if text is FQHC-focused"""
         text_lower = text.lower()
-        fqhc_keywords = [
-            'federally qualified health center',
-            'fqhc',
-            'community health center',
-            'safety-net clinic',
-            'medically underserved'
-        ]
+        fqhc_keywords = ['federally qualified health center', 'fqhc', 'community health center', 
+                        'safety-net clinic', 'medically underserved']
         return any(keyword in text_lower for keyword in fqhc_keywords)
     
     def _calculate_fqhc_score(self, text: str) -> float:
-        """Calculate FQHC relevance score"""
         text_lower = text.lower()
-        
         fqhc_terms = {
-            'federally qualified health center': 3.0,
-            'fqhc': 3.0,
-            'community health center': 2.5,
-            'safety-net clinic': 2.5,
-            'medically underserved': 2.0,
-            'low-income': 1.5,
-            'uninsured': 1.5,
-            'medicaid': 1.5,
-            'health disparities': 2.0,
-            'primary care access': 1.5
+            'federally qualified health center': 3.0, 'fqhc': 3.0, 'community health center': 2.5,
+            'safety-net clinic': 2.5, 'medically underserved': 2.0, 'low-income': 1.5,
+            'uninsured': 1.5, 'medicaid': 1.5, 'health disparities': 2.0, 'primary care access': 1.5
         }
-        
-        total_score = 0
-        for term, weight in fqhc_terms.items():
-            if term in text_lower:
-                total_score += weight
-        
+        total_score = sum(weight for term, weight in fqhc_terms.items() if term in text_lower)
         max_possible = sum(fqhc_terms.values())
         return min(total_score / max_possible, 1.0)
 
-# ============ CHUNK-BASED RAG SYSTEM ============
+
+# ============ CHUNK-BASED RAG SYSTEM WITH EMBEDDING SAVE/LOAD ============
 
 class ChunkBasedRAG:
     """
     CHUNK-BASED RAG SYSTEM FOR RFP MATCHING
-    Finds specific text chunks that match RFP requirements
+    NOW WITH EMBEDDING SAVE/LOAD - 90 mins first time, 5 seconds thereafter!
     """
     
-    def __init__(self, model_name: str = None):
+    def __init__(self, model_name: str = None, load_existing_embeddings: bool = False, 
+                 phase2_data_path: str = None, force_rebuild_dataset: bool = False):
+        
         if model_name is None:
             model_name = RAG_CONFIG.get("phase3", {}).get("embedding_model", 
                                                          "pritamdeka/S-PubMedBert-MS-MARCO")
@@ -473,20 +431,21 @@ class ChunkBasedRAG:
         print(f"🚀 Initializing Chunk-Based RAG for RFP Matching...")
         print(f"   Model: {model_name}")
         print(f"   Vector store: FAISS (for baseline comparison)")
+        print(f"   Mode: {'🔄 LOAD existing embeddings' if load_existing_embeddings else '⚡ CREATE new embeddings'}")
         
         # Load enhanced dataset
-        self.dataset_loader = EnhancedFQHCDataset()
+        self.dataset_loader = EnhancedFQHCDataset(phase2_data_path, force_rebuild_dataset)
         self.data = self.dataset_loader.load_or_create_enhanced_dataset()
         
         if self.data.empty:
             raise ValueError("No data available for RAG system")
         
-        # Chunk documents
+        # Chunk documents (always need to do this - it's fast)
         print("\n🔪 Chunking documents for RFP matching...")
         chunker = DocumentChunker(chunk_size=250, overlap=50)
         self.chunks_df = chunker.chunk_full_documents(self.data)
         
-        # Load embedding model
+        # Load embedding model (needed for queries)
         if EMBEDDING_AVAILABLE:
             self.model = SentenceTransformer(model_name)
             print(f"✅ Loaded embedding model: {model_name}")
@@ -494,71 +453,82 @@ class ChunkBasedRAG:
             self.model = None
             print("⚠️  No embedding model available")
         
-        # Build FAISS index
+        # Either load existing embeddings or build new ones
         self.index = None
         self.embeddings = None
         
-        if FAISS_AVAILABLE and self.model:
-            self._build_faiss_index()
+        if load_existing_embeddings:
+            self._load_existing_index()
+        else:
+            if FAISS_AVAILABLE and self.model:
+                self._build_faiss_index()
+                self._save_embeddings()  # Save for next time!
     
     def _build_faiss_index(self):
-        """Build FAISS vector index for chunks"""
+        """Build FAISS vector index for chunks (90 minutes)"""
         print(f"\n🔨 Building FAISS index for {len(self.chunks_df)} chunks...")
         
-        # Extract chunk texts
         chunk_texts = self.chunks_df['text'].fillna('').tolist()
         
-        # Create embeddings
         print(f"📐 Embedding {len(chunk_texts)} chunks...")
         self.embeddings = self.model.encode(chunk_texts, show_progress_bar=True)
         
-        # Create FAISS index
         dimension = self.embeddings.shape[1]
-        self.index = faiss.IndexFlatIP(dimension)  # Inner product for cosine similarity
-        
-        # Normalize for cosine similarity
+        self.index = faiss.IndexFlatIP(dimension)
         faiss.normalize_L2(self.embeddings)
         self.index.add(self.embeddings)
         
         print(f"✅ FAISS index built: {self.index.ntotal} chunks, {dimension} dimensions")
     
-    def match_rfp_requirements(self, rfp_text: str, 
-                              requirements: List[str] = None,
-                              top_k: int = 5) -> Dict:
-        """
-        Match RFP requirements to document chunks
-        """
-        print(f"\n📋 Matching RFP requirements...")
+    def _save_embeddings(self):
+        """Save embeddings and FAISS index for future use (Phase 4, Phase 5, future runs)"""
+        print("\n💾 SAVING EMBEDDINGS FOR FUTURE USE...")
         
-        if requirements is None:
-            # Extract requirements from RFP text
-            requirements = self._extract_requirements(rfp_text)
+        os.makedirs('./phase3_results', exist_ok=True)
         
-        results = {}
+        # Save FAISS index
+        faiss.write_index(self.index, './phase3_results/faiss_index.bin')
+        print(f"✅ Saved FAISS index: {self.index.ntotal} vectors")
         
-        for i, requirement in enumerate(requirements):
-            print(f"\n🔍 Requirement {i+1}: {requirement[:80]}...")
+        # Save embeddings as numpy array
+        np.save('./phase3_results/chunk_embeddings.npy', self.embeddings)
+        print(f"✅ Saved embeddings: {self.embeddings.shape}")
+        
+        # Save chunks WITH embeddings (for Phase 4)
+        self.chunks_df['embedding'] = self.embeddings.tolist()
+        self.chunks_df.to_csv('./phase3_results/document_chunks_with_embeddings.csv', index=False)
+        print(f"✅ Saved chunks with embeddings: {len(self.chunks_df)} rows")
+        
+        # Remove embedding column to free memory
+        self.chunks_df = self.chunks_df.drop(columns=['embedding'])
+        print("✅ Embeddings saved! Future runs can use load_existing_embeddings=True")
+    
+    def _load_existing_index(self):
+        """Load pre-computed embeddings and FAISS index (5 seconds)"""
+        print("\n📦 Loading pre-computed embeddings from disk...")
+        
+        try:
+            # Load FAISS index
+            self.index = faiss.read_index('./phase3_results/faiss_index.bin')
+            print(f"✅ Loaded FAISS index: {self.index.ntotal} vectors")
             
-            # Search for matching chunks
-            chunks = self.search(requirement, top_k=top_k, fqhc_boost=True)
+            # Load embeddings
+            self.embeddings = np.load('./phase3_results/chunk_embeddings.npy')
+            print(f"✅ Loaded embeddings: {self.embeddings.shape}")
             
-            # Categorize chunks by relevance
-            categorized = self._categorize_chunks_for_rfp(chunks, requirement)
+            # Verify counts match
+            if len(self.chunks_df) != self.index.ntotal:
+                print(f"⚠️  Warning: Chunks ({len(self.chunks_df)}) vs Index ({self.index.ntotal}) mismatch")
             
-            results[f"requirement_{i+1}"] = {
-                "requirement": requirement,
-                "total_matches": len(chunks),
-                "best_matches": chunks[:3],
-                "categorized": categorized,
-                "suggested_sections": self._suggest_rfp_sections(chunks)
-            }
-        
-        return results
+        except FileNotFoundError as e:
+            print(f"❌ Could not load embeddings: {e}")
+            print("⚠️  Run with load_existing_embeddings=False first to generate embeddings")
+            raise
+    
+    # ============ SEARCH METHODS ============
     
     def search(self, query: str, top_k: int = 5, fqhc_boost: bool = True) -> List[Dict]:
-        """
-        Search for chunks matching query
-        """
+        """Search for chunks matching query"""
         if self.index is None or self.model is None:
             print("❌ FAISS index or model not available")
             return []
@@ -575,8 +545,6 @@ class ChunkBasedRAG:
         search_time = time.time() - start_time
         
         results = []
-        query_fqhc_score = self._calculate_fqhc_score(query)
-        
         for i, idx in enumerate(indices[0]):
             if idx < 0 or idx >= len(self.chunks_df):
                 continue
@@ -584,7 +552,6 @@ class ChunkBasedRAG:
             chunk_data = self.chunks_df.iloc[idx].to_dict()
             similarity = float(distances[0][i])
             
-            # Apply FQHC boost if requested
             boosted_similarity = similarity
             if fqhc_boost and chunk_data.get('is_fqhc_focused', False):
                 boost_factor = 1.0 + (chunk_data.get('fqhc_score', 0.5) * 0.5)
@@ -613,10 +580,7 @@ class ChunkBasedRAG:
                 'relevance_explanation': self._explain_relevance(query, chunk_data['text'])
             })
         
-        # Sort by boosted similarity
         results.sort(key=lambda x: x['boosted_similarity'], reverse=True)
-        
-        # Return top_k results
         final_results = results[:top_k]
         
         print(f"📊 Found {len(final_results)} chunks in {search_time:.3f}s")
@@ -626,18 +590,45 @@ class ChunkBasedRAG:
         
         return final_results
     
+    def _explain_relevance(self, query: str, chunk_text: str) -> str:
+        query_words = set(query.lower().split())
+        chunk_words = set(chunk_text.lower().split())
+        overlap = query_words.intersection(chunk_words)
+        if len(overlap) > 3:
+            return f"Contains key terms: {', '.join(list(overlap)[:5])}"
+        else:
+            return "Semantic similarity to requirement"
+    
     def _calculate_fqhc_score(self, text: str) -> float:
-        """Calculate FQHC relevance score"""
         if not isinstance(text, str):
             return 0.0
-        
         return self.dataset_loader._calculate_fqhc_score(text)
     
-    def _extract_requirements(self, rfp_text: str) -> List[str]:
-        """Extract requirements from RFP text"""
-        requirements = []
+    # ============ RFP MATCHING ============
+    
+    def match_rfp_requirements(self, rfp_text: str, requirements: List[str] = None, top_k: int = 5) -> Dict:
+        """Match RFP requirements to document chunks"""
+        print(f"\n📋 Matching RFP requirements...")
         
-        # Common RFP requirement patterns
+        if requirements is None:
+            requirements = self._extract_requirements(rfp_text)
+        
+        results = {}
+        for i, requirement in enumerate(requirements):
+            print(f"\n🔍 Requirement {i+1}: {requirement[:80]}...")
+            chunks = self.search(requirement, top_k=top_k, fqhc_boost=True)
+            categorized = self._categorize_chunks_for_rfp(chunks, requirement)
+            results[f"requirement_{i+1}"] = {
+                "requirement": requirement,
+                "total_matches": len(chunks),
+                "best_matches": chunks[:3],
+                "categorized": categorized,
+                "suggested_sections": self._suggest_rfp_sections(chunks)
+            }
+        return results
+    
+    def _extract_requirements(self, rfp_text: str) -> List[str]:
+        requirements = []
         patterns = [
             r'Requirements?:?\s*(.+?)(?=Requirements?|Qualifications|Deliverables|$)',
             r'Applicants? must\s*(.+?)(?=\.|Applicants? must|$)',
@@ -645,36 +636,22 @@ class ChunkBasedRAG:
             r'Projects? will\s*(.+?)(?=\.|Projects? will|$)',
             r'Key\s+(?:Components|Elements):?\s*(.+?)(?=Key|$)',
         ]
-        
         for pattern in patterns:
             matches = re.findall(pattern, rfp_text, re.IGNORECASE | re.DOTALL)
             for match in matches:
-                if len(match.strip()) > 10:  # Minimum length
+                if len(match.strip()) > 10:
                     requirements.append(match.strip())
-        
-        # If no patterns found, split by sentences
         if not requirements:
             sentences = re.split(r'(?<=[.!?])\s+', rfp_text)
             requirements = [s.strip() for s in sentences if len(s.split()) > 5]
-        
-        # Limit to top requirements
         return requirements[:10]
     
     def _categorize_chunks_for_rfp(self, chunks: List[Dict], requirement: str) -> Dict:
-        """Categorize chunks for RFP response sections"""
-        categories = {
-            'methods_approach': [],
-            'background_significance': [],
-            'innovation': [],
-            'evaluation_outcomes': [],
-            'implementation_plan': [],
-            'budget_justification': []
-        }
-        
+        categories = {'methods_approach': [], 'background_significance': [], 'innovation': [],
+                     'evaluation_outcomes': [], 'implementation_plan': [], 'budget_justification': []}
         for chunk in chunks:
             chunk_type = chunk.get('chunk_type', '').lower()
             text = chunk.get('text', '').lower()
-            
             if 'method' in chunk_type or chunk.get('contains_methods', False):
                 categories['methods_approach'].append(chunk)
             elif 'background' in chunk_type:
@@ -688,19 +665,13 @@ class ChunkBasedRAG:
             elif any(word in text for word in ['budget', 'cost', 'funding', 'resource']):
                 categories['budget_justification'].append(chunk)
             else:
-                # Default to methods approach
                 categories['methods_approach'].append(chunk)
-        
-        # Filter empty categories
         return {k: v for k, v in categories.items() if v}
     
     def _suggest_rfp_sections(self, chunks: List[Dict]) -> List[str]:
-        """Suggest RFP response sections based on matching chunks"""
         sections = set()
-        
         for chunk in chunks:
             chunk_type = chunk.get('chunk_type', '')
-            
             if chunk_type in ['methods', 'approach']:
                 sections.add('Methods and Approach')
             elif chunk_type == 'background':
@@ -713,38 +684,14 @@ class ChunkBasedRAG:
                 sections.add('Implementation Plan')
             elif 'budget' in chunk.get('text', '').lower():
                 sections.add('Budget Justification')
-        
         return list(sections)
     
-    def _explain_relevance(self, query: str, chunk_text: str) -> str:
-        """Generate explanation of why chunk is relevant"""
-        query_words = set(query.lower().split())
-        chunk_words = set(chunk_text.lower().split())
-        
-        overlap = query_words.intersection(chunk_words)
-        
-        if len(overlap) > 3:
-            return f"Contains key terms: {', '.join(list(overlap)[:5])}"
-        else:
-            return "Semantic similarity to requirement"
-    
-    def _truncate_text(self, text: str, max_length: int) -> str:
-        """Truncate text to specified length"""
-        if not isinstance(text, str):
-            return ""
-        if len(text) <= max_length:
-            return text
-        return text[:max_length] + "..."
-    
-    # ============ EVALUATION METHODS (Keep from original) ============
+    # ============ EVALUATION METHODS ============
     
     def evaluate(self, test_queries: List[Dict] = None) -> Dict:
-        """
-        Evaluate chunk-based RAG performance
-        """
+        """Evaluate chunk-based RAG performance"""
         print("\n🧪 Evaluating Chunk-Based RAG...")
         
-        # Load test queries from Phase 2 or create default
         if test_queries is None:
             try:
                 with open('./phase2_output/evaluation_set.json', 'r') as f:
@@ -754,49 +701,30 @@ class ChunkBasedRAG:
                 print("⚠️  Creating default FQHC test queries")
                 test_queries = self._create_fqhc_test_queries()
         
-        metrics = {
-            'precision_at_1': [],
-            'precision_at_3': [],
-            'precision_at_5': [],
-            'fqhc_alignment': [],
-            'retrieval_time': [],
-            'avg_similarity': []
-        }
+        metrics = {'precision_at_1': [], 'precision_at_3': [], 'precision_at_5': [],
+                  'fqhc_alignment': [], 'retrieval_time': [], 'avg_similarity': []}
         
         for i, query_data in enumerate(test_queries):
             query = query_data.get('query', '')
             relevant_ids = set(query_data.get('relevant_grant_ids', []))
-            
             results = self.search(query, top_k=5, fqhc_boost=True)
-            
             retrieved_ids = [r['grant_id'] for r in results]
             
-            # Calculate precision@k
             for k in [1, 3, 5]:
                 top_k_ids = retrieved_ids[:k]
                 relevant_in_top_k = len([id for id in top_k_ids if id in relevant_ids])
                 precision = relevant_in_top_k / k if k > 0 else 0
                 metrics[f'precision_at_{k}'].append(precision)
             
-            # Calculate FQHC alignment
             if results:
-                fqhc_scores = [r['fqhc_score'] for r in results[:3]]
-                metrics['fqhc_alignment'].append(np.mean(fqhc_scores))
-            
-            # Record metrics
-            if results:
+                metrics['fqhc_alignment'].append(np.mean([r['fqhc_score'] for r in results[:3]]))
                 metrics['retrieval_time'].append(results[0]['search_time'])
                 metrics['avg_similarity'].append(np.mean([r['similarity'] for r in results[:3]]))
             
-            # Progress update
             if (i + 1) % 5 == 0:
                 print(f"  Processed {i + 1}/{len(test_queries)} queries...")
         
-        # Calculate average metrics
-        avg_metrics = {}
-        for key, values in metrics.items():
-            if values:
-                avg_metrics[key] = np.mean(values)
+        avg_metrics = {k: np.mean(v) for k, v in metrics.items() if v}
         
         print(f"\n📊 Chunk-Based RAG Results:")
         print(f"   • Precision@1: {avg_metrics.get('precision_at_1', 0):.3f}")
@@ -808,118 +736,58 @@ class ChunkBasedRAG:
         return avg_metrics
     
     def _create_fqhc_test_queries(self) -> List[Dict]:
-        """Create FQHC-focused test queries"""
-        fqhc_queries = [
-            {
-                'query': 'diabetes prevention in Federally Qualified Health Centers',
-                'relevant_grant_ids': ['FQHC_SYNTH_0001', 'FQHC_SYNTH_0010', 'FQHC_SYNTH_0020'],
-                'type': 'fqhc_chronic_disease'
-            },
-            {
-                'query': 'community health worker programs for underserved populations',
-                'relevant_grant_ids': ['FQHC_SYNTH_0005', 'FQHC_SYNTH_0015', 'FQHC_SYNTH_0025'],
-                'type': 'fqhc_intervention'
-            },
-            {
-                'query': 'telehealth implementation in rural community health centers',
-                'relevant_grant_ids': ['FQHC_SYNTH_0003', 'FQHC_SYNTH_0013', 'FQHC_SYNTH_0023'],
-                'type': 'fqhc_technology'
-            },
-            {
-                'query': 'health disparities reduction in safety-net clinics',
-                'relevant_grant_ids': ['FQHC_SYNTH_0007', 'FQHC_SYNTH_0017', 'FQHC_SYNTH_0027'],
-                'type': 'fqhc_equity'
-            },
-            {
-                'query': 'behavioral health integration in primary care FQHCs',
-                'relevant_grant_ids': ['FQHC_SYNTH_0009', 'FQHC_SYNTH_0019', 'FQHC_SYNTH_0029'],
-                'type': 'fqhc_behavioral_health'
-            }
+        return [
+            {'query': 'diabetes prevention in Federally Qualified Health Centers', 'relevant_grant_ids': ['FQHC_SYNTH_0001', 'FQHC_SYNTH_0010', 'FQHC_SYNTH_0020'], 'type': 'fqhc_chronic_disease'},
+            {'query': 'community health worker programs for underserved populations', 'relevant_grant_ids': ['FQHC_SYNTH_0005', 'FQHC_SYNTH_0015', 'FQHC_SYNTH_0025'], 'type': 'fqhc_intervention'},
+            {'query': 'telehealth implementation in rural community health centers', 'relevant_grant_ids': ['FQHC_SYNTH_0003', 'FQHC_SYNTH_0013', 'FQHC_SYNTH_0023'], 'type': 'fqhc_technology'},
+            {'query': 'health disparities reduction in safety-net clinics', 'relevant_grant_ids': ['FQHC_SYNTH_0007', 'FQHC_SYNTH_0017', 'FQHC_SYNTH_0027'], 'type': 'fqhc_equity'},
+            {'query': 'behavioral health integration in primary care FQHCs', 'relevant_grant_ids': ['FQHC_SYNTH_0009', 'FQHC_SYNTH_0019', 'FQHC_SYNTH_0029'], 'type': 'fqhc_behavioral_health'}
         ]
-        return fqhc_queries
     
     def create_proper_evaluation(self, num_queries: int = 20) -> List[Dict]:
-        """
-        Create proper evaluation queries that match actual documents
-        This ensures ground truth IDs exist in the dataset
-        """
+        """Create proper evaluation queries that match actual documents"""
         print(f"\n🎯 Creating proper evaluation from {len(self.data)} documents...")
-        
-        # Get FQHC documents
         fqhc_docs = self.data[self.data['is_fqhc_focused'] == True]
-        
         if len(fqhc_docs) < num_queries:
-            print(f"⚠️  Only {len(fqhc_docs)} FQHC documents available")
             num_queries = len(fqhc_docs)
         
         eval_set = []
-        conditions_used = set()
-        
         for i, (_, doc) in enumerate(fqhc_docs.head(num_queries).iterrows()):
-            # Create query based on document content
-            title = doc.get('title', 'Untitled')
-            abstract = doc.get('abstract', '')
-            full_text = (title + ' ' + abstract).lower()
-            
-            # Determine query based on content
-            query = self._generate_query_from_document(doc, full_text)
-            
-            # Track conditions for diversity
-            primary_condition = doc.get('primary_condition', 'general')
-            conditions_used.add(primary_condition)
+            full_text = (doc.get('title', '') + ' ' + doc.get('abstract', '')).lower()
+            if 'diabetes' in full_text:
+                query = "diabetes management in community health settings"
+            elif 'hypertension' in full_text or 'blood pressure' in full_text:
+                query = "hypertension control in underserved populations"
+            elif 'depression' in full_text or 'mental health' in full_text:
+                query = "behavioral health integration in primary care"
+            elif 'asthma' in full_text:
+                query = "asthma management in pediatric populations"
+            elif 'cancer' in full_text:
+                query = "cancer screening in community health centers"
+            elif 'hiv' in full_text:
+                query = "HIV prevention and care in safety-net settings"
+            else:
+                words = doc.get('title', '').split()[:4]
+                query = f"{' '.join(words)} in Federally Qualified Health Centers"
             
             eval_set.append({
                 "query_id": f"Q{i+1:03d}_PROPER",
                 "query": query,
-                "relevant_grant_ids": [doc['grant_id']],  # CRITICAL: Use actual document ID
+                "relevant_grant_ids": [doc['grant_id']],
                 "query_type": "document_based",
-                "condition": primary_condition,
-                "source_document": doc['grant_id'],
-                "notes": f"Created from document: {doc['grant_id']}"
+                "condition": doc.get('primary_condition', 'general'),
+                "source_document": doc['grant_id']
             })
         
-        # Save evaluation
-        eval_path = './phase3_results/proper_evaluation.json'
         os.makedirs('./phase3_results', exist_ok=True)
-        with open(eval_path, 'w') as f:
+        with open('./phase3_results/proper_evaluation.json', 'w') as f:
             json.dump(eval_set, f, indent=2)
-        
         print(f"✅ Created {len(eval_set)} proper evaluation queries")
-        print(f"   Conditions represented: {list(conditions_used)}")
-        print(f"   Saved to: {eval_path}")
-        
         return eval_set
     
-    def _generate_query_from_document(self, doc: Dict, full_text: str) -> str:
-        """Generate a query from document content"""
-        title = doc.get('title', '')
-        
-        # Check for specific conditions
-        if 'diabetes' in full_text:
-            return "diabetes management in community health settings"
-        elif 'hypertension' in full_text or 'blood pressure' in full_text:
-            return "hypertension control in underserved populations"
-        elif 'depression' in full_text or 'mental health' in full_text:
-            return "behavioral health integration in primary care"
-        elif 'asthma' in full_text:
-            return "asthma management in pediatric populations"
-        elif 'cancer' in full_text:
-            return "cancer screening in community health centers"
-        elif 'hiv' in full_text:
-            return "HIV prevention and care in safety-net settings"
-        else:
-            # Create generic query from title
-            words = title.split()[:4]
-            return f"{' '.join(words)} in Federally Qualified Health Centers"
-    
     def evaluate_with_proper_queries(self, num_queries: int = 20) -> Dict:
-        """
-        Evaluate using proper queries (recommended for accurate metrics)
-        """
+        """Evaluate using proper queries (recommended for accurate metrics)"""
         print("\n🧪 EVALUATION WITH PROPER GROUND TRUTH")
-        print("=" * 50)
-        
-        # Create or load proper evaluation
         eval_path = './phase3_results/proper_evaluation.json'
         if os.path.exists(eval_path):
             with open(eval_path, 'r') as f:
@@ -927,64 +795,31 @@ class ChunkBasedRAG:
             print(f"📋 Loaded existing proper evaluation: {len(test_queries)} queries")
         else:
             test_queries = self.create_proper_evaluation(num_queries)
-        
-        # Run evaluation
         return self._run_evaluation_with_queries(test_queries)
     
     def _run_evaluation_with_queries(self, test_queries: List[Dict]) -> Dict:
-        """Internal method to run evaluation with given queries"""
-        metrics = {
-            'precision_at_1': [],
-            'precision_at_3': [],
-            'precision_at_5': [],
-            'fqhc_alignment': [],
-            'retrieval_time': [],
-            'avg_similarity': []
-        }
+        metrics = {'precision_at_1': [], 'precision_at_3': [], 'precision_at_5': [],
+                  'fqhc_alignment': [], 'retrieval_time': [], 'avg_similarity': []}
         
-        for i, query_data in enumerate(test_queries):
+        for query_data in test_queries:
             query = query_data.get('query', '')
             relevant_ids = set(query_data.get('relevant_grant_ids', []))
-            
             results = self.search(query, top_k=5, fqhc_boost=True)
-            
             retrieved_ids = [r['grant_id'] for r in results]
             
-            # Calculate precision@k
             for k in [1, 3, 5]:
                 top_k_ids = retrieved_ids[:k]
                 relevant_in_top_k = len([id for id in top_k_ids if id in relevant_ids])
-                precision = relevant_in_top_k / k if k > 0 else 0
-                metrics[f'precision_at_{k}'].append(precision)
+                metrics[f'precision_at_{k}'].append(relevant_in_top_k / k if k > 0 else 0)
             
-            # Calculate FQHC alignment
             if results:
-                fqhc_scores = [r['fqhc_score'] for r in results[:3]]
-                metrics['fqhc_alignment'].append(np.mean(fqhc_scores))
-            
-            # Record metrics
-            if results:
+                metrics['fqhc_alignment'].append(np.mean([r['fqhc_score'] for r in results[:3]]))
                 metrics['retrieval_time'].append(results[0]['search_time'])
                 metrics['avg_similarity'].append(np.mean([r['similarity'] for r in results[:3]]))
-            
-            # Progress update
-            if (i + 1) % 5 == 0:
-                print(f"  Processed {i + 1}/{len(test_queries)} queries...")
         
-        # Calculate averages
-        avg_metrics = {}
-        for key, values in metrics.items():
-            if values:
-                avg_metrics[key] = np.mean(values)
-        
-        print(f"\n📊 Evaluation Results:")
-        print(f"   • Precision@1: {avg_metrics.get('precision_at_1', 0):.3f}")
-        print(f"   • Precision@3: {avg_metrics.get('precision_at_3', 0):.3f}")
-        print(f"   • Precision@5: {avg_metrics.get('precision_at_5', 0):.3f}")
-        print(f"   • FQHC Alignment: {avg_metrics.get('fqhc_alignment', 0):.3f}")
-        print(f"   • Avg Retrieval Time: {avg_metrics.get('retrieval_time', 0):.3f}s")
-        
-        return avg_metrics
+        return {k: np.mean(v) for k, v in metrics.items() if v}
+    
+    # ============ INTERACTIVE DEMOS ============
     
     def interactive_rfp_matching(self):
         """Interactive RFP matching demo"""
@@ -993,24 +828,18 @@ class ChunkBasedRAG:
         print("="*70)
         print("Enter RFP requirements to find matching grant sections")
         print("Type 'quit' to exit, 'sample' for sample RFP")
-        print("-" * 70)
         
         while True:
             user_input = input("\n📋 Enter RFP requirement (or 'sample'): ").strip()
-            
             if user_input.lower() in ['quit', 'exit', 'q']:
                 break
-            
             if user_input.lower() == 'sample':
-                # Sample RFP requirement
                 requirement = "Develop a community health worker program for diabetes prevention in underserved populations with evaluation metrics including HbA1c reduction and cost-effectiveness analysis"
                 print(f"\n📋 Sample RFP: {requirement}")
             else:
                 requirement = user_input
             
             print(f"\n🔍 Searching for: '{requirement[:100]}...'")
-            print("-" * 50)
-            
             chunks = self.search(requirement, top_k=3, fqhc_boost=True)
             
             if not chunks:
@@ -1018,7 +847,6 @@ class ChunkBasedRAG:
                 continue
             
             print(f"✅ Found {len(chunks)} relevant chunks:")
-            
             for i, chunk in enumerate(chunks, 1):
                 print(f"\n{i}. 📄 From: {chunk['document_title']}")
                 print(f"   📅 Year: {chunk['year']} | Grant: {chunk['grant_id']}")
@@ -1028,14 +856,11 @@ class ChunkBasedRAG:
                 print(f"   💡 Use for: {chunk.get('relevance_explanation', 'General reference')}")
                 print(f"   📋 Text: {chunk['text'][:200]}...")
             
-            # Show suggested RFP sections
             suggested = self._suggest_rfp_sections(chunks)
             if suggested:
                 print(f"\n🎯 Suggested RFP sections to include:")
                 for section in suggested:
                     print(f"   • {section}")
-            
-            print("\n" + "-" * 50)
     
     def interactive_demo(self):
         """Interactive demo of chunk-based RAG"""
@@ -1044,24 +869,18 @@ class ChunkBasedRAG:
         print("="*70)
         print("Test queries against the chunk-based RAG")
         print("Type 'quit' to exit, 'rfp' for RFP matching mode")
-        print("-" * 70)
         
         while True:
             query = input("\n🔍 Your question: ").strip()
-            
             if query.lower() in ['quit', 'exit', 'q']:
                 break
-            
             if query.lower() == 'rfp':
                 self.interactive_rfp_matching()
                 continue
-            
             if not query:
                 continue
             
             print(f"\n📚 Chunk-Based RAG Searching for: '{query}'")
-            print("-" * 50)
-            
             results = self.search(query, top_k=3)
             
             for i, result in enumerate(results, 1):
@@ -1075,10 +894,9 @@ class ChunkBasedRAG:
             
             if not results:
                 print("No results found. Try a different query.")
-            
-            print("\n" + "-" * 50)
 
-# ============ VISUALIZATION FUNCTIONS (Keep from original) ============
+
+# ============ VISUALIZATION FUNCTIONS ============
 
 def visualize_phase3_results(rag_system, evaluation_metrics: Dict):
     """Visualize Phase 3 results"""
@@ -1101,17 +919,13 @@ def visualize_phase3_results(rag_system, evaluation_metrics: Dict):
             (data['data_source'] == 'synthetic_fqhc').sum(),
             (data['data_source'] == 'phase2_nih').sum()
         ]
-        
         bars = ax.bar(categories, counts, color=['green', 'lightblue', 'orange', 'blue'])
         ax.set_xlabel('Category')
         ax.set_ylabel('Count')
         ax.set_title('Enhanced Dataset Composition')
-        ax.set_ylim(0, max(counts) * 1.1)
-        
         for bar, count in zip(bars, counts):
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height + 0.01,
-                   f'{count}', ha='center', va='bottom')
+            ax.text(bar.get_x() + bar.get_width()/2., height + 0.01, f'{count}', ha='center', va='bottom')
         
         # 2. Chunk type distribution
         ax = axes[0, 1]
@@ -1133,19 +947,16 @@ def visualize_phase3_results(rag_system, evaluation_metrics: Dict):
                 'P@5': evaluation_metrics.get('precision_at_5', 0),
                 'FQHC Align': evaluation_metrics.get('fqhc_alignment', 0)
             }
-            
             bars = ax.bar(range(len(eval_metrics)), list(eval_metrics.values()), 
-                         color=['skyblue', 'lightgreen', 'salmon', 'gold'])
+                        color=['skyblue', 'lightgreen', 'salmon', 'gold'])
             ax.set_xticks(range(len(eval_metrics)))
             ax.set_xticklabels(list(eval_metrics.keys()))
             ax.set_ylabel('Score')
-            ax.set_title('Chunk-Based RAG Evaluation Metrics')
+            ax.set_title('Evaluation Metrics')
             ax.set_ylim(0, 1)
-            
             for bar, value in zip(bars, eval_metrics.values()):
                 height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2., height + 0.01,
-                       f'{value:.3f}', ha='center', va='bottom')
+                ax.text(bar.get_x() + bar.get_width()/2., height + 0.01, f'{value:.3f}', ha='center', va='bottom')
         
         # 4. Chunk size distribution
         ax = axes[1, 0]
@@ -1161,50 +972,39 @@ def visualize_phase3_results(rag_system, evaluation_metrics: Dict):
         # 5. System info
         ax = axes[1, 1]
         ax.axis('off')
-        
         system_info = [
             ['Model', str(rag_system.model).split('/')[-1][:20] if rag_system.model else 'N/A'],
             ['Documents', str(len(data))],
             ['Chunks', str(len(chunks_df))],
             ['FQHC-focused', str(data['is_fqhc_focused'].sum())],
-            ['Vector Dimensions', str(rag_system.embeddings.shape[1] if rag_system.embeddings is not None else 'N/A')],
-            ['FAISS Index Size', str(rag_system.index.ntotal if rag_system.index is not None else 'N/A')],
-            ['Retrieval Method', 'FAISS + Chunk Search']
+            ['Vector Dims', str(rag_system.embeddings.shape[1] if rag_system.embeddings is not None else 'N/A')],
+            ['FAISS Index', str(rag_system.index.ntotal if rag_system.index is not None else 'N/A')],
+            ['Mode', 'LOAD' if hasattr(rag_system, '_load_existing_index') and rag_system.embeddings is not None else 'CREATE']
         ]
-        
         table = ax.table(cellText=system_info, loc='center', cellLoc='center')
         table.auto_set_font_size(False)
         table.set_fontsize(10)
         table.scale(1, 1.5)
         ax.set_title('System Configuration')
         
-        # 6. RFP matching capabilities
+        # 6. RFP capabilities
         ax = axes[1, 2]
         ax.axis('off')
-        
         rfp_capabilities = [
             "📊 CHUNK-BASED RAG FOR RFP MATCHING",
             "",
             "Capabilities:",
             "• Document chunking into sections",
-            "• Methods, Background, Results extraction",
             "• RFP requirement matching",
-            "• Chunk categorization for RFP sections",
-            "",
-            "Sample RFP queries:",
-            "• 'community health worker training'",
-            "• 'randomized trial design'",
-            "• 'cost-effectiveness analysis'",
-            "• 'culturally adapted intervention'"
+            "• Chunk categorization",
+            "• FQHC relevance boosting",
+            f"• {len(chunks_df)} chunks available",
+            f"• {data['is_fqhc_focused'].sum()} FQHC-focused docs"
         ]
-        
-        ax.text(0.5, 0.5, '\n'.join(rfp_capabilities), 
-               ha='center', va='center', fontsize=10,
+        ax.text(0.5, 0.5, '\n'.join(rfp_capabilities), ha='center', va='center', fontsize=10,
                bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8))
         
         plt.tight_layout()
-        
-        # Save figure
         os.makedirs('./phase3_results', exist_ok=True)
         plt.savefig('./phase3_results/phase3_chunk_based_results.png', dpi=300, bbox_inches='tight')
         plt.show()
@@ -1212,11 +1012,20 @@ def visualize_phase3_results(rag_system, evaluation_metrics: Dict):
     except ImportError:
         print("⚠️  Visualization libraries not available")
 
-# ============ MAIN EXECUTION FUNCTIONS ============
 
-def run_phase3_chunking():
+# ============ MAIN EXECUTION ============
+
+def run_phase3_chunking(load_existing_embeddings: bool = False, 
+                       phase2_data_path: str = None,
+                       force_rebuild_dataset: bool = False):
     """
     RUN CHUNK-BASED PHASE 3
+    
+    Args:
+        load_existing_embeddings: If True, load saved embeddings (5 seconds)
+                                 If False, create new embeddings (90 minutes)
+        phase2_data_path: Path to Phase 2 NIH abstracts CSV
+        force_rebuild_dataset: If True, rebuild enhanced dataset from scratch
     """
     print("\n" + "="*70)
     print("🚀 STARTING PHASE 3: CHUNK-BASED RAG")
@@ -1227,22 +1036,24 @@ def run_phase3_chunking():
     print("-" * 50)
     
     try:
-        rag_system = ChunkBasedRAG()
+        rag_system = ChunkBasedRAG(
+            load_existing_embeddings=load_existing_embeddings,
+            phase2_data_path=phase2_data_path,
+            force_rebuild_dataset=force_rebuild_dataset
+        )
         print("✅ Chunk-based RAG initialized successfully")
     except Exception as e:
         print(f"❌ Failed to initialize RAG system: {e}")
-        return None
+        return None, None
     
     # Step 2: Evaluate performance
     print("\n🧪 STEP 2: EVALUATING PERFORMANCE")
     print("-" * 50)
-    
     evaluation_metrics = rag_system.evaluate()
     
     # Step 3: Visualization
     print("\n📊 STEP 3: GENERATING VISUALIZATIONS")
     print("-" * 50)
-    
     visualize_phase3_results(rag_system, evaluation_metrics)
     
     # Step 4: Save results
@@ -1252,6 +1063,7 @@ def run_phase3_chunking():
     results = {
         "phase": "phase3_chunk_based_rag",
         "timestamp": datetime.now().isoformat(),
+        "mode": "load_existing" if load_existing_embeddings else "create_new",
         "model": str(rag_system.model).split('/')[-1] if rag_system.model else "unknown",
         "dataset_stats": {
             "total_documents": len(rag_system.data),
@@ -1269,22 +1081,16 @@ def run_phase3_chunking():
         "system_info": {
             "vector_dimensions": rag_system.embeddings.shape[1] if rag_system.embeddings is not None else None,
             "faiss_index_size": rag_system.index.ntotal if rag_system.index is not None else None,
-            "chunking_enabled": True,
-            "fqhc_boosting_enabled": True
-        },
-        "notes": [
-            "Chunk-based RAG for RFP matching",
-            "Documents split into sections for precise requirement matching",
-            "Each chunk categorized for RFP response sections",
-            "Use interactive_rfp_matching() for RFP requirement testing"
-        ]
+            "embeddings_loaded": load_existing_embeddings,
+            "embeddings_saved": os.path.exists('./phase3_results/chunk_embeddings.npy')
+        }
     }
     
     os.makedirs('./phase3_results', exist_ok=True)
     with open('./phase3_results/phase3_chunk_based_results.json', 'w') as f:
         json.dump(results, f, indent=2)
     
-    # Save chunk database
+    # Save chunk database (without embeddings)
     rag_system.chunks_df.to_csv('./phase3_results/document_chunks.csv', index=False)
     
     print("\n" + "="*70)
@@ -1295,21 +1101,21 @@ def run_phase3_chunking():
     print("  • phase3_chunk_based_results.png")
     print("  • document_chunks.csv (all text chunks)")
     
-    print("\n🎯 CHUNK-BASED RAG READY FOR RFP MATCHING:")
+    if load_existing_embeddings:
+        print("  • ✅ Used pre-computed embeddings (5 seconds)")
+    else:
+        print("  • ✅ Created new embeddings (90 minutes) and saved them for future use!")
+        print("  • 💾 FAISS index saved to faiss_index.bin")
+        print("  • 💾 Embeddings saved to chunk_embeddings.npy")
+        print("  • 💾 Chunks+embeddings saved to document_chunks_with_embeddings.csv")
+    
+    print(f"\n🎯 CHUNK-BASED RAG READY FOR RFP MATCHING:")
     print(f"   1. Enhanced dataset: {len(rag_system.data)} documents")
     print(f"   2. Created {len(rag_system.chunks_df)} text chunks")
     print(f"   3. FAISS index with {rag_system.index.ntotal if rag_system.index else 0} chunk embeddings")
-    print(f"   4. Chunk types: {list(rag_system.chunks_df['chunk_type'].unique()) if 'chunk_type' in rag_system.chunks_df.columns else []}")
-    
-    if evaluation_metrics:
-        print(f"   5. Precision@3: {evaluation_metrics.get('precision_at_3', 0):.3f}")
-        print(f"   6. FQHC Alignment: {evaluation_metrics.get('fqhc_alignment', 0):.3f}")
-        print(f"   7. Avg Retrieval Time: {evaluation_metrics.get('retrieval_time', 0):.3f}s")
-    
-    print("\n🚀 READY FOR RFP MATCHING!")
-    print("   Use rag_system.interactive_rfp_matching() to test RFP requirements")
     
     return rag_system, results
+
 
 # ============================================================================
 # 🏃‍♂️ MAIN EXECUTION
@@ -1318,43 +1124,49 @@ def run_phase3_chunking():
 if __name__ == "__main__":
     # Install required packages
     print("📦 Checking/installing required packages...")
-    
     required_packages = []
-    
     if not FAISS_AVAILABLE:
         required_packages.append("faiss-cpu")
-    
     try:
         import matplotlib
     except ImportError:
         required_packages.extend(["matplotlib", "seaborn"])
-    
     if required_packages:
         print(f"Installing: {', '.join(required_packages)}")
         import subprocess
         subprocess.check_call([sys.executable, "-m", "pip", "install"] + required_packages)
     
-    # Run chunk-based Phase 3
     print("\n" + "="*70)
     print("🚀 PHASE 3: CHUNK-BASED RAG FOR RFP MATCHING")
     print("="*70)
+    print("\n📌 Choose mode:")
+    print("   1. FIRST RUN: Create new embeddings (90 minutes)")
+    print("   2. SUBSEQUENT RUNS: Load existing embeddings (5 seconds)")
+    print("-" * 50)
     
-    rag_system, results = run_phase3_chunking()
+    # Auto-detect if embeddings exist
+    embeddings_exist = os.path.exists('./phase3_results/chunk_embeddings.npy')
+    
+    if embeddings_exist:
+        print(f"✅ Found existing embeddings! Loading in 5 seconds...")
+        rag_system, results = run_phase3_chunking(load_existing_embeddings=True)
+    else:
+        print(f"⚠️  No existing embeddings found. Creating new ones (90 minutes)...")
+        print(f"   This will only happen once. Future runs will be instant!")
+        rag_system, results = run_phase3_chunking(load_existing_embeddings=False)
     
     if rag_system:
-        # Interactive demo
         print("\n" + "="*70)
         print("🎮 INTERACTIVE CHUNK-BASED RAG DEMO")
         print("="*70)
-        
         rag_system.interactive_demo()
         
         print("\n" + "="*70)
-        print("✅ CHUNK-BASED RAG READY FOR RFP MATCHING!")
+        print("✅ PHASE 3 READY FOR RFP MATCHING!")
         print("="*70)
         print(f"\n📊 Your RFP Matching Capabilities:")
         print(f"   • {len(rag_system.chunks_df)} text chunks available")
-        print(f"   • Chunk types: {list(rag_system.chunks_df['chunk_type'].unique()[:5])}...")
-        print(f"   • Avg chunk size: {rag_system.chunks_df['word_count'].mean():.0f} words")
+        print(f"   • Embeddings: {'LOADED' if rag_system.embeddings is not None else 'N/A'}")
+        print(f"   • FAISS index: {rag_system.index.ntotal if rag_system.index else 0} vectors")
         print("\n🚀 Try: rag_system.interactive_rfp_matching() for RFP requirements!")
         print("="*70)
