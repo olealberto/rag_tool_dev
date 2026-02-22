@@ -1,13 +1,13 @@
 {
   "phase": "phase5",
-  "timestamp": "2026-02-22T04:22:59.832367",
-  "corpus_fingerprint": "e206376eca7a44fb",
+  "timestamp": "2026-02-22T08:23:16.970581",
+  "corpus_fingerprint": "6ace068bc4738baf",
   "graph_stats": {
-    "nodes": 1824,
-    "edges": 16817,
-    "density": 0.010115,
+    "nodes": 1826,
+    "edges": 16901,
+    "density": 0.010143,
     "node_types": {
-      "grant": 1795,
+      "grant": 1797,
       "year": 2,
       "condition": 10,
       "intervention": 8,
@@ -15,23 +15,23 @@
       "fqhc_hub": 1
     },
     "edge_types": {
-      "published_in": 1795,
-      "treats": 2290,
-      "similar_study": 11441,
-      "uses": 205,
-      "targets": 1012,
-      "is_fqhc": 73,
+      "published_in": 1797,
+      "treats": 2304,
+      "similar_study": 11499,
+      "uses": 198,
+      "targets": 1028,
+      "is_fqhc": 74,
       "consecutive_year": 1
     }
   },
   "communities": {
-    "count": 12,
-    "modularity": 0.4328
+    "count": 10,
+    "modularity": 0.4559
   },
   "demo_queries": {
-    "diabetes_grants": 139,
-    "chw_grants": 16,
-    "latino_grants": 57,
+    "diabetes_grants": 134,
+    "chw_grants": 14,
+    "latino_grants": 61,
     "rfp_results": 26
   }
 }

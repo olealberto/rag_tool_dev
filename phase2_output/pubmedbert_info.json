@@ -1,6 +1,6 @@
 {
   "model_name": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 350, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 768, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n)",
   "embedding_dimensions": 768,
-  "validation_timestamp": "2026-02-22T03:42:39.200224",
+  "validation_timestamp": "2026-02-22T08:23:03.631585",
   "recommendation": "USE FOR PHASE 3 - Validated on biomedical research"
 }

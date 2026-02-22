@@ -1,7 +1,7 @@
 [
   {
     "query_id": "Q001",
-    "query": "substance use prevention and management in primary care settings",
+    "query": "cardiovascular disease prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -17,7 +17,7 @@
   },
   {
     "query_id": "Q002",
-    "query": "digital health for depression in older adult patients",
+    "query": "telehealth for depression in older adult patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -33,7 +33,7 @@
   },
   {
     "query_id": "Q003",
-    "query": "addressing health disparities in healthcare access and outcomes",
+    "query": "addressing racial disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -65,7 +65,7 @@
   },
   {
     "query_id": "Q005",
-    "query": "mental illness prevention and management in primary care settings",
+    "query": "chronic pain prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -81,7 +81,7 @@
   },
   {
     "query_id": "Q006",
-    "query": "telehealth for asthma in low-income patients",
+    "query": "telehealth for diabetes in minority patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -97,7 +97,7 @@
   },
   {
     "query_id": "Q007",
-    "query": "addressing socioeconomic disparities in healthcare access and outcomes",
+    "query": "addressing racial disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -113,7 +113,7 @@
   },
   {
     "query_id": "Q008",
-    "query": "implementation of mobile apps in clinical practice",
+    "query": "implementation of EHR in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -129,7 +129,7 @@
   },
   {
     "query_id": "Q009",
-    "query": "mental illness prevention and management in primary care settings",
+    "query": "substance use prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -145,7 +145,7 @@
   },
   {
     "query_id": "Q010",
-    "query": "behavioral intervention for depression in minority patients",
+    "query": "screening program for hypertension in low-income patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -153,15 +153,15 @@
       "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "3R01ES035691-01S1",
-      "1K08MD020100-01"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q011",
-    "query": "addressing socioeconomic disparities in healthcare access and outcomes",
+    "query": "addressing health disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -209,7 +209,7 @@
   },
   {
     "query_id": "Q014",
-    "query": "behavioral intervention for cancer in older adult patients",
+    "query": "screening program for diabetes in pediatric patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -241,7 +241,7 @@
   },
   {
     "query_id": "Q016",
-    "query": "implementation of mobile apps in clinical practice",
+    "query": "implementation of wearable devices in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -273,7 +273,7 @@
   },
   {
     "query_id": "Q018",
-    "query": "digital health for depression in rural patients",
+    "query": "behavioral intervention for HIV in low-income patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
       "5P50AA022538-10",
@@ -305,7 +305,7 @@
   },
   {
     "query_id": "Q020",
-    "query": "implementation of wearable devices in clinical practice",
+    "query": "implementation of EHR in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
       "5P50AA022538-10",

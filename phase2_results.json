@@ -1,33 +1,33 @@
 {
   "phase": "phase2_complete_collection",
-  "timestamp": "2026-02-22T03:42:42.015048",
-  "abstracts_collected": 1997,
+  "timestamp": "2026-02-22T08:23:07.889213",
+  "abstracts_collected": 1996,
   "data_analysis": {
     "basic_stats": {
-      "total_abstracts": 1997,
-      "avg_word_count": 388.6795192789184,
-      "avg_abstract_length": 2716.187280921382,
+      "total_abstracts": 1996,
+      "avg_word_count": 389.7299599198397,
+      "avg_abstract_length": 2721.539078156313,
       "unique_institutes": 1,
       "year_range": "2023-2024"
     },
     "institute_distribution": {
-      "": 1997
+      "": 1996
     },
     "year_distribution": {
-      "2023": 998,
+      "2023": 997,
       "2024": 999
     },
     "fqhc_analysis": {
-      "with_fqhc_terms": 15,
+      "with_fqhc_terms": 14,
       "without_fqhc_terms": 1982,
-      "percentage_with_fqhc": 0.7511266900350526
+      "percentage_with_fqhc": 0.7014028056112225
     },
     "institution_distribution": {
       "JOHNS HOPKINS UNIVERSITY": 400,
       "NORTHWESTERN UNIVERSITY": 400,
       "UNIVERSITY OF ILLINOIS AT CHICAGO": 399,
       "UNIVERSITY OF CHICAGO": 399,
-      "UNIVERSITY OF MICHIGAN": 399
+      "UNIVERSITY OF MICHIGAN": 398
     }
   },
   "validation_results": {
@@ -54,7 +54,7 @@
   },
   "recommendations": [
     "Use PubMedBERT for Phase 3 RAG system",
-    "Dataset contains 1997 NIH research abstracts",
+    "Dataset contains 1996 NIH research abstracts",
     "Collected from 5 universities"
   ]
 }
