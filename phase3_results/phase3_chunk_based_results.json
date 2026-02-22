@@ -1,6 +1,6 @@
 {
   "phase": "phase3_chunk_based_rag",
-  "timestamp": "2026-02-12T19:10:43.211130",
+  "timestamp": "2026-02-22T04:18:55.739210",
   "mode": "load_existing",
   "model": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 350, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 768, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n)",
   "dataset_stats": {
@@ -27,9 +27,9 @@
     "precision_at_1": 0.0,
     "precision_at_3": 0.0,
     "precision_at_5": 0.0,
-    "fqhc_alignment": 0.48711572187494623,
-    "retrieval_time": 0.0015200734138488769,
-    "avg_similarity": 0.9142688562472662
+    "fqhc_alignment": 0.44393929817783356,
+    "retrieval_time": 0.001399552822113037,
+    "avg_similarity": 0.9163396825393043
   },
   "system_info": {
     "vector_dimensions": 768,

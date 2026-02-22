@@ -1,0 +1,102 @@
+{
+  "coverage": {
+    "conditions": 10,
+    "interventions": 8,
+    "populations": 8,
+    "grants_with_conditions": 1431,
+    "pct_with_conditions": 79.72144846796657,
+    "grants_with_interventions": 162,
+    "pct_with_interventions": 9.025069637883009,
+    "grants_with_populations": 774,
+    "pct_with_populations": 43.119777158774376
+  },
+  "rfp_metrics": [
+    {
+      "rfp_id": "RFP_diabetes_telehealth_Latino",
+      "found_count": 26,
+      "expected_count": 2,
+      "recall": 1.0,
+      "precision": 0.07692307692307693,
+      "novel_grants": 24,
+      "diversity": 0.057692307692307696,
+      "f1": 0.14285714285714288
+    },
+    {
+      "rfp_id": "RFP_hypertension_telehealth_Latino",
+      "found_count": 29,
+      "expected_count": 2,
+      "recall": 1.0,
+      "precision": 0.06896551724137931,
+      "novel_grants": 27,
+      "diversity": 0.05172413793103448,
+      "f1": 0.12903225806451613
+    },
+    {
+      "rfp_id": "RFP_hypertension_telehealth_low_income",
+      "found_count": 36,
+      "expected_count": 3,
+      "recall": 0.3333333333333333,
+      "precision": 0.027777777777777776,
+      "novel_grants": 35,
+      "diversity": 0.041666666666666664,
+      "f1": 0.05128205128205128
+    },
+    {
+      "rfp_id": "RFP_cancer_CHW_low_income",
+      "found_count": 37,
+      "expected_count": 2,
+      "recall": 0.5,
+      "precision": 0.02702702702702703,
+      "novel_grants": 36,
+      "diversity": 0.04054054054054054,
+      "f1": 0.05128205128205129
+    },
+    {
+      "rfp_id": "RFP_cancer_telehealth_Latino",
+      "found_count": 34,
+      "expected_count": 2,
+      "recall": 1.0,
+      "precision": 0.058823529411764705,
+      "novel_grants": 32,
+      "diversity": 0.044117647058823525,
+      "f1": 0.1111111111111111
+    },
+    {
+      "rfp_id": "RFP_cancer_navigation_rural",
+      "found_count": 20,
+      "expected_count": 3,
+      "recall": 0.3333333333333333,
+      "precision": 0.05,
+      "novel_grants": 19,
+      "diversity": 0.07500000000000001,
+      "f1": 0.08695652173913045
+    },
+    {
+      "rfp_id": "RFP_cancer_navigation_low_income",
+      "found_count": 34,
+      "expected_count": 3,
+      "recall": 0.6666666666666666,
+      "precision": 0.058823529411764705,
+      "novel_grants": 32,
+      "diversity": 0.044117647058823525,
+      "f1": 0.10810810810810811
+    },
+    {
+      "rfp_id": "RFP_cancer_screening_rural",
+      "found_count": 20,
+      "expected_count": 2,
+      "recall": 0.0,
+      "precision": 0.0,
+      "novel_grants": 20,
+      "diversity": 0.07500000000000001,
+      "f1": 0
+    }
+  ],
+  "aggregate": {
+    "precision": 0.04604255722409881,
+    "recall": 0.6041666666666666,
+    "f1": 0.0850786555555139,
+    "novelty": 28.125,
+    "diversity": 0.05373236836852456
+  }
+}
