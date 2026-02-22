@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-02-22T02:14:52.587221",
+  "phase3": {
+    "MAP": 0.0273,
+    "MRR": 0.3218
+  },
+  "phase4": {
+    "MAP": 0.0732,
+    "optimal_alpha": 0.25
+  },
+  "phase5": {
+    "MAP": 0.0281,
+    "map_improvement": 0.0008
+  }
+}

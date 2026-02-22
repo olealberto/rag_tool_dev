@@ -1,28 +1,28 @@
 {
-  "timestamp": "2026-02-12T19:01:32.940606",
+  "timestamp": "2026-02-22T01:41:36.962758",
   "chunks_imported": 4316,
   "chunk_dimension": 768,
   "query_model": "pritamdeka/S-PubMedBert-MS-MARCO",
   "optimal_alpha": 1.0,
   "alpha_performance": {
     "0.0": {
-      "avg_time": 0.1869354248046875,
+      "avg_time": 0.30360833803812665,
       "avg_results": 5.0
     },
     "0.3": {
-      "avg_time": 0.17345007260640463,
+      "avg_time": 0.35711669921875,
       "avg_results": 5.0
     },
     "0.5": {
-      "avg_time": 0.17247804005940756,
+      "avg_time": 0.2849438985188802,
       "avg_results": 5.0
     },
     "0.7": {
-      "avg_time": 0.15024256706237793,
+      "avg_time": 0.18794512748718262,
       "avg_results": 5.0
     },
     "1.0": {
-      "avg_time": 0.008475859959920248,
+      "avg_time": 0.006809314092000325,
       "avg_results": 5.0
     }
   }

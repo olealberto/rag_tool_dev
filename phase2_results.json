@@ -1,43 +1,47 @@
 {
   "phase": "phase2_complete_collection",
-  "timestamp": "2026-02-12T17:48:54.676218",
-  "abstracts_collected": 1996,
+  "timestamp": "2026-02-22T03:42:42.015048",
+  "abstracts_collected": 1997,
   "data_analysis": {
     "basic_stats": {
-      "total_abstracts": 1996,
-      "avg_word_count": 389.90380761523045,
-      "avg_abstract_length": 2723.6583166332666,
+      "total_abstracts": 1997,
+      "avg_word_count": 388.6795192789184,
+      "avg_abstract_length": 2716.187280921382,
       "unique_institutes": 1,
       "year_range": "2023-2024"
     },
     "institute_distribution": {
-      "": 1996
+      "": 1997
     },
     "year_distribution": {
-      "2023": 997,
+      "2023": 998,
       "2024": 999
     },
     "fqhc_analysis": {
       "with_fqhc_terms": 15,
-      "without_fqhc_terms": 1981,
-      "percentage_with_fqhc": 0.751503006012024
+      "without_fqhc_terms": 1982,
+      "percentage_with_fqhc": 0.7511266900350526
     },
     "institution_distribution": {
-      "UNIVERSITY OF MICHIGAN": 400,
+      "JOHNS HOPKINS UNIVERSITY": 400,
       "NORTHWESTERN UNIVERSITY": 400,
       "UNIVERSITY OF ILLINOIS AT CHICAGO": 399,
       "UNIVERSITY OF CHICAGO": 399,
-      "JOHNS HOPKINS UNIVERSITY": 398
+      "UNIVERSITY OF MICHIGAN": 399
     }
   },
   "validation_results": {
     "model_name": "SentenceTransformer(\n  (0): Transformer({'max_seq_length': 350, 'do_lower_case': False, 'architecture': 'BertModel'})\n  (1): Pooling({'word_embedding_dimension': 768, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False, 'pooling_mode_weightedmean_tokens': False, 'pooling_mode_lasttoken': False, 'include_prompt': True})\n)",
-    "validation_score": 0.7420072555541992,
-    "avg_similarity": 0.8490105271339417,
-    "query_relevance": 0.8770112991333008,
+    "validation_score": 0.6779788136482239,
+    "avg_similarity": 0.8503992557525635,
+    "query_relevance": 0.8812017440795898,
     "fqhc_metrics": {
-      "fqhc_discrimination": 0.5,
-      "notes": "Insufficient FQHC/non-FQHC mix"
+      "fqhc_discrimination": 0.30233561992645264,
+      "intra_fqhc_similarity": 0.5,
+      "intra_non_fqhc_similarity": 0.9054256081581116,
+      "inter_group_similarity": 0.8953287601470947,
+      "high_fqhc_count": 1,
+      "low_fqhc_count": 45
     },
     "sample_size": 50,
     "query_count": 10,
@@ -50,7 +54,7 @@
   },
   "recommendations": [
     "Use PubMedBERT for Phase 3 RAG system",
-    "Dataset contains 1996 NIH research abstracts",
+    "Dataset contains 1997 NIH research abstracts",
     "Collected from 5 universities"
   ]
 }

@@ -1,176 +1,176 @@
 [
   {
     "query_id": "Q001",
-    "query": "mental illness prevention and management in primary care settings",
+    "query": "substance use prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q002",
-    "query": "telehealth for asthma in older adult patients",
+    "query": "digital health for depression in older adult patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "3R01ES035691-01S1",
+      "1K08MD020100-01"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q003",
-    "query": "addressing socioeconomic disparities in healthcare access and outcomes",
+    "query": "addressing health disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q004",
-    "query": "implementation of mobile apps in clinical practice",
+    "query": "implementation of EHR in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q005",
-    "query": "substance use prevention and management in primary care settings",
+    "query": "mental illness prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q006",
-    "query": "telehealth for depression in older adult patients",
+    "query": "telehealth for asthma in low-income patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "3R01ES035691-01S1",
+      "1K08MD020100-01"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q007",
-    "query": "addressing health disparities in healthcare access and outcomes",
+    "query": "addressing socioeconomic disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q008",
-    "query": "implementation of EHR in clinical practice",
+    "query": "implementation of mobile apps in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q009",
-    "query": "substance use prevention and management in primary care settings",
+    "query": "mental illness prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q010",
-    "query": "digital health for asthma in rural patients",
+    "query": "behavioral intervention for depression in minority patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "3R01ES035691-01S1",
+      "1K08MD020100-01"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q011",
-    "query": "addressing health disparities in healthcare access and outcomes",
+    "query": "addressing socioeconomic disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
@@ -180,141 +180,141 @@
     "query": "implementation of wearable devices in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q013",
-    "query": "chronic pain prevention and management in primary care settings",
+    "query": "cardiovascular disease prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q014",
-    "query": "digital health for cancer in rural patients",
+    "query": "behavioral intervention for cancer in older adult patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q015",
-    "query": "addressing health disparities in healthcare access and outcomes",
+    "query": "addressing socioeconomic disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q016",
-    "query": "implementation of telemedicine in clinical practice",
+    "query": "implementation of mobile apps in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q017",
-    "query": "substance use prevention and management in primary care settings",
+    "query": "chronic pain prevention and management in primary care settings",
     "query_type": "chronic_disease",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q018",
-    "query": "screening program for hypertension in minority patients",
+    "query": "digital health for depression in rural patients",
     "query_type": "intervention_study",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "3R01ES035691-01S1",
+      "1K08MD020100-01"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q019",
-    "query": "addressing health disparities in healthcare access and outcomes",
+    "query": "addressing socioeconomic disparities in healthcare access and outcomes",
     "query_type": "health_equity",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
   },
   {
     "query_id": "Q020",
-    "query": "implementation of EHR in clinical practice",
+    "query": "implementation of wearable devices in clinical practice",
     "query_type": "implementation_science",
     "relevant_grant_ids": [
-      "5R24EY033598-03",
-      "5R03CA277166-02",
-      "5R01HL161386-03"
+      "5P50AA022538-10",
+      "5T32CA057699-32",
+      "1R13DC021617-01"
     ],
     "somewhat_relevant": [
-      "5R01HL152515-04",
-      "5R01MD014839-04"
+      "5R01HL163806-03",
+      "3R01ES035691-01S1"
     ],
     "creation_method": "auto_generated",
     "notes": "Manually verify these labels for production use"
