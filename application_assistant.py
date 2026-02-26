@@ -471,6 +471,39 @@ class ApplicationAssistant:
 
         return results
 
+    def describe_application(self, description: str, use_llm: bool = False,
+                              api_key: str = None, provider: str = "anthropic") -> Dict:
+        """
+        Parse a free-text application description and run retrieval.
+
+        Args:
+            description: Natural language description of the grant application
+            use_llm:     Use LLM-powered extraction (Option B) vs rule-based (Option A)
+            api_key:     Optional API key (also reads from env ANTHROPIC_API_KEY / OPENAI_API_KEY)
+            provider:    "anthropic" or "openai"
+
+        Returns:
+            Dict with keys "parsed" (extraction result) and "results" (retrieval results)
+        """
+        parser = ApplicationDescriptionParser()
+
+        print(f"\n  🔎 Parsing application description...")
+        if use_llm:
+            parsed = parser.parse_llm(description, api_key=api_key, provider=provider)
+        else:
+            parsed = parser.parse_rule_based(description)
+
+        parser.print_parsed(parsed)
+
+        topic    = parsed["enriched_topic"]
+        sections = parsed["sections"]
+
+        results = self.find_for_application(
+            topic    = topic,
+            sections = sections,
+        )
+        return {"parsed": parsed, "results": results}
+
     def interactive(self):
         """Run interactive application assistant session."""
         print("\n" + "=" * 70)
@@ -483,8 +516,13 @@ class ApplicationAssistant:
         print("  /pdf <path> <topic>        — run assistant on a PDF application")
         print("  /sections <topic>          — run with standard NIH sections")
         print("  /custom <s1>|<s2> <topic>  — run with custom sections (pipe-separated)")
+        print("  /describe <description>    — [Option A] rule-based intent extraction + search")
+        print("  /smart <description>       — [Option B] LLM-powered extraction + search")
+        print("  /apikey <key>              — set API key for /smart (or set env var)")
         print("  /n <number>                — set candidates per section (default 3)")
         print("  /quit                      — exit\n")
+
+        self._llm_api_key = None
 
         while True:
             try:
@@ -508,6 +546,10 @@ class ApplicationAssistant:
             elif ui.startswith("/setgrants "):
                 ids = ui[11:].strip().split()
                 self.set_user_grants(ids)
+
+            elif ui.startswith("/apikey "):
+                self._llm_api_key = ui[8:].strip()
+                print(f"  ✅ API key set ({self._llm_api_key[:8]}...)")
 
             elif ui.startswith("/n "):
                 try:
@@ -533,7 +575,6 @@ class ApplicationAssistant:
 
             elif ui.startswith("/custom "):
                 rest = ui[8:].strip()
-                # Format: "section1|section2|section3 topic description"
                 if "|" in rest:
                     parts   = rest.split(" ", 1)
                     sec_str = parts[0]
@@ -546,6 +587,39 @@ class ApplicationAssistant:
                 else:
                     print("  Usage: /custom <s1>|<s2>|<s3> <topic>")
                     print("  Example: /custom Specific Aims|Significance|Methods diabetes CHW FQHC")
+
+            elif ui.startswith("/describe "):
+                description = ui[10:].strip()
+                if description:
+                    self.describe_application(description, use_llm=False)
+                else:
+                    print("  Usage: /describe <natural language application description>")
+                    print("  Example: /describe We are a FQHC in Chicago serving Latino patients")
+                    print("           and want to expand diabetes prevention using CHWs and telehealth")
+
+            elif ui.startswith("/smart "):
+                description = ui[7:].strip()
+                if description:
+                    key = self._llm_api_key or \
+                          os.environ.get("ANTHROPIC_API_KEY") or \
+                          os.environ.get("OPENAI_API_KEY")
+                    if not key:
+                        print("  ⚠️  No API key found.")
+                        print("  Set one with: /apikey <your-key>")
+                        print("  Or set env var ANTHROPIC_API_KEY / OPENAI_API_KEY")
+                        print("  Falling back to rule-based (/describe) instead...")
+                        self.describe_application(description, use_llm=False)
+                    else:
+                        provider = "anthropic" if (
+                            self._llm_api_key or os.environ.get("ANTHROPIC_API_KEY")
+                        ) else "openai"
+                        self.describe_application(
+                            description, use_llm=True,
+                            api_key=key, provider=provider
+                        )
+                else:
+                    print("  Usage: /smart <natural language application description>")
+                    print("  Requires ANTHROPIC_API_KEY or OPENAI_API_KEY (or /apikey <key>)")
 
             else:
                 # Treat as free topic — run with standard sections
@@ -584,7 +658,7 @@ class ApplicationAssistant:
             query        = topic,
             query_vector = query_vec,
             alpha        = self.pipeline.alpha,
-            top_k        = 20,  # fetch more, we'll filter down
+            top_k        = 40,  # fetch more — quality filter will discard boilerplate
             section_filter = section_type,
         )
 
@@ -608,6 +682,32 @@ class ApplicationAssistant:
                 user_results = (user_results + broader_user)[:self.n * 2]
 
             results = user_results
+
+        # ── Content quality filter ────────────────────────────────────────────
+        # Remove boilerplate / table-of-contents chunks that match section names
+        # but contain no scientific content.
+        def _is_substantive(r: Dict) -> bool:
+            text = r.get("text", "")
+            words = text.split()
+            # Too short to be useful
+            if len(words) < 40:
+                return False
+            # TOC pattern: numbered lines like "3. Research Strategy\n4. Progress..."
+            numbered_lines = sum(
+                1 for line in text.splitlines()
+                if line.strip() and line.strip()[0].isdigit() and ". " in line[:10]
+            )
+            if numbered_lines >= 3:
+                return False
+            # Pure form fields: mostly short lines with no sentences
+            lines = [l.strip() for l in text.splitlines() if l.strip()]
+            if lines:
+                avg_line_len = sum(len(l) for l in lines) / len(lines)
+                if avg_line_len < 30 and len(lines) > 5:
+                    return False
+            return True
+
+        results = [r for r in results if _is_substantive(r)]
 
         # Deduplicate by grant_id + section_type, keep highest score
         seen_keys = {}
@@ -646,6 +746,301 @@ class ApplicationAssistant:
                     text[j:j+80] for j in range(0, len(text), 80)
                 )
                 print(f"\n      \"{wrapped}\"")
+
+
+# ============ APPLICATION DESCRIPTION PARSER ============
+
+class ApplicationDescriptionParser:
+    """
+    Extracts structured grant intent from a free-text application description.
+
+    Two modes:
+      A) Rule-based  — fast, no API key, works offline
+      B) LLM-powered — richer, handles messy/implicit descriptions
+
+    Output schema:
+        {
+          "conditions":    ["diabetes", "hypertension"],
+          "populations":   ["Latino", "pediatric", "low-income"],
+          "interventions": ["CHW", "telehealth"],
+          "settings":      ["FQHC", "community health center"],
+          "funder_type":   "NIH" | "HRSA" | "SAMHSA" | "foundation" | "unknown",
+          "grant_type":    "R01" | "R21" | "K" | "HRSA" | "unknown",
+          "is_fqhc":       True/False,
+          "enriched_topic": "<flattened keyword string for retrieval>",
+          "sections":       ["Specific Aims", ...],   # suggested sections
+          "summary":        "<one-line human-readable summary>"
+        }
+    """
+
+    # ── Rule-based vocabulary ──────────────────────────────────────────────
+
+    CONDITION_MAP = {
+        "diabetes":           ["diabetes", "diabetic", "glycemic", "hba1c", "insulin"],
+        "hypertension":       ["hypertension", "blood pressure", "cardiovascular", "heart disease", "stroke"],
+        "cancer":             ["cancer", "oncology", "screening", "mammogram", "colonoscopy"],
+        "behavioral_health":  ["mental health", "depression", "anxiety", "psychiatric", "behavioral health",
+                               "substance use", "opioid", "addiction", "alcohol", "suds"],
+        "HIV":                ["hiv", "aids", "prep", "antiretroviral"],
+        "obesity":            ["obesity", "overweight", "bmi", "weight loss", "nutrition"],
+        "asthma":             ["asthma", "copd", "respiratory", "lung"],
+        "maternal_health":    ["maternal", "prenatal", "pregnancy", "postpartum", "infant mortality"],
+        "pediatric":          ["pediatric", "child", "children", "adolescent", "youth", "school-based"],
+        "social_determinants":["housing", "food insecurity", "transportation", "social determinants", "sdoh"],
+    }
+
+    POPULATION_MAP = {
+        "Latino":      ["latino", "hispanic", "spanish", "promotora", "spanish-speaking"],
+        "African American": ["african american", "black", "african-american"],
+        "low_income":  ["low income", "low-income", "poverty", "medicaid", "uninsured", "underserved", "vulnerable"],
+        "rural":       ["rural", "frontier", "remote", "underserved rural"],
+        "elderly":     ["elderly", "older adult", "aging", "geriatric", "senior"],
+        "pediatric":   ["child", "pediatric", "youth", "adolescent", "teen"],
+        "immigrant":   ["immigrant", "refugee", "undocumented", "limited english"],
+        "LGBTQ":       ["lgbtq", "transgender", "sexual minority", "msm"],
+    }
+
+    INTERVENTION_MAP = {
+        "CHW":           ["community health worker", "chw", "promotora", "lay health", "patient navigator"],
+        "telehealth":    ["telehealth", "telemedicine", "digital health", "remote monitoring", "mhealth", "app"],
+        "EHR":           ["ehr", "electronic health record", "clinical decision support", "health it"],
+        "care_management":["care management", "care coordination", "case management", "disease management"],
+        "screening":     ["screening", "early detection", "preventive", "prevention program"],
+        "education":     ["health education", "literacy", "training", "curriculum", "workshop"],
+        "peer_support":  ["peer support", "peer counselor", "lived experience", "recovery coach"],
+    }
+
+    SETTING_MAP = {
+        "FQHC":          ["fqhc", "federally qualified", "community health center", "chc", "health center"],
+        "hospital":      ["hospital", "inpatient", "clinical", "medical center"],
+        "school":        ["school", "classroom", "school-based", "education setting"],
+        "community":     ["community", "neighborhood", "faith-based", "church", "community organization"],
+        "pharmacy":      ["pharmacy", "pharmacist", "medication management"],
+        "home":          ["home visit", "home-based", "in-home"],
+    }
+
+    FUNDER_SECTIONS = {
+        "NIH":   ["Specific Aims", "Significance", "Innovation", "Approach", "Methods", "Background"],
+        "HRSA":  ["Need", "Proposed Solution", "Organizational Capacity",
+                  "Work Plan", "Evaluation Plan", "Budget Narrative"],
+        "SAMHSA":["Project Description", "Goals and Objectives", "Evidence Base",
+                  "Implementation Plan", "Staff Qualifications", "Evaluation"],
+        "foundation": ["Executive Summary", "Needs Statement", "Project Description",
+                       "Evaluation", "Budget Narrative", "Sustainability"],
+    }
+
+    FUNDER_SIGNALS = {
+        "NIH":        ["r01", "r21", "k01", "k23", "r03", "nih", "national institutes", "nimh", "nida", "nhlbi"],
+        "HRSA":       ["hrsa", "health resources", "fqhc", "bureau of health", "bureau of primary care",
+                       "look-alike", "section 330"],
+        "SAMHSA":     ["samhsa", "substance abuse", "mental health services administration", "sow"],
+        "foundation": ["foundation", "trust", "award", "rfp", "grant opportunity", "robert wood johnson",
+                       "kellogg", "commonwealth"],
+    }
+
+    # ── Public API ─────────────────────────────────────────────────────────
+
+    def parse_rule_based(self, description: str) -> Dict:
+        """
+        Option A: Rule-based extraction. Fast, no API needed.
+        Returns structured dict with detected fields + enriched_topic.
+        """
+        text = description.lower()
+
+        conditions    = self._match(text, self.CONDITION_MAP)
+        populations   = self._match(text, self.POPULATION_MAP)
+        interventions = self._match(text, self.INTERVENTION_MAP)
+        settings      = self._match(text, self.SETTING_MAP)
+
+        funder_type = self._detect_funder(text)
+        grant_type  = self._detect_grant_type(text)
+        is_fqhc     = "FQHC" in settings or any(
+            kw in text for kw in ["fqhc", "federally qualified", "community health center", "chc"]
+        )
+
+        # Build enriched topic: original description + key extracted terms
+        extras = conditions + populations + interventions + settings
+        enriched = description.strip()
+        if extras:
+            enriched += " " + " ".join(extras)
+
+        sections = self.FUNDER_SECTIONS.get(funder_type,
+                   self.FUNDER_SECTIONS["NIH"])
+
+        summary = self._build_summary(conditions, populations, interventions,
+                                      settings, funder_type, is_fqhc)
+
+        return {
+            "conditions":    conditions,
+            "populations":   populations,
+            "interventions": interventions,
+            "settings":      settings,
+            "funder_type":   funder_type,
+            "grant_type":    grant_type,
+            "is_fqhc":       is_fqhc,
+            "enriched_topic": enriched,
+            "sections":      sections,
+            "summary":       summary,
+            "method":        "rule-based",
+        }
+
+    def parse_llm(self, description: str, api_key: str = None,
+                  provider: str = "anthropic") -> Dict:
+        """
+        Option B: LLM-powered extraction.
+        provider: "anthropic" or "openai"
+        Falls back to rule-based if API call fails.
+        """
+        key = api_key or os.environ.get("ANTHROPIC_API_KEY") or \
+                         os.environ.get("OPENAI_API_KEY")
+        if not key:
+            print("  ⚠️  No API key found — falling back to rule-based parsing")
+            return self.parse_rule_based(description)
+
+        prompt = f"""You are a grant writing analyst. Extract structured information from this grant application description.
+
+Application description:
+\"\"\"{description}\"\"\"
+
+Return ONLY a JSON object with these exact keys (no markdown, no explanation):
+{{
+  "conditions": ["list of medical/health conditions mentioned"],
+  "populations": ["target populations e.g. Latino, pediatric, low-income, rural"],
+  "interventions": ["interventions e.g. CHW, telehealth, screening, care management"],
+  "settings": ["care settings e.g. FQHC, community health center, school, hospital"],
+  "funder_type": "NIH or HRSA or SAMHSA or foundation or unknown",
+  "grant_type": "R01 or R21 or K or HRSA or foundation or unknown",
+  "is_fqhc": true or false,
+  "sections": ["suggested NIH/HRSA section names appropriate for this application type"],
+  "summary": "one sentence describing this grant application",
+  "enriched_topic": "a rich keyword string for semantic search combining all extracted fields"
+}}"""
+
+        try:
+            if provider == "anthropic" or "ANTHROPIC_API_KEY" in os.environ:
+                result = self._call_anthropic(prompt,
+                    api_key or os.environ.get("ANTHROPIC_API_KEY"))
+            else:
+                result = self._call_openai(prompt,
+                    api_key or os.environ.get("OPENAI_API_KEY"))
+
+            result["method"] = "llm"
+
+            # Fill any missing keys with rule-based fallback
+            rb = self.parse_rule_based(description)
+            for k in ["conditions", "populations", "interventions", "settings",
+                      "funder_type", "grant_type", "is_fqhc", "sections",
+                      "enriched_topic", "summary"]:
+                if k not in result or not result[k]:
+                    result[k] = rb[k]
+            return result
+
+        except Exception as e:
+            print(f"  ⚠️  LLM extraction failed ({e}) — falling back to rule-based")
+            return self.parse_rule_based(description)
+
+    def print_parsed(self, parsed: Dict):
+        """Pretty-print the parsed application intent."""
+        method = parsed.get("method", "?")
+        print(f"\n  {'─'*60}")
+        print(f"  🔍 Application Analysis  [{method}]")
+        print(f"  {'─'*60}")
+        if parsed.get("summary"):
+            print(f"  Summary:       {parsed['summary']}")
+        if parsed.get("conditions"):
+            print(f"  Conditions:    {', '.join(parsed['conditions'])}")
+        if parsed.get("populations"):
+            print(f"  Populations:   {', '.join(parsed['populations'])}")
+        if parsed.get("interventions"):
+            print(f"  Interventions: {', '.join(parsed['interventions'])}")
+        if parsed.get("settings"):
+            print(f"  Settings:      {', '.join(parsed['settings'])}")
+        print(f"  Funder type:   {parsed.get('funder_type','?')}  "
+              f"| Grant type: {parsed.get('grant_type','?')}  "
+              f"| FQHC: {'✅' if parsed.get('is_fqhc') else '❌'}")
+        print(f"  Sections:      {', '.join(parsed.get('sections',[]))}")
+        print(f"  Search query:  \"{parsed.get('enriched_topic','')}\"")
+        print(f"  {'─'*60}\n")
+
+    # ── Private helpers ────────────────────────────────────────────────────
+
+    def _match(self, text: str, vocab: Dict) -> List[str]:
+        matched = []
+        for label, keywords in vocab.items():
+            if any(kw in text for kw in keywords):
+                matched.append(label)
+        return matched
+
+    def _detect_funder(self, text: str) -> str:
+        for funder, signals in self.FUNDER_SIGNALS.items():
+            if any(s in text for s in signals):
+                return funder
+        return "NIH"  # default assumption
+
+    def _detect_grant_type(self, text: str) -> str:
+        for gtype in ["r01", "r21", "r03", "k01", "k23", "k99"]:
+            if gtype in text:
+                return gtype.upper()
+        if any(s in text for s in ["hrsa", "fqhc", "bureau"]):
+            return "HRSA"
+        return "unknown"
+
+    def _build_summary(self, conditions, populations, interventions,
+                       settings, funder_type, is_fqhc) -> str:
+        parts = []
+        if settings:   parts.append(f"{'/'.join(settings)} setting")
+        if conditions: parts.append(f"{'/'.join(conditions[:2])} focused")
+        if populations:parts.append(f"serving {'/'.join(populations[:2])}")
+        if interventions: parts.append(f"using {'/'.join(interventions[:2])}")
+        if is_fqhc:    parts.append("FQHC-eligible")
+        parts.append(f"[{funder_type}]")
+        return ", ".join(parts) if parts else "General health grant"
+
+    def _call_anthropic(self, prompt: str, api_key: str) -> Dict:
+        import urllib.request
+        data = json.dumps({
+            "model":      "claude-haiku-4-5-20251001",
+            "max_tokens": 800,
+            "messages":   [{"role": "user", "content": prompt}]
+        }).encode()
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=data,
+            headers={
+                "x-api-key":         api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type":      "application/json",
+            }
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = json.loads(resp.read())
+        text = body["content"][0]["text"].strip()
+        # Strip markdown fences if present
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+        return json.loads(text)
+
+    def _call_openai(self, prompt: str, api_key: str) -> Dict:
+        import urllib.request
+        data = json.dumps({
+            "model":      "gpt-4o-mini",
+            "max_tokens": 800,
+            "messages":   [{"role": "user", "content": prompt}]
+        }).encode()
+        req = urllib.request.Request(
+            "https://api.openai.com/v1/chat/completions",
+            data=data,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "content-type":  "application/json",
+            }
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = json.loads(resp.read())
+        text = body["choices"][0]["message"]["content"].strip()
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+        return json.loads(text)
 
 
 # ============ STANDALONE RUNNER ============
