@@ -180,9 +180,25 @@ class IRMetrics:
         ideal = dcg(ideal_docs, grade_map, k)
         return actual / ideal if ideal else 0.0
 
+    @staticmethod
+    def score_weighted_precision(retrieved, scores, relevant, k):
+        """Mean retrieval score of relevant hits in top-k. Shows confidence when correct."""
+        hits = [scores[i] for i, r in enumerate(retrieved[:k]) if r in relevant]
+        return float(np.mean(hits)) if hits else 0.0
+
     @classmethod
-    def compute_all(cls, retrieved, relevant_ids):
+    def compute_all(cls, retrieved, relevant_ids, scores=None):
         relevant = set(relevant_ids)
+        # Normalise scores to [0,1] if provided; default 1.0 per position
+        if scores is None or len(scores) == 0:
+            scores = [1.0] * len(retrieved)
+        scores = list(scores)[:len(retrieved)]
+        # Normalise: hybrid scores are [0,2], FAISS cosine is [-1,1] after L2 norm → [0,1]
+        smax = max(scores) if scores else 1.0
+        smin = min(scores) if scores else 0.0
+        rng  = smax - smin if smax != smin else 1.0
+        norm_scores = [(s - smin) / rng for s in scores]
+
         m = {}
         for k in [1, 3, 5, 10, 20]:
             m[f"P@{k}"]      = cls.precision_at_k(retrieved, relevant, k)
@@ -194,7 +210,19 @@ class IRMetrics:
         m["R-Prec"]    = cls.r_precision(retrieved, relevant)
         m["hits@5"]    = sum(1 for r in retrieved[:5] if r in relevant)
         m["hits@20"]   = sum(1 for r in retrieved[:20] if r in relevant)
-        m["n_relevant"] = len(relevant)   # track set size for context
+        m["n_relevant"] = len(relevant)
+
+        # Score-based metrics (use raw scores, not normalised, for interpretability)
+        m["avg_score_top5"]     = float(np.mean(scores[:5]))   if scores[:5]   else 0.0
+        m["avg_score_top20"]    = float(np.mean(scores[:20]))  if scores[:20]  else 0.0
+        m["avg_score_relevant"] = float(np.mean(
+            [scores[i] for i, r in enumerate(retrieved) if r in relevant]
+        )) if any(r in relevant for r in retrieved) else 0.0
+        m["avg_score_irrelevant"] = float(np.mean(
+            [scores[i] for i, r in enumerate(retrieved) if r not in relevant]
+        )) if any(r not in relevant for r in retrieved) else 0.0
+        # Score gap: how much higher does the system score relevant vs irrelevant?
+        m["score_gap"] = m["avg_score_relevant"] - m["avg_score_irrelevant"]
         return m
 
     @staticmethod
@@ -382,17 +410,18 @@ class Phase3Evaluator:
             vec = self.data.model.encode([q["query"]])
             faiss.normalize_L2(vec)
             t0 = time.time()
-            _, indices = self.data.faiss_index.search(vec, top_k)
+            raw_scores, indices = self.data.faiss_index.search(vec, top_k)
             retrieval_times.append(time.time() - t0)
 
-            retrieved = []
-            for idx in indices[0]:
+            retrieved, scores = [], []
+            for score, idx in zip(raw_scores[0], indices[0]):
                 if 0 <= idx < len(self.data.chunks_df):
                     gid = str(self.data.chunks_df.iloc[idx].get("grant_id", ""))
                     if gid and gid != "nan":
                         retrieved.append(gid)
+                        scores.append(float(score))
 
-            m = IRMetrics.compute_all(retrieved, q["relevant_ids"])
+            m = IRMetrics.compute_all(retrieved, q["relevant_ids"], scores)
             m["query_id"] = q["query_id"]; m["topic"] = q["topic"]
             query_metrics.append(m)
 
@@ -402,14 +431,17 @@ class Phase3Evaluator:
         agg["section_aware"] = self.data.section_aware
 
         label = "section-aware ✨" if self.data.section_aware else "flat"
-        print(f"  MAP:      {agg['MAP']:.4f}")
-        print(f"  MRR:      {agg['MRR']:.4f}")
-        print(f"  R-Prec:   {agg.get('R-Prec',{}).get('mean',0):.4f}  ← robust to relevance set size")
-        print(f"  P@5:      {agg.get('P@5',{}).get('mean',0):.4f}")
-        print(f"  R@20:     {agg.get('R@20',{}).get('mean',0):.4f}")
-        print(f"  HR@5:     {agg.get('HR@5',{}).get('mean',0):.4f}  ← hit rate")
-        print(f"  HR@20:    {agg.get('HR@20',{}).get('mean',0):.4f}")
-        print(f"  nDCG@5:   {agg.get('nDCG@5',{}).get('mean',0):.4f}")
+        print(f"  MAP:                  {agg['MAP']:.4f}")
+        print(f"  MRR:                  {agg['MRR']:.4f}")
+        print(f"  R-Prec:               {agg.get('R-Prec',{}).get('mean',0):.4f}  ← robust to relevance set size")
+        print(f"  P@5:                  {agg.get('P@5',{}).get('mean',0):.4f}")
+        print(f"  R@20:                 {agg.get('R@20',{}).get('mean',0):.4f}")
+        print(f"  HR@5:                 {agg.get('HR@5',{}).get('mean',0):.4f}  ← hit rate")
+        print(f"  HR@20:                {agg.get('HR@20',{}).get('mean',0):.4f}")
+        print(f"  nDCG@5:               {agg.get('nDCG@5',{}).get('mean',0):.4f}")
+        print(f"  Avg score (top-5):    {agg.get('avg_score_top5',{}).get('mean',0):.4f}  ← retrieval confidence")
+        print(f"  Avg score (relevant): {agg.get('avg_score_relevant',{}).get('mean',0):.4f}")
+        print(f"  Score gap (rel-irrel):{agg.get('score_gap',{}).get('mean',0):+.4f}  ← system discriminability")
         print(f"  Index:    {label}")
         print(f"  Avg retrieval time: {agg['avg_retrieval_time_s']:.4f}s")
         return agg
@@ -477,11 +509,12 @@ class Phase4Evaluator:
                     qvec = (self.data.model.encode(q["query"]).tolist()
                             if self.data.model and alpha > 0 else None)
                     t0 = time.time()
-                    retrieved = self._hybrid_search(collection, q["query"], alpha, qvec, top_k)
+                    retrieved, scores = self._hybrid_search(collection, q["query"], alpha, qvec, top_k)
                     retrieval_times.append(time.time() - t0)
-                    m = IRMetrics.compute_all(retrieved, q["relevant_ids"])
+                    m = IRMetrics.compute_all(retrieved, q["relevant_ids"], scores)
                     m["query_id"] = q["query_id"]; m["topic"] = q["topic"]
                     m["retrieved_ids"] = retrieved  # store for Phase5 reuse
+                    m["retrieved_scores"] = scores  # store scores too
                     query_metrics.append(m)
 
                 agg = IRMetrics.aggregate(query_metrics)
@@ -490,7 +523,9 @@ class Phase4Evaluator:
                 results_by_alpha[alpha] = agg
                 print(f"    MAP={agg['MAP']:.4f}  MRR={agg['MRR']:.4f}  "
                       f"P@5={agg.get('P@5',{}).get('mean',0):.4f}  "
-                      f"nDCG@5={agg.get('nDCG@5',{}).get('mean',0):.4f}  "
+                      f"HR@5={agg.get('HR@5',{}).get('mean',0):.4f}  "
+                      f"AvgScore={agg.get('avg_score_top5',{}).get('mean',0):.4f}  "
+                      f"ScoreGap={agg.get('score_gap',{}).get('mean',0):+.4f}  "
                       f"time={agg['avg_retrieval_time_s']:.4f}s")
 
             optimal = max(results_by_alpha, key=lambda a: results_by_alpha[a]["MAP"])
@@ -585,9 +620,14 @@ class Phase4Evaluator:
             if alpha > 0 and query_vec:
                 kwargs["vector"] = query_vec
             resp = collection.query.hybrid(**kwargs)
-            return [o.properties.get("grantId", "") for o in resp.objects
-                    if o.properties.get("grantId")]
-        except: return []
+            ids, scores = [], []
+            for o in resp.objects:
+                gid = o.properties.get("grantId", "")
+                if gid:
+                    ids.append(gid)
+                    scores.append(float(o.metadata.score or 0.0))
+            return ids, scores
+        except: return [], []
 
     def _print_table(self, rba):
         print(f"\n  {'─'*90}")
@@ -649,10 +689,12 @@ class Phase5Evaluator:
 
         # Build lookup from p4 vector-only results (avoids re-importing 3986 chunks)
         p4_lookup = {}
+        p4_score_lookup = {}
         if p4_vector_results:
             for qm in p4_vector_results:
                 if qm.get("retrieved_ids"):
-                    p4_lookup[qm["query_id"]] = qm["retrieved_ids"]
+                    p4_lookup[qm["query_id"]]       = qm["retrieved_ids"]
+                    p4_score_lookup[qm["query_id"]] = qm.get("retrieved_scores", [])
             print(f"  ✅ Reusing Phase 4 vector results for {len(p4_lookup)} queries")
 
         # Only spin up Weaviate if p4 results unavailable
@@ -674,21 +716,22 @@ class Phase5Evaluator:
         for q in test_set:
             print(f"\n  📝 {q['query_id']} ({q['topic']}): {q['query'][:55]}...")
 
-            # Vector — prefer p4 reuse, fall back to fresh search
+            # Vector — prefer p4 reuse (with stored scores), fall back to fresh search
             t0 = time.time()
             if q["query_id"] in p4_lookup:
-                v_ids = p4_lookup[q["query_id"]]
+                v_ids    = p4_lookup[q["query_id"]]
+                v_scores = p4_score_lookup.get(q["query_id"], [])
             elif vector_available and collection:
                 vec = self.data.model.encode(q["query"]).tolist()
-                v_ids = self._weaviate_search(collection, vec, top_k)
+                v_ids, v_scores = self._weaviate_search(collection, vec, top_k)
             else:
-                v_ids = self._faiss_search(q["query"], top_k)
+                v_ids, v_scores = self._faiss_search(q["query"], top_k)
             times["vector"].append(time.time() - t0)
-            vm = IRMetrics.compute_all(v_ids, q["relevant_ids"])
+            vm = IRMetrics.compute_all(v_ids, q["relevant_ids"], v_scores)
             vm["query_id"] = q["query_id"]; vm["topic"] = q["topic"]
             v_list.append(vm)
 
-            # Graph-expanded
+            # Graph-expanded (no retrieval scores — positional proxy)
             t0 = time.time()
             e_ids = self._expand(v_ids[:3], v_ids, top_k)
             times["expanded"].append(time.time() - t0)
@@ -696,18 +739,18 @@ class Phase5Evaluator:
             em["query_id"] = q["query_id"]; em["topic"] = q["topic"]
             e_list.append(em)
 
-            # Graph-only
+            # Graph-only (no retrieval scores)
             t0 = time.time()
             g_ids = self._graph_only(q["topic"])
             times["graph_only"].append(time.time() - t0)
-            gm = IRMetrics.compute_all(g_ids, q["relevant_ids"])
-            gm["query_id"] = q["query_id"]; gm["topic"] = q["topic"]
-            g_list.append(gm)
+            gm_obj = IRMetrics.compute_all(g_ids, q["relevant_ids"])
+            gm_obj["query_id"] = q["query_id"]; gm_obj["topic"] = q["topic"]
+            g_list.append(gm_obj)
 
             improved = "✅ improved" if em["AP"] > vm["AP"] else "──"
             print(f"    Vector:         P@5={vm['P@5']:.3f}  AP={vm['AP']:.3f}")
             print(f"    Graph-expanded: P@5={em['P@5']:.3f}  AP={em['AP']:.3f}  {improved}")
-            print(f"    Graph-only:     P@5={gm['P@5']:.3f}  AP={gm['AP']:.3f}")
+            print(f"    Graph-only:     P@5={gm_obj['P@5']:.3f}  AP={gm_obj['AP']:.3f}")
 
         if client:
             try: client.close()
@@ -726,9 +769,9 @@ class Phase5Evaluator:
         hr5_delta   = eagg.get("HR@5",{}).get("mean",0)   - vagg.get("HR@5",{}).get("mean",0)
         r20_delta   = eagg.get("R@20",{}).get("mean",0)   - vagg.get("R@20",{}).get("mean",0)
 
-        print(f"\n  {'─'*82}")
-        print(f"  {'Method':<22} {'MAP':<8} {'MRR':<8} {'R-Prec':<8} {'HR@5':<8} {'R@20':<8} {'nDCG@5':<8} Time")
-        print(f"  {'─'*82}")
+        print(f"\n  {'─'*100}")
+        print(f"  {'Method':<22} {'MAP':<8} {'MRR':<8} {'R-Prec':<8} {'HR@5':<8} {'R@20':<8} {'AvgSc@5':<9} {'ScoreGap':<10} Time")
+        print(f"  {'─'*100}")
         for label, agg in [("Vector only", vagg),
                             ("Graph expanded", eagg),
                             ("Graph only", gagg)]:
@@ -736,9 +779,10 @@ class Phase5Evaluator:
                   f"{agg.get('R-Prec',{}).get('mean',0):<8.4f} "
                   f"{agg.get('HR@5',{}).get('mean',0):<8.4f} "
                   f"{agg.get('R@20',{}).get('mean',0):<8.4f} "
-                  f"{agg.get('nDCG@5',{}).get('mean',0):<8.4f} "
+                  f"{agg.get('avg_score_top5',{}).get('mean',0):<9.4f} "
+                  f"{agg.get('score_gap',{}).get('mean',0):<+10.4f} "
                   f"{agg['avg_retrieval_time_s']:.4f}s")
-        print(f"  {'─'*82}")
+        print(f"  {'─'*100}")
         print(f"  Graph expansion MAP Δ:    {map_delta:+.4f} "
               f"({'✅ positive' if map_delta > 0 else '❌ negative'})")
         print(f"  Graph expansion R-Prec Δ: {rprec_delta:+.4f}")
@@ -768,24 +812,33 @@ class Phase5Evaluator:
                 return_metadata=MetadataQuery(distance=True),
                 return_properties=["grantId"]
             )
-            return [o.properties.get("grantId","") for o in resp.objects
-                    if o.properties.get("grantId")]
-        except: return []
+            ids, scores = [], []
+            for o in resp.objects:
+                gid = o.properties.get("grantId", "")
+                if gid:
+                    ids.append(gid)
+                    # distance → similarity: score = 1 - distance/2 (cosine)
+                    dist = o.metadata.distance or 0.0
+                    scores.append(float(1.0 - dist / 2.0))
+            return ids, scores
+        except: return [], []
 
     def _faiss_search(self, query, top_k):
-        if self.data.faiss_index is None or self.data.model is None: return []
+        if self.data.faiss_index is None or self.data.model is None: return [], []
         try:
             import faiss
             vec = self.data.model.encode([query])
             faiss.normalize_L2(vec)
-            _, indices = self.data.faiss_index.search(vec, top_k)
-            ids = []
-            for idx in indices[0]:
+            raw_scores, indices = self.data.faiss_index.search(vec, top_k)
+            ids, scores = [], []
+            for score, idx in zip(raw_scores[0], indices[0]):
                 if 0 <= idx < len(self.data.chunks_df):
                     gid = str(self.data.chunks_df.iloc[idx].get("grant_id",""))
-                    if gid and gid != "nan": ids.append(gid)
-            return ids
-        except: return []
+                    if gid and gid != "nan":
+                        ids.append(gid)
+                        scores.append(float(score))
+            return ids, scores
+        except: return [], []
 
     def _expand(self, seed_ids, base_ids, top_k):
         expanded, seen = list(base_ids), set(base_ids)
@@ -887,7 +940,7 @@ def visualize_results(p3, p4, p5):
                 ha="center", va="center", transform=ax.transAxes)
         ax.set_title("Phase 5: Graph R-Prec Improvement")
 
-    # ── 4. Hit Rate @K across phases ──────────────────────────────────────────
+    # ── 4a. Hit Rate @K across phases ─────────────────────────────────────────
     ax = axes[1, 0]
     ks = [1, 3, 5, 10, 20]
     p3_hr  = [gm(p3,  f"HR@{k}") for k in ks]
@@ -897,6 +950,12 @@ def visualize_results(p3, p4, p5):
         ax.plot(ks, p3_hr, "o-", label="Phase 3 (FAISS)",   color="#4C72B0", lw=2)
         ax.plot(ks, p4_hr, "s-", label="Phase 4 (Hybrid)",  color="#DD8452", lw=2)
         ax.plot(ks, p5_hr, "^-", label="Phase 5 (Graph+)",  color="#55A868", lw=2)
+
+        # Annotate final values
+        for vals, c in [(p3_hr,"#4C72B0"),(p4_hr,"#DD8452"),(p5_hr,"#55A868")]:
+            ax.annotate(f"{vals[-1]:.2f}", xy=(20, vals[-1]),
+                        xytext=(4, 0), textcoords="offset points",
+                        color=c, fontsize=7, va="center")
         ax.set_xlabel("K"); ax.set_ylabel("Hit Rate")
         ax.set_title("Hit Rate@K by Phase\n(≥1 relevant in top-K)")
         ax.legend(fontsize=8); ax.grid(alpha=0.3)
@@ -906,35 +965,34 @@ def visualize_results(p3, p4, p5):
                 ha="center", va="center", transform=ax.transAxes)
         ax.set_title("Hit Rate@K by Phase")
 
-    # ── 5. Phase 5 full method comparison (MAP / R-Prec / HR@5 / R@20) ───────
+    # ── 5. Retrieval score confidence by phase ────────────────────────────────
     ax = axes[1, 1]
-    if p5:
-        methods = ["Vector only", "Graph expanded", "Graph only"]
-        aggs    = [p5.get("vector_metrics",{}),
-                   p5.get("graph_expanded_metrics",{}),
-                   p5.get("graph_only_metrics",{})]
-        metric_vals = {
-            "MAP":    [a.get("MAP", 0)         for a in aggs],
-            "R-Prec": [gm(a, "R-Prec")         for a in aggs],
-            "HR@5":   [gm(a, "HR@5")            for a in aggs],
-            "R@20":   [gm(a, "R@20")            for a in aggs],
-        }
-        x2  = np.arange(len(methods))
-        w2  = 0.18
-        mcolors = ["#4C72B0", "#DD8452", "#55A868", "#C44E52"]
-        for i, (mlabel, mvals) in enumerate(metric_vals.items()):
-            ax.bar(x2 + (i - 1.5)*w2, mvals, w2,
-                   label=mlabel, color=mcolors[i], alpha=0.85)
-        ax.set_xticks(x2)
-        ax.set_xticklabels(methods, rotation=12, ha="right", fontsize=8)
-        ax.set_ylabel("Score"); ax.set_title("Phase 5: Full Method Comparison")
+    phases      = ["Phase 3\n(FAISS)", "Phase 4\n(Hybrid α=0.25)", "Phase 5\n(Graph+)"]
+    aggs_score  = [p3, p4o, p5e]
+    top5_scores = [gm(a, "avg_score_top5")     for a in aggs_score]
+    rel_scores  = [gm(a, "avg_score_relevant")  for a in aggs_score]
+    irrel_scores= [gm(a, "avg_score_irrelevant") for a in aggs_score]
+    x2 = np.arange(len(phases))
+    w2 = 0.25
+    if any(top5_scores + rel_scores):
+        b1 = ax.bar(x2 - w2, top5_scores,  w2, label="Avg score top-5",    color="#4C72B0", alpha=0.85)
+        b2 = ax.bar(x2,       rel_scores,   w2, label="Avg score relevant", color="#55A868", alpha=0.85)
+        b3 = ax.bar(x2 + w2,  irrel_scores, w2, label="Avg score irrelevant", color="#C44E52", alpha=0.85)
+        ax.set_xticks(x2); ax.set_xticklabels(phases, fontsize=8)
+        ax.set_ylabel("Retrieval Score")
+        ax.set_title("Retrieval Score Confidence by Phase\n(higher relevant vs irrelevant = better discrimination)")
         ax.legend(fontsize=7); ax.grid(axis="y", alpha=0.3)
-        top = max(v for vals in metric_vals.values() for v in vals) * 1.2 + 0.01
-        ax.set_ylim(0, min(top, 1.05))
+        # Annotate score gap
+        for i, (rs, ir) in enumerate(zip(rel_scores, irrel_scores)):
+            if rs and ir:
+                gap = rs - ir
+                ax.annotate(f"gap={gap:+.3f}", xy=(i, max(rs, ir)),
+                            xytext=(0, 5), textcoords="offset points",
+                            ha="center", fontsize=7, color="#333")
     else:
-        ax.text(0.5, 0.5, "Phase 5 data\nnot available",
+        ax.text(0.5, 0.5, "Score data\nnot available",
                 ha="center", va="center", transform=ax.transAxes)
-        ax.set_title("Phase 5: Method Comparison")
+        ax.set_title("Retrieval Score Confidence")
 
     # ── 6. Summary table ──────────────────────────────────────────────────────
     ax = axes[1, 2]
@@ -959,13 +1017,17 @@ def visualize_results(p3, p4, p5):
         ["nDCG@5",           f"{gm(p3,'nDCG@5'):.4f}",
                              f"{gm(p4o,'nDCG@5'):.4f}",
                              f"{gm(p5e,'nDCG@5'):.4f}"],
+        ["AvgScore@5",       f"{gm(p3,'avg_score_top5'):.4f}",
+                             f"{gm(p4o,'avg_score_top5'):.4f}",
+                             f"{gm(p5e,'avg_score_top5'):.4f}"],
+        ["Score Gap",        f"{gm(p3,'score_gap'):+.4f}",
+                             f"{gm(p4o,'score_gap'):+.4f}",
+                             f"{gm(p5e,'score_gap'):+.4f}"],
         ["Optimal α",        "—",
                              str(p4.get("optimal_alpha","N/A") if p4 else "N/A"),
                              "—"],
         ["Graph MAP Δ",      "—", "—",
                              f"{p5.get('map_improvement',0):+.4f}" if p5 else "N/A"],
-        ["Graph R-Prec Δ",   "—", "—",
-                             f"{p5.get('rprec_improvement',0):+.4f}" if p5 else "N/A"],
         ["Graph HR@5 Δ",     "—", "—",
                              f"{p5.get('hr5_improvement',0):+.4f}" if p5 else "N/A"],
     ]
@@ -1037,12 +1099,14 @@ def main():
     comparison = {
         "timestamp": datetime.now().isoformat(),
         "phase3": {
-            "MAP":    p3.get("MAP", 0),
-            "MRR":    p3.get("MRR", 0),
-            "R-Prec": _gm(p3, "R-Prec"),
-            "HR@5":   _gm(p3, "HR@5"),
-            "R@20":   _gm(p3, "R@20"),
-            "section_aware": p3.get("section_aware", False),
+            "MAP":            p3.get("MAP", 0),
+            "MRR":            p3.get("MRR", 0),
+            "R-Prec":         _gm(p3, "R-Prec"),
+            "HR@5":           _gm(p3, "HR@5"),
+            "R@20":           _gm(p3, "R@20"),
+            "avg_score_top5": _gm(p3, "avg_score_top5"),
+            "score_gap":      _gm(p3, "score_gap"),
+            "section_aware":  p3.get("section_aware", False),
         },
         "phase4": {
             "MAP":    p4o.get("MAP", 0),
@@ -1082,12 +1146,14 @@ def main():
     print(f"  {'Metric':<12} {'Phase 3':>10} {'Phase 4':>10} {'Phase 5':>10}  {'Graph Δ':>10}")
     print(f"  {'─'*58}")
     metrics_summary = [
-        ("MAP",    p3.get("MAP",0),    p4o.get("MAP",0),    p5e.get("MAP",0),    p5.get("map_improvement",0)   if p5 else 0),
-        ("R-Prec", _gm(p3,"R-Prec"),  _gm(p4o,"R-Prec"),  _gm(p5e,"R-Prec"),  p5.get("rprec_improvement",0) if p5 else 0),
-        ("HR@5",   _gm(p3,"HR@5"),    _gm(p4o,"HR@5"),    _gm(p5e,"HR@5"),    p5.get("hr5_improvement",0)   if p5 else 0),
-        ("R@20",   _gm(p3,"R@20"),    _gm(p4o,"R@20"),    _gm(p5e,"R@20"),    p5.get("r20_improvement",0)   if p5 else 0),
-        ("MRR",    p3.get("MRR",0),   p4o.get("MRR",0),   p5e.get("MRR",0),   0),
-        ("nDCG@5", _gm(p3,"nDCG@5"), _gm(p4o,"nDCG@5"), _gm(p5e,"nDCG@5"), 0),
+        ("MAP",           p3.get("MAP",0),              p4o.get("MAP",0),              p5e.get("MAP",0),              p5.get("map_improvement",0)   if p5 else 0),
+        ("R-Prec",        _gm(p3,"R-Prec"),             _gm(p4o,"R-Prec"),             _gm(p5e,"R-Prec"),             p5.get("rprec_improvement",0) if p5 else 0),
+        ("HR@5",          _gm(p3,"HR@5"),               _gm(p4o,"HR@5"),               _gm(p5e,"HR@5"),               p5.get("hr5_improvement",0)   if p5 else 0),
+        ("R@20",          _gm(p3,"R@20"),               _gm(p4o,"R@20"),               _gm(p5e,"R@20"),               p5.get("r20_improvement",0)   if p5 else 0),
+        ("MRR",           p3.get("MRR",0),              p4o.get("MRR",0),              p5e.get("MRR",0),              0),
+        ("nDCG@5",        _gm(p3,"nDCG@5"),             _gm(p4o,"nDCG@5"),             _gm(p5e,"nDCG@5"),             0),
+        ("AvgScore@5",    _gm(p3,"avg_score_top5"),     _gm(p4o,"avg_score_top5"),     _gm(p5e,"avg_score_top5"),     0),
+        ("ScoreGap",      _gm(p3,"score_gap"),          _gm(p4o,"score_gap"),          _gm(p5e,"score_gap"),          0),
     ]
     for name, v3, v4, v5, delta in metrics_summary:
         d_str = f"{delta:+.4f}" if delta else "   —  "

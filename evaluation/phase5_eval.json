@@ -97,20 +97,20 @@
       "max": 1.0
     },
     "P@20": {
-      "mean": 0.1292,
-      "std": 0.0946,
+      "mean": 0.125,
+      "std": 0.0901,
       "min": 0.0,
       "max": 0.3
     },
     "R@20": {
-      "mean": 0.1412,
-      "std": 0.1175,
+      "mean": 0.137,
+      "std": 0.1144,
       "min": 0.0,
       "max": 0.4286
     },
     "nDCG@20": {
-      "mean": 0.1457,
-      "std": 0.1474,
+      "mean": 0.143,
+      "std": 0.1437,
       "min": 0.0,
       "max": 0.5189
     },
@@ -121,8 +121,8 @@
       "max": 1.0
     },
     "AP": {
-      "mean": 0.0549,
-      "std": 0.0852,
+      "mean": 0.0538,
+      "std": 0.0839,
       "min": 0.0,
       "max": 0.2964
     },
@@ -133,12 +133,42 @@
       "max": 1.0
     },
     "R-Prec": {
-      "mean": 0.1368,
-      "std": 0.1178,
+      "mean": 0.1326,
+      "std": 0.1146,
       "min": 0.0,
       "max": 0.4286
     },
-    "MAP": 0.0549,
+    "avg_score_top5": {
+      "mean": 0.7152,
+      "std": 0.055,
+      "min": 0.6202,
+      "max": 0.8108
+    },
+    "avg_score_top20": {
+      "mean": 0.5092,
+      "std": 0.0758,
+      "min": 0.3588,
+      "max": 0.6122
+    },
+    "avg_score_relevant": {
+      "mean": 0.4653,
+      "std": 0.1899,
+      "min": 0.0,
+      "max": 0.6978
+    },
+    "avg_score_irrelevant": {
+      "mean": 0.5056,
+      "std": 0.0826,
+      "min": 0.3753,
+      "max": 0.6299
+    },
+    "score_gap": {
+      "mean": -0.0403,
+      "std": 0.1991,
+      "min": -0.5563,
+      "max": 0.2533
+    },
+    "MAP": 0.0538,
     "MRR": 0.2926,
     "avg_retrieval_time_s": 0.0
   },
@@ -240,20 +270,20 @@
       "max": 1.0
     },
     "P@20": {
-      "mean": 0.1292,
-      "std": 0.0946,
+      "mean": 0.125,
+      "std": 0.0901,
       "min": 0.0,
       "max": 0.3
     },
     "R@20": {
-      "mean": 0.1412,
-      "std": 0.1175,
+      "mean": 0.137,
+      "std": 0.1144,
       "min": 0.0,
       "max": 0.4286
     },
     "nDCG@20": {
-      "mean": 0.1457,
-      "std": 0.1474,
+      "mean": 0.143,
+      "std": 0.1437,
       "min": 0.0,
       "max": 0.5189
     },
@@ -264,8 +294,8 @@
       "max": 1.0
     },
     "AP": {
-      "mean": 0.1259,
-      "std": 0.124,
+      "mean": 0.1246,
+      "std": 0.1234,
       "min": 0.0096,
       "max": 0.3625
     },
@@ -276,14 +306,44 @@
       "max": 1.0
     },
     "R-Prec": {
-      "mean": 0.1368,
-      "std": 0.1178,
+      "mean": 0.1326,
+      "std": 0.1146,
       "min": 0.0,
       "max": 0.4286
     },
-    "MAP": 0.1259,
+    "avg_score_top5": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "avg_score_top20": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "avg_score_relevant": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "avg_score_irrelevant": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "score_gap": {
+      "mean": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "MAP": 0.1246,
     "MRR": 0.2966,
-    "avg_retrieval_time_s": 0.0007
+    "avg_retrieval_time_s": 0.0016
   },
   "graph_only_metrics": {
     "P@1": {
@@ -424,11 +484,41 @@
       "min": 0.3,
       "max": 1.0
     },
+    "avg_score_top5": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "avg_score_top20": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "avg_score_relevant": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "avg_score_irrelevant": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "score_gap": {
+      "mean": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
     "MAP": 0.7113,
     "MRR": 0.9306,
-    "avg_retrieval_time_s": 0.0001
+    "avg_retrieval_time_s": 0.0002
   },
-  "map_improvement": 0.071,
+  "map_improvement": 0.0708,
   "mrr_improvement": 0.004,
   "rprec_improvement": 0.0,
   "hr5_improvement": 0.0,

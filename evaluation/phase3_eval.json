@@ -137,6 +137,36 @@
     "min": 0.0,
     "max": 0.2632
   },
+  "avg_score_top5": {
+    "mean": 0.9198,
+    "std": 0.0112,
+    "min": 0.8979,
+    "max": 0.937
+  },
+  "avg_score_top20": {
+    "mean": 0.9122,
+    "std": 0.0099,
+    "min": 0.8931,
+    "max": 0.9321
+  },
+  "avg_score_relevant": {
+    "mean": 0.6807,
+    "std": 0.3931,
+    "min": 0.0,
+    "max": 0.9185
+  },
+  "avg_score_irrelevant": {
+    "mean": 0.9123,
+    "std": 0.01,
+    "min": 0.893,
+    "max": 0.9321
+  },
+  "score_gap": {
+    "mean": -0.2315,
+    "std": 0.3979,
+    "min": -0.9321,
+    "max": 0.0098
+  },
   "MAP": 0.0251,
   "MRR": 0.1546,
   "avg_retrieval_time_s": 0.0012,
