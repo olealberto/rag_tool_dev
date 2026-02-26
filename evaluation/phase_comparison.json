@@ -1,15 +1,16 @@
 {
-  "timestamp": "2026-02-22T02:14:52.587221",
+  "timestamp": "2026-02-26T02:46:07.175530",
   "phase3": {
-    "MAP": 0.0273,
-    "MRR": 0.3218
+    "MAP": 0.0004,
+    "MRR": 0.0222,
+    "section_aware": true
   },
   "phase4": {
-    "MAP": 0.0732,
-    "optimal_alpha": 0.25
+    "MAP": 0.0517,
+    "optimal_alpha": 0.5
   },
   "phase5": {
-    "MAP": 0.0281,
-    "map_improvement": 0.0008
+    "MAP": 0.0018,
+    "map_improvement": 0.0014
   }
 }

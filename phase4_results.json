@@ -1,29 +1,51 @@
 {
-  "timestamp": "2026-02-22T04:21:45.209826",
-  "chunks_imported": 4316,
-  "chunk_dimension": 768,
-  "query_model": "pritamdeka/S-PubMedBert-MS-MARCO",
-  "optimal_alpha": 1.0,
-  "alpha_performance": {
+  "timestamp": "2026-02-26T02:28:56.680609",
+  "model": "pritamdeka/S-PubMedBert-MS-MARCO",
+  "chunks_total": 3986,
+  "eval_queries": 50,
+  "alpha_metrics": {
     "0.0": {
-      "avg_time": 0.1943822701772054,
-      "avg_results": 5.0
+      "p@1": 0.0,
+      "p@3": 0.0067,
+      "p@5": 0.004,
+      "map": 0.01,
+      "mrr": 0.01,
+      "avg_time": 0.0768
     },
-    "0.3": {
-      "avg_time": 0.1361852486928304,
-      "avg_results": 5.0
+    "0.25": {
+      "p@1": 0.02,
+      "p@3": 0.0133,
+      "p@5": 0.008,
+      "map": 0.0267,
+      "mrr": 0.0267,
+      "avg_time": 0.0885
     },
     "0.5": {
-      "avg_time": 0.15091252326965332,
-      "avg_results": 5.0
+      "p@1": 0.02,
+      "p@3": 0.02,
+      "p@5": 0.012,
+      "map": 0.0367,
+      "mrr": 0.0367,
+      "avg_time": 0.0855
     },
-    "0.7": {
-      "avg_time": 0.23629117012023926,
-      "avg_results": 5.0
+    "0.75": {
+      "p@1": 0.04,
+      "p@3": 0.0133,
+      "p@5": 0.016,
+      "map": 0.048,
+      "mrr": 0.048,
+      "avg_time": 0.0764
     },
     "1.0": {
-      "avg_time": 0.01355759302775065,
-      "avg_results": 5.0
+      "p@1": 0.04,
+      "p@3": 0.02,
+      "p@5": 0.012,
+      "map": 0.05,
+      "mrr": 0.05,
+      "avg_time": 0.0125
     }
-  }
+  },
+  "optimal_alpha": 1.0,
+  "runtime_s": 66.2,
+  "section_indexes_used": true
 }

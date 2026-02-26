@@ -1,25 +1,19 @@
 {
-  "ingestion_timestamp": "2026-02-22T01:21:36.448445",
+  "ingestion_timestamp": "2026-02-26T00:23:45.919888",
   "statistics": {
     "success": 0,
-    "skipped": 11,
+    "skipped": 42,
     "failed": 0,
     "low_quality": 0
   },
-  "total_documents": 11,
-  "fqhc_focused": 0,
+  "total_documents": 42,
+  "fqhc_focused": 1,
   "quality_distribution": {
-    "high": 11
+    "high": 42
   },
-  "institute_distribution": {
-    "Unknown": 11
+  "method_distribution": {
+    "pdfplumber": 29,
+    "ocr_tesseract": 13
   },
-  "condition_distribution": {
-    "obesity": 5,
-    "depression": 3,
-    "general": 1,
-    "cancer": 1,
-    "HIV": 1
-  },
-  "avg_word_count": 3869.090909090909
+  "avg_word_count": 18547.071428571428
 }

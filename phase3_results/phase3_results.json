@@ -1,0 +1,41 @@
+{
+  "phase": "phase3_section_aware_rag",
+  "timestamp": "2026-02-26T01:55:28.863483",
+  "dataset": {
+    "total_chunks": 3986,
+    "section_types": {
+      "methods": 1512,
+      "specific_aims": 592,
+      "bibliography": 352,
+      "project_narrative": 344,
+      "approach": 321,
+      "general": 199,
+      "project_summary": 160,
+      "background": 140,
+      "innovation": 128,
+      "significance": 128,
+      "human_subjects": 110
+    }
+  },
+  "indexes": [
+    "global",
+    "specific_aims",
+    "methods",
+    "background",
+    "innovation",
+    "general",
+    "human_subjects",
+    "project_summary",
+    "significance",
+    "approach",
+    "bibliography",
+    "project_narrative"
+  ],
+  "metrics": {
+    "p@1": 0.0,
+    "p@3": 0.0,
+    "p@5": 0.0,
+    "fqhc_alignment": 1.0,
+    "avg_score": 0.915
+  }
+}

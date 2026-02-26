@@ -1,1172 +1,1071 @@
 # ============================================================================
-# 📁 phase3_document_rag.py - FQHC RAG WITH DOCUMENT CHUNKING (EMBEDDING SAVE/LOAD)
+# 📁 phase3_document_rag.py - SECTION-AWARE RAG WITH DOCUMENT CHUNKING
 # ============================================================================
 
 """
-PHASE 3: FQHC-FOCUSED RAG BASELINE WITH DOCUMENT CHUNKING
-NOW WITH EMBEDDING SAVE/LOAD - 90 mins first time, 5 seconds thereafter!
+PHASE 3: SECTION-AWARE RAG WITH DOCUMENT CHUNKING
+
+Key upgrade: Section-aware embeddings
+  - Chunks are prefixed with their section type before embedding
+    e.g. "specific aims: <text>", "significance: <text>"
+  - Separate FAISS indexes per section for targeted retrieval
+  - Output CSV includes `section_type` column for Phase 4 Weaviate filtering
+
+Output files (Phase 4 / Phase 5 compatible):
+  ./phase3_results/document_chunks_with_embeddings.csv
+    Columns: grant_id, text, embedding, section_type, chunk_type,
+             title, institution, year, is_fqhc_focused, ...
 """
 
-print("="*70)
-print("🎯 PHASE 3: FQHC-FOCUSED RAG WITH DOCUMENT CHUNKING")
-print("="*70)
+print("=" * 70)
+print("🎯 PHASE 3: SECTION-AWARE RAG WITH DOCUMENT CHUNKING")
+print("=" * 70)
 
 import sys
 sys.path.append('.')
 
-from config import RAG_CONFIG
-from utils import logger, DataProcessor
-import pandas as pd
+import os, re, json, time
 import numpy as np
-import time
-import json
-import os
-import re
-from typing import List, Dict, Any, Tuple
+import pandas as pd
+import faiss
+from pathlib import Path
+from typing import List, Dict, Optional, Tuple
 from datetime import datetime
-
-# EDIT HERE: Import FAISS for vector search
-try:
-    import faiss
-    FAISS_AVAILABLE = True
-except ImportError:
-    FAISS_AVAILABLE = False
-    print("⚠️  FAISS not available. Run: !pip install faiss-cpu")
 
 try:
     from sentence_transformers import SentenceTransformer
-    from sklearn.metrics.pairwise import cosine_similarity
     EMBEDDING_AVAILABLE = True
 except ImportError:
     EMBEDDING_AVAILABLE = False
-    print("⚠️  Sentence transformers not available.")
+    print("⚠️  Run: pip install sentence-transformers")
 
-# ============ DOCUMENT CHUNKING CLASS ============
+try:
+    from config import RAG_CONFIG
+except ImportError:
+    RAG_CONFIG = {}
+
+# ── Constants ─────────────────────────────────────────────────────────────────
+
+EMBEDDING_MODEL  = (RAG_CONFIG.get("phase3", {})
+                    .get("embedding_model", "pritamdeka/S-PubMedBert-MS-MARCO"))
+CHUNKS_CSV       = "./phase3_results/document_chunks_with_embeddings.csv"
+FAISS_DIR        = "./phase3_results/faiss"
+RESULTS_DIR      = "./phase3_results"
+
+# Sections considered most valuable for grant-writing retrieval
+HIGH_VALUE_SECTIONS = {
+    "specific_aims", "significance", "innovation",
+    "approach", "methods", "background", "project_summary",
+}
+
+# Prefix prepended to chunk text before embedding — teaches the model
+# that "specific aims: ..." is semantically different from "methods: ..."
+SECTION_PREFIXES = {
+    "specific_aims":    "specific aims:",
+    "significance":     "significance and innovation:",
+    "innovation":       "innovation:",
+    "approach":         "approach and methods:",
+    "methods":          "research methods:",
+    "background":       "background:",
+    "project_summary":  "project summary:",
+    "project_narrative":"project narrative:",
+    "human_subjects":   "human subjects:",
+    "bibliography":     "references:",
+    "preamble":         "introduction:",
+    "full_text":        "grant document:",
+    "semantic_chunk":   "grant section:",
+    "general":          "grant text:",
+}
+
+SECTION_PATTERNS = {
+    "project_summary":   r"(?:PROJECT\s+SUMMARY|ABSTRACT)\s*[:\-]?\s*\n",
+    "project_narrative": r"PROJECT\s+NARRATIVE\s*[:\-]?\s*\n",
+    "specific_aims":     r"SPECIFIC\s+AIMS?\s*[:\-]?\s*\n",
+    "background":        r"(?:BACKGROUND|SIGNIFICANCE\s+AND\s+INNOVATION)\s*[:\-]?\s*\n",
+    "significance":      r"(?:A\.|1\.)\s*SIGNIFICANCE\s*[:\-]?\s*\n|^SIGNIFICANCE\s*[:\-]?\s*\n",
+    "innovation":        r"(?:B\.|2\.)\s*INNOVATION\s*[:\-]?\s*\n|^INNOVATION\s*[:\-]?\s*\n",
+    "approach":          r"(?:C\.|3\.)\s*APPROACH\s*[:\-]?\s*\n|^APPROACH\s*[:\-]?\s*\n",
+    "methods":           r"(?:RESEARCH\s+)?(?:DESIGN\s+AND\s+)?METHODS?\s*[:\-]?\s*\n",
+    "human_subjects":    r"(?:PROTECTION\s+OF\s+)?HUMAN\s+SUBJECTS?\s*[:\-]?\s*\n",
+    "bibliography":      r"(?:BIBLIOGRAPHY|REFERENCES?\s+CITED)\s*[:\-]?\s*\n",
+}
+
+
+# ── Document chunker ──────────────────────────────────────────────────────────
 
 class DocumentChunker:
     """
-    CHUNK GRANT DOCUMENTS FOR RFP MATCHING
-    Splits documents into meaningful sections
+    Splits grant documents into section-aware chunks.
+    Each chunk carries a `section_type` label used for:
+      - Section-prefixed embedding
+      - Per-section FAISS indexes
+      - Weaviate section_type property (Phase 4)
     """
-    
-    def __init__(self, chunk_size: int = 250, overlap: int = 50):
-        self.chunk_size = chunk_size
-        self.overlap = overlap
-        self.section_patterns = {
-            'abstract': r'(?:PROJECT\s+)?(?:SUMMARY/)?ABSTRACT[:]?\s*',
-            'specific_aims': r'SPECIFIC\s+AIMS?[:]?\s*',
-            'background': r'BACKGROUND\s*(?:AND\s+SIGNIFICANCE)?[:]?\s*',
-            'methods': r'(?:RESEARCH\s+)?(?:DESIGN\s+AND\s+)?METHODS?[:]?\s*',
-            'results': r'RESULTS?[:]?\s*',
-            'discussion': r'DISCUSSION[:]?\s*',
-            'significance': r'SIGNIFICANCE\s*(?:AND\s+IMPACT)?[:]?\s*',
-            'innovation': r'INNOVATION[:]?\s*',
-            'approach': r'APPROACH[:]?\s*',
-        }
-    
-    def chunk_full_documents(self, documents_df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Chunk full grant documents into sections for RFP matching
-        """
-        print(f"\n🔪 Chunking {len(documents_df)} documents...")
-        
+
+    def __init__(self, chunk_size: int = 300, overlap_sentences: int = 2):
+        self.chunk_size        = chunk_size
+        self.overlap_sentences = overlap_sentences
+
+    def chunk_documents(self, df: pd.DataFrame) -> pd.DataFrame:
+        print(f"\n🔪 Chunking {len(df)} documents (section-aware)...")
         all_chunks = []
-        
-        for idx, document in documents_df.iterrows():
-            grant_id = document.get('grant_id', f'doc_{idx}')
-            title = document.get('title', 'Untitled')
-            full_text = self._get_full_text(document)
-            
-            # Chunk by sections if available
-            chunks = self._chunk_by_sections(full_text, grant_id, title)
-            
-            # If no sections found, chunk by semantic units
-            if not chunks:
-                chunks = self._chunk_semantic(full_text, grant_id, title)
-            
-            # Add document metadata to each chunk
-            for chunk in chunks:
-                chunk.update({
-                    'grant_id': grant_id,
-                    'document_title': title,
-                    'year': document.get('year', 2024),
-                    'institute': document.get('institute', 'Unknown'),
-                    'is_fqhc_focused': document.get('is_fqhc_focused', False),
-                    'fqhc_score': document.get('fqhc_score', 0.0),
-                    'data_source': document.get('data_source', 'unknown'),
-                    'primary_condition': document.get('primary_condition', 'general'),
-                    'chunk_id': f"{grant_id}_chunk{len(all_chunks)}"
-                })
+
+        for idx, row in df.iterrows():
+            doc       = row.to_dict()
+            grant_id  = doc.get("grant_id", f"doc_{idx}")
+            chunks    = self._chunk_document(doc)
+
+            for i, chunk in enumerate(chunks):
+                chunk["grant_id"]           = grant_id
+                chunk["title"]              = doc.get("title", "")
+                chunk["institution"]        = doc.get("institution",
+                                               doc.get("institute", "Unknown"))
+                chunk["year"]               = doc.get("year", 2024)
+                chunk["institute"]          = doc.get("institute",
+                                               doc.get("institution", "Unknown"))
+                chunk["is_fqhc_focused"]    = bool(doc.get("is_fqhc_focused", False)
+                                               or doc.get("has_fqhc_terms", False))
+                chunk["has_fqhc_terms"]     = chunk["is_fqhc_focused"]
+                chunk["fqhc_score"]         = float(doc.get("fqhc_score", 0.0))
+                chunk["data_source"]        = doc.get("data_source", "nih_reporter")
+                chunk["primary_condition"]  = doc.get("primary_condition", "general")
+                chunk["chunk_index"]        = i
+                chunk["chunk_id"]           = f"{grant_id}_chunk{len(all_chunks)}"
                 all_chunks.append(chunk)
-            
-            if (idx + 1) % 100 == 0:
-                print(f"  Chunked {idx+1}/{len(documents_df)} documents...")
-        
-        print(f"✅ Created {len(all_chunks)} chunks from {len(documents_df)} documents")
-        print(f"   Avg chunks per document: {len(all_chunks)/len(documents_df):.1f}")
-        
-        return pd.DataFrame(all_chunks)
-    
-    def _get_full_text(self, document: Dict) -> str:
-        """Extract full text from document"""
-        # Try different text fields
-        text_fields = ['full_text', 'text', 'abstract', 'content', 'narrative']
-        
-        for field in text_fields:
-            if field in document and isinstance(document[field], str):
-                return document[field]
-        
-        # Fallback: combine available text fields
-        text_parts = []
-        for field in ['title', 'abstract', 'specific_aims', 'methods']:
-            if field in document and isinstance(document[field], str):
-                text_parts.append(document[field])
-        
-        return "\n\n".join(text_parts)
-    
-    def _chunk_by_sections(self, text: str, grant_id: str, title: str) -> List[Dict]:
-        """Chunk document by detected sections"""
+
+            if (idx + 1) % 200 == 0:
+                print(f"  {idx+1}/{len(df)} documents chunked…")
+
+        chunks_df = pd.DataFrame(all_chunks)
+        print(f"✅ {len(chunks_df)} chunks from {len(df)} documents "
+              f"(avg {len(chunks_df)/max(len(df),1):.1f}/doc)")
+
+        if "section_type" in chunks_df.columns:
+            print("   Section distribution:")
+            for s, c in chunks_df["section_type"].value_counts().head(10).items():
+                hv = "⭐" if s in HIGH_VALUE_SECTIONS else "  "
+                print(f"   {hv} {s}: {c}")
+
+        return chunks_df
+
+    def _chunk_document(self, doc: dict) -> List[Dict]:
+        # Prefer pre-parsed sections (from pdf_ingestion.py)
+        sections = doc.get("sections")
+        if isinstance(sections, str):
+            try:    sections = json.loads(sections)
+            except: sections = {}
+
+        if sections and len(sections) > 1:
+            return self._chunk_from_sections(sections)
+
+        # Fall back to regex section detection on raw text
+        text = self._get_text(doc)
+        if not text:
+            return []
+
+        sections = self._detect_sections(text)
+        if sections and len(sections) > 1:
+            return self._chunk_from_sections(sections)
+
+        # Final fallback: semantic paragraph chunking
+        return self._semantic_chunks(text, "semantic_chunk")
+
+    def _get_text(self, doc: dict) -> str:
+        for field in ["full_text", "text", "abstract", "content"]:
+            v = doc.get(field)
+            if isinstance(v, str) and v.strip():
+                return v.strip()
+        parts = [str(doc.get(f, "")) for f in ["title", "abstract"] if doc.get(f)]
+        return "\n\n".join(parts)
+
+    def _detect_sections(self, text: str) -> Dict[str, str]:
+        boundaries = []
+        for name, pat in SECTION_PATTERNS.items():
+            for m in re.finditer(pat, text, re.IGNORECASE | re.MULTILINE):
+                boundaries.append({"pos": m.start(), "end": m.end(), "name": name})
+        boundaries.sort(key=lambda x: x["pos"])
+        boundaries = [b for i, b in enumerate(boundaries)
+                      if i == 0 or b["pos"] - boundaries[i-1]["pos"] > 50]
+
+        if not boundaries:
+            return {}
+
+        sections = {}
+        for i, b in enumerate(boundaries):
+            end = boundaries[i+1]["pos"] if i+1 < len(boundaries) else len(text)
+            s   = text[b["end"]:end].strip()
+            if s and len(s.split()) >= 20 and b["name"] not in sections:
+                sections[b["name"]] = s
+        return sections
+
+    def _chunk_from_sections(self, sections: Dict[str, str]) -> List[Dict]:
         chunks = []
-        
-        # Find all section boundaries
-        section_matches = []
-        for section_name, pattern in self.section_patterns.items():
-            for match in re.finditer(pattern, text, re.IGNORECASE):
-                section_matches.append((match.start(), section_name))
-        
-        # Sort by position
-        section_matches.sort(key=lambda x: x[0])
-        
-        if not section_matches:
-            return chunks
-        
-        # Extract sections
-        for i, (start_pos, section_name) in enumerate(section_matches):
-            end_pos = section_matches[i+1][0] if i+1 < len(section_matches) else len(text)
-            section_text = text[start_pos:end_pos].strip()
-            
-            if section_text and len(section_text.split()) >= 20:
-                chunks.append({
-                    'text': section_text,
-                    'chunk_type': 'section',
-                    'section_name': section_name,
-                    'start_pos': start_pos,
-                    'end_pos': end_pos,
-                    'word_count': len(section_text.split())
-                })
-        
+        for name, text in sections.items():
+            if name == "full_text" or not text or len(text.split()) < 20:
+                continue
+            section_type = name if name in SECTION_PATTERNS or name in HIGH_VALUE_SECTIONS \
+                           else "general"
+            chunks.extend(self._split_section(text, section_type))
+        if not chunks:
+            full = sections.get("full_text", "")
+            if full:
+                chunks = self._semantic_chunks(full, "semantic_chunk")
         return chunks
-    
-    def _chunk_semantic(self, text: str, grant_id: str, title: str) -> List[Dict]:
-        """Chunk text by semantic units (paragraphs, sentences)"""
-        chunks = []
-        
-        # Split by paragraphs
-        paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
-        
-        current_chunk = []
-        current_word_count = 0
-        
-        for para in paragraphs:
-            para_words = para.split()
-            para_word_count = len(para_words)
-            
-            if para_word_count > self.chunk_size:
-                sentences = self._split_into_sentences(para)
-                for sentence in sentences:
-                    sent_words = sentence.split()
-                    sent_word_count = len(sent_words)
-                    
-                    if current_word_count + sent_word_count <= self.chunk_size:
-                        current_chunk.append(sentence)
-                        current_word_count += sent_word_count
-                    else:
-                        if current_chunk:
-                            chunks.append(self._create_semantic_chunk(
-                                current_chunk, current_word_count, grant_id
-                            ))
-                        current_chunk = [sentence]
-                        current_word_count = sent_word_count
+
+    def _split_section(self, text: str, section_type: str) -> List[Dict]:
+        words = text.split()
+        base  = {"section_type": section_type,
+                 "chunk_type":   section_type,
+                 "is_high_value": section_type in HIGH_VALUE_SECTIONS,
+                 "word_count":   0}
+
+        if len(words) <= self.chunk_size:
+            return [{**base, "text": text, "word_count": len(words)}]
+
+        # Split at sentence boundaries with overlap
+        sentences = re.split(r"(?<=[.!?])\s+", text)
+        chunks, cur, cw = [], [], 0
+
+        for sent in sentences:
+            sw = len(sent.split())
+            if cw + sw > self.chunk_size and cur:
+                chunks.append({**base,
+                                "text":       " ".join(cur),
+                                "word_count": cw})
+                cur = cur[-self.overlap_sentences:] + [sent]
+                cw  = sum(len(s.split()) for s in cur)
             else:
-                if current_word_count + para_word_count <= self.chunk_size:
-                    current_chunk.append(para)
-                    current_word_count += para_word_count
-                else:
-                    if current_chunk:
-                        chunks.append(self._create_semantic_chunk(
-                            current_chunk, current_word_count, grant_id
-                        ))
-                    current_chunk = [para]
-                    current_word_count = para_word_count
-        
-        if current_chunk:
-            chunks.append(self._create_semantic_chunk(
-                current_chunk, current_word_count, grant_id
-            ))
-        
+                cur.append(sent)
+                cw += sw
+
+        if cur:
+            chunks.append({**base, "text": " ".join(cur), "word_count": cw})
         return chunks
-    
-    def _split_into_sentences(self, text: str) -> List[str]:
-        sentences = re.split(r'(?<=[.!?])\s+', text)
-        return [s.strip() for s in sentences if s.strip()]
-    
-    def _create_semantic_chunk(self, text_parts: List[str], word_count: int, grant_id: str) -> Dict:
-        chunk_text = '\n\n'.join(text_parts)
-        chunk_type = self._classify_chunk_type(chunk_text)
-        
-        return {
-            'text': chunk_text,
-            'chunk_type': chunk_type,
-            'section_name': 'semantic_chunk',
-            'word_count': word_count,
-            'contains_methods': 'method' in chunk_text.lower() or 'approach' in chunk_text.lower(),
-            'contains_outcomes': 'outcome' in chunk_text.lower() or 'result' in chunk_text.lower(),
-            'contains_innovation': 'innovative' in chunk_text.lower() or 'novel' in chunk_text.lower(),
-        }
-    
-    def _classify_chunk_type(self, text: str) -> str:
-        text_lower = text.lower()
-        if any(word in text_lower for word in ['method', 'approach', 'design', 'procedure']):
-            return 'methods'
-        elif any(word in text_lower for word in ['result', 'finding', 'outcome', 'data']):
-            return 'results'
-        elif any(word in text_lower for word in ['background', 'significance', 'rationale']):
-            return 'background'
-        elif any(word in text_lower for word in ['aim', 'objective', 'goal', 'purpose']):
-            return 'aims'
-        elif any(word in text_lower for word in ['innovative', 'novel', 'unique', 'advance']):
-            return 'innovation'
+
+    def _semantic_chunks(self, text: str, section_type: str) -> List[Dict]:
+        paras = [p.strip() for p in text.split("\n\n") if p.strip()]
+        base  = {"section_type": section_type,
+                 "chunk_type":   "semantic_chunk",
+                 "is_high_value": False,
+                 "word_count":   0}
+        chunks, cur, cw = [], [], 0
+
+        for para in paras:
+            pw = len(para.split())
+            if cw + pw > self.chunk_size and cur:
+                chunks.append({**base,
+                                "text":       "\n\n".join(cur),
+                                "word_count": cw,
+                                "section_type": self._classify(cur)})
+                cur, cw = [para], pw
+            else:
+                cur.append(para)
+                cw += pw
+
+        if cur:
+            chunks.append({**base,
+                            "text":       "\n\n".join(cur),
+                            "word_count": cw,
+                            "section_type": self._classify(cur)})
+        return chunks
+
+    def _classify(self, text_parts: List[str]) -> str:
+        t = " ".join(text_parts).lower()
+        if any(w in t for w in ["method", "approach", "design", "procedure"]):
+            return "methods"
+        if any(w in t for w in ["background", "significance", "rationale"]):
+            return "background"
+        if any(w in t for w in ["aim", "objective", "goal"]):
+            return "specific_aims"
+        if any(w in t for w in ["innovative", "novel", "unique"]):
+            return "innovation"
+        return "general"
+
+
+# ── Section-aware embedder ────────────────────────────────────────────────────
+
+class SectionAwareEmbedder:
+    """
+    Embeds chunks with section-type prefix so the model encodes
+    section context into the vector.
+
+    e.g. "specific aims: The goal of this project is to..."
+         "methods: We will recruit 200 participants..."
+
+    Also builds separate per-section FAISS indexes for targeted search.
+    """
+
+    def __init__(self, model_name: str = EMBEDDING_MODEL):
+        print(f"\n🧠 Loading embedding model: {model_name}")
+        self.model = SentenceTransformer(model_name)
+        print(f"  ✅ Model loaded")
+        self.section_indexes: Dict[str, faiss.Index] = {}
+        self.section_chunk_ids: Dict[str, List[int]] = {}  # section → row indices in chunks_df
+
+    def embed_chunks(self, chunks_df: pd.DataFrame,
+                     batch_size: int = 64) -> pd.DataFrame:
+        """
+        Embed all chunks with section prefix.
+        Adds `embedding` column to chunks_df.
+        Returns updated DataFrame.
+        """
+        print(f"\n📐 Embedding {len(chunks_df)} chunks (section-prefixed)…")
+
+        texts = []
+        for _, row in chunks_df.iterrows():
+            section = row.get("section_type", "general")
+            prefix  = SECTION_PREFIXES.get(section, "grant text:")
+            texts.append(f"{prefix} {row['text']}")
+
+        embeddings = self.model.encode(
+            texts,
+            batch_size=batch_size,
+            show_progress_bar=True,
+            normalize_embeddings=True,   # L2-normalize for cosine via dot product
+        )
+
+        chunks_df = chunks_df.copy()
+        chunks_df["embedding"] = embeddings.tolist()
+        print(f"  ✅ Embeddings shape: {embeddings.shape}")
+        return chunks_df, embeddings
+
+    def build_indexes(self, chunks_df: pd.DataFrame,
+                      embeddings: np.ndarray) -> Dict[str, faiss.Index]:
+        """
+        Build one global FAISS index + per-section indexes.
+        Returns dict of {section_type: faiss.Index}.
+        """
+        print("\n🗂️  Building FAISS indexes…")
+        dim = embeddings.shape[1]
+        os.makedirs(FAISS_DIR, exist_ok=True)
+
+        # Global index
+        global_idx = faiss.IndexFlatIP(dim)
+        global_idx.add(embeddings.astype(np.float32))
+        faiss.write_index(global_idx, f"{FAISS_DIR}/global.index")
+        print(f"  ✅ Global index: {global_idx.ntotal} vectors")
+        self.section_indexes["global"] = global_idx
+
+        # Per-section indexes
+        section_types = chunks_df["section_type"].unique() \
+                        if "section_type" in chunks_df.columns else []
+
+        for section in section_types:
+            mask     = chunks_df["section_type"] == section
+            row_idxs = np.where(mask)[0]
+            if len(row_idxs) == 0:
+                continue
+            sec_embs = embeddings[row_idxs].astype(np.float32)
+            sec_idx  = faiss.IndexFlatIP(dim)
+            sec_idx.add(sec_embs)
+            faiss.write_index(sec_idx, f"{FAISS_DIR}/{section}.index")
+            self.section_indexes[section]   = sec_idx
+            self.section_chunk_ids[section] = row_idxs.tolist()
+            hv = "⭐" if section in HIGH_VALUE_SECTIONS else "  "
+            print(f"  {hv} {section}: {sec_idx.ntotal} vectors")
+
+        # Save section→row mapping
+        with open(f"{FAISS_DIR}/section_chunk_ids.json", "w") as f:
+            json.dump(self.section_chunk_ids, f)
+
+        print(f"  ✅ {len(self.section_indexes)} indexes built "
+              f"(1 global + {len(self.section_indexes)-1} section)")
+        return self.section_indexes
+
+    def load_indexes(self, chunks_df: pd.DataFrame) -> bool:
+        """Load pre-built indexes from disk."""
+        global_path = f"{FAISS_DIR}/global.index"
+        if not os.path.exists(global_path):
+            return False
+
+        print("\n📦 Loading FAISS indexes from disk…")
+        self.section_indexes["global"] = faiss.read_index(global_path)
+        print(f"  ✅ Global: {self.section_indexes['global'].ntotal} vectors")
+
+        map_path = f"{FAISS_DIR}/section_chunk_ids.json"
+        if os.path.exists(map_path):
+            with open(map_path) as f:
+                self.section_chunk_ids = json.load(f)
+
+        for section in self.section_chunk_ids:
+            p = f"{FAISS_DIR}/{section}.index"
+            if os.path.exists(p):
+                self.section_indexes[section] = faiss.read_index(p)
+                print(f"  ✅ {section}: {self.section_indexes[section].ntotal} vectors")
+
+        return True
+
+    def search(self, query: str, section_filter: Optional[str] = None,
+               top_k: int = 10,
+               chunks_df: Optional[pd.DataFrame] = None) -> List[Dict]:
+        """
+        Search with optional section filter.
+
+        Args:
+            query:          Natural language query
+            section_filter: If set, search only that section's index
+                           e.g. "specific_aims", "significance", "methods"
+                           Pass None to search all chunks (global index)
+            top_k:          Number of results
+            chunks_df:      DataFrame to look up metadata
+        """
+        # Embed query with matching section prefix
+        if section_filter:
+            prefix      = SECTION_PREFIXES.get(section_filter, "grant text:")
+            query_text  = f"{prefix} {query}"
+            index       = self.section_indexes.get(section_filter,
+                          self.section_indexes.get("global"))
+            row_map     = self.section_chunk_ids.get(section_filter)
         else:
-            return 'general'
+            query_text  = query
+            index       = self.section_indexes.get("global")
+            row_map     = None
+
+        if index is None:
+            print("⚠️  No index available")
+            return []
+
+        qvec = self.model.encode([query_text], normalize_embeddings=True)
+        qvec = qvec.astype(np.float32)
+
+        scores, local_ids = index.search(qvec, min(top_k, index.ntotal))
+
+        results = []
+        for score, local_id in zip(scores[0], local_ids[0]):
+            if local_id < 0:
+                continue
+            # Map local index position back to global chunks_df row
+            global_id = row_map[local_id] if row_map else local_id
+
+            result = {"score": round(float(score), 4),
+                      "local_id": int(local_id),
+                      "global_id": int(global_id),
+                      "section_filter": section_filter or "global"}
+
+            if chunks_df is not None and global_id < len(chunks_df):
+                row = chunks_df.iloc[global_id]
+                result.update({
+                    "grant_id":       row.get("grant_id", ""),
+                    "title":          row.get("title", ""),
+                    "institution":    row.get("institution", ""),
+                    "year":           row.get("year", ""),
+                    "section_type":   row.get("section_type", ""),
+                    "is_fqhc_focused":bool(row.get("is_fqhc_focused", False)),
+                    "text":           str(row.get("text", ""))[:300],
+                    "word_count":     row.get("word_count", 0),
+                    "is_high_value":  row.get("section_type", "") in HIGH_VALUE_SECTIONS,
+                    "source":         "section_aware_faiss",
+                })
+            results.append(result)
+
+        return results
 
 
-# ============ ENHANCED FQHC DATASET ============
+# ── Enhanced FQHC dataset ────────────────────────────────────────────────────
+# Loads data in priority order:
+#   1. pdf_ingestion_output/combined_grants.csv  (PDFs + Phase 2 merged)
+#   2. pdf_ingestion_output/ingested_grants.csv  (PDFs only)
+#   3. phase2_output/nih_research_abstracts.csv  (abstracts only, fallback)
+# Then appends 50 synthetic FQHC examples.
 
 class EnhancedFQHCDataset:
-    """
-    LOAD AND PREPARE ENHANCED FQHC DATASET
-    Combines Phase 2 data with synthetic FQHC examples
-    """
-    
-    def __init__(self, phase2_data_path: str = None, force_rebuild: bool = False):
-        self.data_processor = DataProcessor()
-        self.phase2_data_path = phase2_data_path or "./phase2_output/nih_research_abstracts.csv"
-        self.force_rebuild = force_rebuild
-        
-    def load_or_create_enhanced_dataset(self, phase2_path: str = None, force_rebuild: bool = None) -> pd.DataFrame:
-        """
-        Load enhanced FQHC dataset or create it if not exists
-        force_rebuild=True ignores cached file and rebuilds from scratch
-        """
-        if phase2_path:
-            self.phase2_data_path = phase2_path
-        if force_rebuild is not None:
-            self.force_rebuild = force_rebuild
-            
-        enhanced_path = "./phase3_data/enhanced_fqhc_dataset.csv"
-        
-        if self.force_rebuild:
-            print("🗑️  Force rebuild enabled - deleting cached dataset")
-            if os.path.exists(enhanced_path):
-                os.remove(enhanced_path)
-            data = self._create_enhanced_dataset()
-            os.makedirs("./phase3_data", exist_ok=True)
-            data.to_csv(enhanced_path, index=False)
-            print(f"💾 Saved enhanced dataset to {enhanced_path}")
-            print(f"✅ Created {len(data)} documents")
-            return data
-        
-        if os.path.exists(enhanced_path):
-            print(f"📂 Loading enhanced dataset from {enhanced_path}")
-            data = pd.read_csv(enhanced_path)
-            print(f"✅ Loaded {len(data)} documents")
-            return data
+
+    COMBINED_CSV = "./pdf_ingestion_output/combined_grants.csv"
+    PDF_ONLY_CSV = "./pdf_ingestion_output/ingested_grants.csv"
+
+    def __init__(self, phase2_path="./phase2_output/nih_research_abstracts.csv"):
+        self.phase2_path = phase2_path
+
+    def load(self, force_rebuild=False) -> pd.DataFrame:
+        cache = "./phase3_data/enhanced_fqhc_dataset.csv"
+        if not force_rebuild and os.path.exists(cache):
+            df = pd.read_csv(cache)
+            print(f"📂 Loaded cached dataset: {len(df)} docs")
+            return df
+
+        print("📝 Building enhanced dataset…")
+        parts = []
+
+        # Priority 1: combined CSV (PDFs + abstracts already merged by pdf_ingestion.py)
+        if os.path.exists(self.COMBINED_CSV):
+            df = pd.read_csv(self.COMBINED_CSV)
+            if "is_fqhc_focused" not in df.columns:
+                text = df["abstract"].fillna("") if "abstract" in df.columns else pd.Series([""] * len(df))
+                df["is_fqhc_focused"] = text.apply(self._fqhc)
+            if "fqhc_score" not in df.columns:
+                text = df["abstract"].fillna("") if "abstract" in df.columns else pd.Series([""] * len(df))
+                df["fqhc_score"] = text.apply(self._fqhc_score)
+            pdf_n = (df["data_source"] == "pdf_ingestion").sum() if "data_source" in df.columns else 0
+            abs_n = len(df) - pdf_n
+            print(f"  ✅ Combined CSV: {len(df)} docs ({pdf_n} PDFs + {abs_n} abstracts)")
+            parts.append(df)
+
+        # Priority 2: PDFs only (combined CSV not yet generated)
+        elif os.path.exists(self.PDF_ONLY_CSV):
+            pdf_df = pd.read_csv(self.PDF_ONLY_CSV)
+            if "data_source" not in pdf_df.columns:
+                pdf_df["data_source"] = "pdf_ingestion"
+            parts.append(pdf_df)
+            print(f"  ✅ PDFs: {len(pdf_df)} docs")
+            # Also load Phase 2 abstracts
+            if os.path.exists(self.phase2_path):
+                abs_df = pd.read_csv(self.phase2_path)
+                abs_df["is_fqhc_focused"] = abs_df["abstract"].apply(self._fqhc)
+                abs_df["fqhc_score"]      = abs_df["abstract"].apply(self._fqhc_score)
+                abs_df["data_source"]     = "phase2_nih"
+                parts.append(abs_df)
+                print(f"  ✅ Phase 2 abstracts: {len(abs_df)} docs")
+
+        # Priority 3: abstracts only
+        elif os.path.exists(self.phase2_path):
+            abs_df = pd.read_csv(self.phase2_path)
+            abs_df["is_fqhc_focused"] = abs_df["abstract"].apply(self._fqhc)
+            abs_df["fqhc_score"]      = abs_df["abstract"].apply(self._fqhc_score)
+            abs_df["data_source"]     = "phase2_nih"
+            parts.append(abs_df)
+            print(f"  ✅ Abstracts only: {len(abs_df)} docs")
+            print(f"  ⚠️  No PDF data found — run pdf_ingestion.py for richer results")
+
         else:
-            print("📝 Creating enhanced FQHC dataset...")
-            data = self._create_enhanced_dataset()
-            os.makedirs("./phase3_data", exist_ok=True)
-            data.to_csv(enhanced_path, index=False)
-            print(f"💾 Saved enhanced dataset to {enhanced_path}")
-            return data
-    
-    def _create_enhanced_dataset(self) -> pd.DataFrame:
-        """Create enhanced dataset by combining Phase 2 data + synthetic FQHC examples"""
-        all_data = []
-        
-        # 1. Load Phase 2 data
-        try:
-            phase2_data = pd.read_csv(self.phase2_data_path)
-            print(f"📊 Phase 2 data: {len(phase2_data)} abstracts from {self.phase2_data_path}")
-            
-            phase2_data['is_fqhc_focused'] = phase2_data['abstract'].apply(
-                lambda x: self._detect_fqhc_focus(str(x))
-            )
-            phase2_data['fqhc_score'] = phase2_data['abstract'].apply(
-                lambda x: self._calculate_fqhc_score(str(x))
-            )
-            phase2_data['data_source'] = 'phase2_nih'
-            
-            all_data.append(phase2_data)
-        except Exception as e:
-            print(f"⚠️  Could not load Phase 2 data: {e}")
-        
-        # 2. Add synthetic FQHC data
-        synthetic_data = self._create_synthetic_fqhc_data(50)
-        all_data.append(synthetic_data)
-        
-        if all_data:
-            enhanced_data = pd.concat(all_data, ignore_index=True)
-            
-            if 'grant_id' not in enhanced_data.columns:
-                enhanced_data['grant_id'] = [f"DOC_{i}" for i in range(len(enhanced_data))]
-            if 'title' not in enhanced_data.columns:
-                enhanced_data['title'] = enhanced_data.get('grant_id', 'Untitled')
-            
-            print(f"\n🎯 Enhanced Dataset Summary:")
-            print(f"   • Total documents: {len(enhanced_data)}")
-            print(f"   • FQHC-focused: {enhanced_data['is_fqhc_focused'].sum()}")
-            print(f"   • Synthetic examples: {(enhanced_data['data_source'] == 'synthetic_fqhc').sum()}")
-            
-            return enhanced_data
-        else:
-            print("❌ No data available")
+            print("  ❌ No data sources found. Check your paths.")
             return pd.DataFrame()
-    
-    def _create_synthetic_fqhc_data(self, n: int = 50) -> pd.DataFrame:
-        """Create synthetic FQHC-focused abstracts"""
-        print(f"🧪 Creating {n} synthetic FQHC abstracts...")
-        
-        templates = [{
-            "title": "Community Health Worker Program for {condition} Management in {population} {setting}",
-            "abstract": """This {study_type} evaluates a community health worker-led {condition} management program 
-            for {population} patients at {setting}. The intervention includes {components} with focus on 
-            {focus_area}. {design} with {participants} participants across {num_clinics} clinics. 
-            Primary outcomes include {outcomes}. Results show {results}.""",
-            "conditions": ["diabetes", "hypertension", "depression", "asthma", "HIV"],
-            "populations": ["Latino", "African American", "low-income", "Medicaid", "rural", "older adult"],
-            "settings": ["Federally Qualified Health Centers", "community health centers", "safety-net clinics"],
-            "study_types": ["randomized controlled trial", "implementation study", "pragmatic trial"],
-            "components": ["culturally-adapted education", "regular health screenings", "medication adherence support", "telehealth follow-ups"],
-            "focus_areas": ["health disparities reduction", "chronic disease management", "preventive care", "behavioral health integration"],
-            "designs": ["Mixed-methods design", "Stepped-wedge design", "Cluster randomized design"],
-            "participants": ["200", "500", "1000", "1500"],
-            "num_clinics": ["5", "10", "15", "20"],
-            "outcomes": ["HbA1c levels", "blood pressure control", "depression scores", "healthcare utilization"],
-            "results": ["significant improvements in clinical outcomes", "high patient satisfaction", "cost-effective intervention", "sustainable model for other clinics"]
-        }]
-        
-        synthetic_docs = []
+
+        # Always add synthetic FQHC examples
+        parts.append(self._synthetic(50))
+
+        combined = pd.concat(parts, ignore_index=True)
+        combined = combined.drop_duplicates(subset=["grant_id"], keep="last")
+
+        os.makedirs("./phase3_data", exist_ok=True)
+        combined.to_csv(cache, index=False)
+
+        pdf_n   = (combined["data_source"] == "pdf_ingestion").sum()  if "data_source" in combined.columns else 0
+        abs_n   = (combined["data_source"] == "phase2_nih").sum()     if "data_source" in combined.columns else 0
+        synth_n = (combined["data_source"] == "synthetic_fqhc").sum() if "data_source" in combined.columns else 0
+        fqhc_n  = combined["is_fqhc_focused"].sum()                   if "is_fqhc_focused" in combined.columns else 0
+
+        print(f"\n✅ Enhanced dataset: {len(combined)} docs total")
+        print(f"   📄 PDF full-text:      {pdf_n}")
+        print(f"   📝 NIH abstracts:      {abs_n}")
+        print(f"   🧪 Synthetic FQHC:     {synth_n}")
+        print(f"   🏥 FQHC-focused total: {fqhc_n}")
+        return combined
+
+    def _fqhc(self, text):
+        t = str(text).lower()
+        return any(k in t for k in
+                   ["federally qualified health center", "fqhc",
+                    "community health center", "safety-net"])
+
+    def _fqhc_score(self, text):
+        t = str(text).lower()
+        w = {"federally qualified health center": 3.0, "fqhc": 3.0,
+             "community health center": 2.5, "safety-net": 2.0,
+             "medically underserved": 2.0, "health disparities": 1.5,
+             "low-income": 1.0, "uninsured": 1.0, "medicaid": 1.0}
+        return round(min(sum(v for k, v in w.items() if k in t) / sum(w.values()), 1.0), 3)
+
+    def _synthetic(self, n=50):
+        conditions   = ["diabetes", "hypertension", "depression", "HIV", "cancer"]
+        populations  = ["Latino", "African American", "low-income", "Medicaid", "rural"]
+        settings     = ["Federally Qualified Health Centers", "community health centers"]
+        study_types  = ["randomized controlled trial", "implementation study"]
+        rows = []
         for i in range(n):
-            template = templates[0]
-            title = template["title"].format(
-                condition=np.random.choice(template["conditions"]),
-                population=np.random.choice(template["populations"]),
-                setting=np.random.choice(template["settings"])
-            )
-            abstract = template["abstract"].format(
-                study_type=np.random.choice(template["study_types"]),
-                condition=np.random.choice(template["conditions"]),
-                population=np.random.choice(template["populations"]),
-                setting=np.random.choice(template["settings"]),
-                components=np.random.choice(template["components"]),
-                focus_area=np.random.choice(template["focus_areas"]),
-                design=np.random.choice(template["designs"]),
-                participants=np.random.choice(template["participants"]),
-                num_clinics=np.random.choice(template["num_clinics"]),
-                outcomes=np.random.choice(template["outcomes"]),
-                results=np.random.choice(template["results"])
-            )
-            abstract = ' '.join(abstract.split())
-            
-            synthetic_docs.append({
-                'grant_id': f'FQHC_SYNTH_{i:04d}',
-                'title': title,
-                'abstract': abstract,
-                'year': np.random.choice([2022, 2023, 2024]),
-                'institute': 'NIMHD',
-                'institution': 'SYNTHETIC_FQHC_RESEARCH',
-                'abstract_length': len(abstract),
-                'word_count': len(abstract.split()),
-                'is_fqhc_focused': True,
-                'fqhc_score': 0.8 + np.random.random() * 0.2,
-                'data_source': 'synthetic_fqhc'
+            cond = np.random.choice(conditions)
+            pop  = np.random.choice(populations)
+            rows.append({
+                "grant_id":        f"FQHC_SYNTH_{i:04d}",
+                "title":           f"CHW Program for {cond} in {pop} {np.random.choice(settings)}",
+                "abstract":        (f"This {np.random.choice(study_types)} evaluates a community "
+                                    f"health worker-led {cond} management program for {pop} patients "
+                                    f"at {np.random.choice(settings)}."),
+                "year":            int(np.random.choice([2022, 2023, 2024])),
+                "institute":       "NIMHD",
+                "institution":     "SYNTHETIC_FQHC",
+                "is_fqhc_focused": True,
+                "fqhc_score":      round(0.8 + np.random.random() * 0.2, 3),
+                "data_source":     "synthetic_fqhc",
+                "has_fqhc_terms":  True,
             })
-        
-        print(f"✅ Created {len(synthetic_docs)} synthetic FQHC abstracts")
-        return pd.DataFrame(synthetic_docs)
-    
-    def _detect_fqhc_focus(self, text: str) -> bool:
-        text_lower = text.lower()
-        fqhc_keywords = ['federally qualified health center', 'fqhc', 'community health center', 
-                        'safety-net clinic', 'medically underserved']
-        return any(keyword in text_lower for keyword in fqhc_keywords)
-    
-    def _calculate_fqhc_score(self, text: str) -> float:
-        text_lower = text.lower()
-        fqhc_terms = {
-            'federally qualified health center': 3.0, 'fqhc': 3.0, 'community health center': 2.5,
-            'safety-net clinic': 2.5, 'medically underserved': 2.0, 'low-income': 1.5,
-            'uninsured': 1.5, 'medicaid': 1.5, 'health disparities': 2.0, 'primary care access': 1.5
-        }
-        total_score = sum(weight for term, weight in fqhc_terms.items() if term in text_lower)
-        max_possible = sum(fqhc_terms.values())
-        return min(total_score / max_possible, 1.0)
+        return pd.DataFrame(rows)
 
 
-# ============ CHUNK-BASED RAG SYSTEM WITH EMBEDDING SAVE/LOAD ============
+# ── Main RAG class ────────────────────────────────────────────────────────────
 
 class ChunkBasedRAG:
     """
-    CHUNK-BASED RAG SYSTEM FOR RFP MATCHING
-    NOW WITH EMBEDDING SAVE/LOAD - 90 mins first time, 5 seconds thereafter!
+    Section-aware chunk-based RAG.
+
+    Usage:
+        # First run (builds embeddings ~90 min)
+        rag = ChunkBasedRAG()
+        rag.setup()
+
+        # Subsequent runs (loads from disk, ~5s)
+        rag = ChunkBasedRAG(load_existing=True)
+        rag.setup()
+
+        # Search all sections
+        results = rag.search("diabetes CHW intervention")
+
+        # Search specific section only
+        results = rag.search("diabetes CHW", section_filter="specific_aims")
+        results = rag.search("health disparities innovation", section_filter="significance")
     """
-    
-    def __init__(self, model_name: str = None, load_existing_embeddings: bool = False, 
-                 phase2_data_path: str = None, force_rebuild_dataset: bool = False):
-        
-        if model_name is None:
-            model_name = RAG_CONFIG.get("phase3", {}).get("embedding_model", 
-                                                         "pritamdeka/S-PubMedBert-MS-MARCO")
-        
-        print(f"🚀 Initializing Chunk-Based RAG for RFP Matching...")
-        print(f"   Model: {model_name}")
-        print(f"   Vector store: FAISS (for baseline comparison)")
-        print(f"   Mode: {'🔄 LOAD existing embeddings' if load_existing_embeddings else '⚡ CREATE new embeddings'}")
-        
-        # Load enhanced dataset
-        self.dataset_loader = EnhancedFQHCDataset(phase2_data_path, force_rebuild_dataset)
-        self.data = self.dataset_loader.load_or_create_enhanced_dataset()
-        
-        if self.data.empty:
-            raise ValueError("No data available for RAG system")
-        
-        # Chunk documents (always need to do this - it's fast)
-        print("\n🔪 Chunking documents for RFP matching...")
-        chunker = DocumentChunker(chunk_size=250, overlap=50)
-        self.chunks_df = chunker.chunk_full_documents(self.data)
-        
-        # Load embedding model (needed for queries)
-        if EMBEDDING_AVAILABLE:
-            self.model = SentenceTransformer(model_name)
-            print(f"✅ Loaded embedding model: {model_name}")
+
+    def __init__(self, load_existing: bool = None,
+                 phase2_path: str = None,
+                 force_rebuild_dataset: bool = False):
+        self.load_existing = load_existing
+        self.phase2_path   = phase2_path or "./phase2_output/nih_research_abstracts.csv"
+        self.force_rebuild = force_rebuild_dataset
+
+        self.chunks_df  = None
+        self.embedder   = None
+        self._ready     = False
+
+    def setup(self) -> bool:
+        print("\n" + "=" * 70)
+        print("⚙️  SETTING UP SECTION-AWARE RAG")
+        print("=" * 70)
+        t0 = time.time()
+
+        # 1. Load dataset
+        dataset = EnhancedFQHCDataset(self.phase2_path)
+        data    = dataset.load(force_rebuild=self.force_rebuild)
+        if data.empty:
+            print("❌ No data"); return False
+
+        # 2. Chunk documents
+        chunker       = DocumentChunker(chunk_size=300, overlap_sentences=2)
+        self.chunks_df = chunker.chunk_documents(data)
+
+        # 3. Embedder
+        self.embedder = SectionAwareEmbedder(EMBEDDING_MODEL)
+
+        # 4. Auto-detect whether to load or build
+        global_exists = os.path.exists(f"{FAISS_DIR}/global.index")
+        csv_exists    = os.path.exists(CHUNKS_CSV)
+
+        load = self.load_existing
+        if load is None:
+            load = global_exists and csv_exists
+
+        if load and global_exists and csv_exists:
+            print("\n📦 Loading pre-built embeddings from disk…")
+            saved = pd.read_csv(CHUNKS_CSV)
+            # Restore embedding column as list
+            if "embedding" in saved.columns:
+                saved["embedding"] = saved["embedding"].apply(
+                    lambda x: json.loads(x) if isinstance(x, str) else x
+                )
+            # Merge saved embeddings into current chunks_df on chunk_id
+            if "embedding" in saved.columns and "chunk_id" in saved.columns:
+                self.chunks_df = self.chunks_df.merge(
+                    saved[["chunk_id", "embedding"]], on="chunk_id", how="left"
+                )
+            self.embedder.load_indexes(self.chunks_df)
+            print(f"✅ Loaded in {round(time.time()-t0, 1)}s")
         else:
-            self.model = None
-            print("⚠️  No embedding model available")
-        
-        # Either load existing embeddings or build new ones
-        self.index = None
-        self.embeddings = None
-        
-        if load_existing_embeddings:
-            self._load_existing_index()
+            print("\n⚡ Building new embeddings (this takes ~90 min first time)…")
+            self.chunks_df, embeddings = self.embedder.embed_chunks(self.chunks_df)
+            self.embedder.build_indexes(self.chunks_df, embeddings)
+            self._save(embeddings)
+            print(f"✅ Built in {round(time.time()-t0, 1)}s")
+
+        self._ready = True
+        print(f"\n✅ RAG ready — {len(self.chunks_df)} chunks | "
+              f"{len(self.embedder.section_indexes)} indexes")
+        return True
+
+    def _save(self, embeddings: np.ndarray):
+        os.makedirs(RESULTS_DIR, exist_ok=True)
+        # Save numpy embeddings
+        np.save(f"{RESULTS_DIR}/chunk_embeddings.npy", embeddings)
+
+        # Save chunks CSV with embeddings as JSON strings
+        out = self.chunks_df.copy()
+        if "embedding" in out.columns:
+            out["embedding"] = out["embedding"].apply(
+                lambda x: json.dumps(x) if isinstance(x, list) else x
+            )
         else:
-            if FAISS_AVAILABLE and self.model:
-                self._build_faiss_index()
-                self._save_embeddings()  # Save for next time!
-    
-    def _build_faiss_index(self):
-        """Build FAISS vector index for chunks (90 minutes)"""
-        print(f"\n🔨 Building FAISS index for {len(self.chunks_df)} chunks...")
-        
-        chunk_texts = self.chunks_df['text'].fillna('').tolist()
-        
-        print(f"📐 Embedding {len(chunk_texts)} chunks...")
-        self.embeddings = self.model.encode(chunk_texts, show_progress_bar=True)
-        
-        dimension = self.embeddings.shape[1]
-        self.index = faiss.IndexFlatIP(dimension)
-        faiss.normalize_L2(self.embeddings)
-        self.index.add(self.embeddings)
-        
-        print(f"✅ FAISS index built: {self.index.ntotal} chunks, {dimension} dimensions")
-    
-    def _save_embeddings(self):
-        """Save embeddings and FAISS index for future use (Phase 4, Phase 5, future runs)"""
-        print("\n💾 SAVING EMBEDDINGS FOR FUTURE USE...")
-        
-        os.makedirs('./phase3_results', exist_ok=True)
-        
-        # Save FAISS index
-        faiss.write_index(self.index, './phase3_results/faiss_index.bin')
-        print(f"✅ Saved FAISS index: {self.index.ntotal} vectors")
-        
-        # Save embeddings as numpy array
-        np.save('./phase3_results/chunk_embeddings.npy', self.embeddings)
-        print(f"✅ Saved embeddings: {self.embeddings.shape}")
-        
-        # Save chunks WITH embeddings (for Phase 4)
-        self.chunks_df['embedding'] = self.embeddings.tolist()
-        self.chunks_df.to_csv('./phase3_results/document_chunks_with_embeddings.csv', index=False)
-        print(f"✅ Saved chunks with embeddings: {len(self.chunks_df)} rows")
-        
-        # Remove embedding column to free memory
-        self.chunks_df = self.chunks_df.drop(columns=['embedding'])
-        print("✅ Embeddings saved! Future runs can use load_existing_embeddings=True")
-    
-    def _load_existing_index(self):
-        """Load pre-computed embeddings and FAISS index (5 seconds)"""
-        print("\n📦 Loading pre-computed embeddings from disk...")
-        
-        try:
-            # Load FAISS index
-            self.index = faiss.read_index('./phase3_results/faiss_index.bin')
-            print(f"✅ Loaded FAISS index: {self.index.ntotal} vectors")
-            
-            # Load embeddings
-            self.embeddings = np.load('./phase3_results/chunk_embeddings.npy')
-            print(f"✅ Loaded embeddings: {self.embeddings.shape}")
-            
-            # Verify counts match
-            if len(self.chunks_df) != self.index.ntotal:
-                print(f"⚠️  Warning: Chunks ({len(self.chunks_df)}) vs Index ({self.index.ntotal}) mismatch")
-            
-        except FileNotFoundError as e:
-            print(f"❌ Could not load embeddings: {e}")
-            print("⚠️  Run with load_existing_embeddings=False first to generate embeddings")
-            raise
-    
-    # ============ SEARCH METHODS ============
-    
-    def search(self, query: str, top_k: int = 5, fqhc_boost: bool = True) -> List[Dict]:
-        """Search for chunks matching query"""
-        if self.index is None or self.model is None:
-            print("❌ FAISS index or model not available")
-            return []
-        
-        print(f"\n🔍 Chunk Search: '{query[:50]}...'")
-        
-        # Encode query
-        query_embedding = self.model.encode([query])
-        faiss.normalize_L2(query_embedding)
-        
-        # Search
-        start_time = time.time()
-        distances, indices = self.index.search(query_embedding, top_k * 2)
-        search_time = time.time() - start_time
-        
-        results = []
-        for i, idx in enumerate(indices[0]):
-            if idx < 0 or idx >= len(self.chunks_df):
-                continue
-            
-            chunk_data = self.chunks_df.iloc[idx].to_dict()
-            similarity = float(distances[0][i])
-            
-            boosted_similarity = similarity
-            if fqhc_boost and chunk_data.get('is_fqhc_focused', False):
-                boost_factor = 1.0 + (chunk_data.get('fqhc_score', 0.5) * 0.5)
-                boosted_similarity = similarity * boost_factor
-            
-            results.append({
-                'rank': len(results) + 1,
-                'chunk_id': chunk_data.get('chunk_id', f'chunk_{idx}'),
-                'text': chunk_data.get('text', ''),
-                'chunk_type': chunk_data.get('chunk_type', 'unknown'),
-                'section_name': chunk_data.get('section_name', ''),
-                'grant_id': chunk_data.get('grant_id', ''),
-                'document_title': chunk_data.get('document_title', 'Untitled'),
-                'year': chunk_data.get('year', 'Unknown'),
-                'institute': chunk_data.get('institute', 'Unknown'),
-                'similarity': similarity,
-                'boosted_similarity': boosted_similarity,
-                'fqhc_score': chunk_data.get('fqhc_score', 0.0),
-                'is_fqhc_focused': chunk_data.get('is_fqhc_focused', False),
-                'data_source': chunk_data.get('data_source', 'unknown'),
-                'word_count': chunk_data.get('word_count', 0),
-                'contains_methods': chunk_data.get('contains_methods', False),
-                'contains_outcomes': chunk_data.get('contains_outcomes', False),
-                'search_time': search_time,
-                'retrieval_method': 'faiss_chunk_vector',
-                'relevance_explanation': self._explain_relevance(query, chunk_data['text'])
-            })
-        
-        results.sort(key=lambda x: x['boosted_similarity'], reverse=True)
-        final_results = results[:top_k]
-        
-        print(f"📊 Found {len(final_results)} chunks in {search_time:.3f}s")
-        if final_results:
-            print(f"   Top similarity: {final_results[0]['similarity']:.3f}")
-            print(f"   Top chunk type: {final_results[0]['chunk_type']}")
-        
-        return final_results
-    
-    def _explain_relevance(self, query: str, chunk_text: str) -> str:
-        query_words = set(query.lower().split())
-        chunk_words = set(chunk_text.lower().split())
-        overlap = query_words.intersection(chunk_words)
-        if len(overlap) > 3:
-            return f"Contains key terms: {', '.join(list(overlap)[:5])}"
-        else:
-            return "Semantic similarity to requirement"
-    
-    def _calculate_fqhc_score(self, text: str) -> float:
-        if not isinstance(text, str):
-            return 0.0
-        return self.dataset_loader._calculate_fqhc_score(text)
-    
-    # ============ RFP MATCHING ============
-    
-    def match_rfp_requirements(self, rfp_text: str, requirements: List[str] = None, top_k: int = 5) -> Dict:
-        """Match RFP requirements to document chunks"""
-        print(f"\n📋 Matching RFP requirements...")
-        
-        if requirements is None:
-            requirements = self._extract_requirements(rfp_text)
-        
-        results = {}
-        for i, requirement in enumerate(requirements):
-            print(f"\n🔍 Requirement {i+1}: {requirement[:80]}...")
-            chunks = self.search(requirement, top_k=top_k, fqhc_boost=True)
-            categorized = self._categorize_chunks_for_rfp(chunks, requirement)
-            results[f"requirement_{i+1}"] = {
-                "requirement": requirement,
-                "total_matches": len(chunks),
-                "best_matches": chunks[:3],
-                "categorized": categorized,
-                "suggested_sections": self._suggest_rfp_sections(chunks)
-            }
-        return results
-    
-    def _extract_requirements(self, rfp_text: str) -> List[str]:
-        requirements = []
-        patterns = [
-            r'Requirements?:?\s*(.+?)(?=Requirements?|Qualifications|Deliverables|$)',
-            r'Applicants? must\s*(.+?)(?=\.|Applicants? must|$)',
-            r'Proposals? should\s*(.+?)(?=\.|Proposals? should|$)',
-            r'Projects? will\s*(.+?)(?=\.|Projects? will|$)',
-            r'Key\s+(?:Components|Elements):?\s*(.+?)(?=Key|$)',
+            out["embedding"] = [json.dumps(e.tolist()) for e in embeddings]
+
+        out.to_csv(CHUNKS_CSV, index=False)
+        print(f"💾 Saved {len(out)} chunks to {CHUNKS_CSV}")
+        print(f"   Columns: {list(out.columns)}")
+
+    def search(self, query: str,
+               section_filter: Optional[str] = None,
+               top_k: int = 10,
+               fqhc_only: bool = False) -> List[Dict]:
+        """
+        Search for relevant grant chunks.
+
+        Args:
+            query:          Natural language query
+            section_filter: Restrict to section type e.g. "specific_aims"
+            top_k:          Number of results
+            fqhc_only:      Filter to FQHC-focused grants only
+        """
+        if not self._ready:
+            print("❌ Call setup() first"); return []
+
+        results = self.embedder.search(
+            query, section_filter=section_filter,
+            top_k=top_k * 2, chunks_df=self.chunks_df
+        )
+
+        if fqhc_only:
+            results = [r for r in results if r.get("is_fqhc_focused")]
+
+        return results[:top_k]
+
+    def compare_sections(self, query: str, top_k: int = 3) -> Dict[str, List[Dict]]:
+        """
+        Search query across each section type and return side-by-side results.
+        Useful for demo — shows how the same query retrieves differently
+        depending on which section you're looking at.
+        """
+        if not self._ready:
+            print("❌ Call setup() first"); return {}
+
+        print(f"\n{'='*70}")
+        print(f"📊 SECTION COMPARISON: '{query}'")
+        print(f"{'='*70}")
+
+        sections_to_compare = [
+            None,               # global
+            "specific_aims",
+            "significance",
+            "methods",
+            "background",
         ]
-        for pattern in patterns:
-            matches = re.findall(pattern, rfp_text, re.IGNORECASE | re.DOTALL)
-            for match in matches:
-                if len(match.strip()) > 10:
-                    requirements.append(match.strip())
-        if not requirements:
-            sentences = re.split(r'(?<=[.!?])\s+', rfp_text)
-            requirements = [s.strip() for s in sentences if len(s.split()) > 5]
-        return requirements[:10]
-    
-    def _categorize_chunks_for_rfp(self, chunks: List[Dict], requirement: str) -> Dict:
-        categories = {'methods_approach': [], 'background_significance': [], 'innovation': [],
-                     'evaluation_outcomes': [], 'implementation_plan': [], 'budget_justification': []}
-        for chunk in chunks:
-            chunk_type = chunk.get('chunk_type', '').lower()
-            text = chunk.get('text', '').lower()
-            if 'method' in chunk_type or chunk.get('contains_methods', False):
-                categories['methods_approach'].append(chunk)
-            elif 'background' in chunk_type:
-                categories['background_significance'].append(chunk)
-            elif 'innovation' in chunk_type or 'innovative' in text:
-                categories['innovation'].append(chunk)
-            elif 'result' in chunk_type or chunk.get('contains_outcomes', False):
-                categories['evaluation_outcomes'].append(chunk)
-            elif any(word in text for word in ['implement', 'timeline', 'plan', 'schedule']):
-                categories['implementation_plan'].append(chunk)
-            elif any(word in text for word in ['budget', 'cost', 'funding', 'resource']):
-                categories['budget_justification'].append(chunk)
-            else:
-                categories['methods_approach'].append(chunk)
-        return {k: v for k, v in categories.items() if v}
-    
-    def _suggest_rfp_sections(self, chunks: List[Dict]) -> List[str]:
-        sections = set()
-        for chunk in chunks:
-            chunk_type = chunk.get('chunk_type', '')
-            if chunk_type in ['methods', 'approach']:
-                sections.add('Methods and Approach')
-            elif chunk_type == 'background':
-                sections.add('Background and Significance')
-            elif chunk_type == 'innovation':
-                sections.add('Innovation')
-            elif chunk_type == 'results':
-                sections.add('Evaluation and Outcomes')
-            elif 'implementation' in chunk.get('text', '').lower():
-                sections.add('Implementation Plan')
-            elif 'budget' in chunk.get('text', '').lower():
-                sections.add('Budget Justification')
-        return list(sections)
-    
-    # ============ EVALUATION METHODS ============
-    
+
+        all_results = {}
+        for section in sections_to_compare:
+            label   = section or "global (all sections)"
+            results = self.embedder.search(
+                query, section_filter=section,
+                top_k=top_k, chunks_df=self.chunks_df
+            )
+            all_results[label] = results
+            print(f"\n  {label}:")
+            for i, r in enumerate(results[:top_k], 1):
+                print(f"    {i}. [{r['score']:.4f}] {r.get('grant_id','')} — "
+                      f"{r.get('title','')[:50]}...")
+
+        return all_results
+
     def evaluate(self, test_queries: List[Dict] = None) -> Dict:
-        """Evaluate chunk-based RAG performance"""
-        print("\n🧪 Evaluating Chunk-Based RAG...")
-        
+        """Evaluate retrieval performance."""
+        if not self._ready:
+            print("❌ Not ready"); return {}
+
         if test_queries is None:
-            try:
-                with open('./phase2_output/evaluation_set.json', 'r') as f:
+            eval_path = "./phase2_output/evaluation_set.json"
+            if os.path.exists(eval_path):
+                with open(eval_path) as f:
                     test_queries = json.load(f)
-                print(f"📋 Using {len(test_queries)} test queries from Phase 2")
-            except:
-                print("⚠️  Creating default FQHC test queries")
-                test_queries = self._create_fqhc_test_queries()
-        
-        metrics = {'precision_at_1': [], 'precision_at_3': [], 'precision_at_5': [],
-                  'fqhc_alignment': [], 'retrieval_time': [], 'avg_similarity': []}
-        
-        for i, query_data in enumerate(test_queries):
-            query = query_data.get('query', '')
-            relevant_ids = set(query_data.get('relevant_grant_ids', []))
-            results = self.search(query, top_k=5, fqhc_boost=True)
-            retrieved_ids = [r['grant_id'] for r in results]
-            
+                print(f"📋 Loaded {len(test_queries)} eval queries")
+            else:
+                test_queries = self._default_queries()
+
+        metrics = {"p@1": [], "p@3": [], "p@5": [],
+                   "fqhc_alignment": [], "avg_score": []}
+
+        for qd in test_queries:
+            query       = qd.get("query", "")
+            relevant    = set(qd.get("relevant_grant_ids", []))
+            results     = self.search(query, top_k=5)
+            retrieved   = [r.get("grant_id", "") for r in results]
+
             for k in [1, 3, 5]:
-                top_k_ids = retrieved_ids[:k]
-                relevant_in_top_k = len([id for id in top_k_ids if id in relevant_ids])
-                precision = relevant_in_top_k / k if k > 0 else 0
-                metrics[f'precision_at_{k}'].append(precision)
-            
+                hits = sum(1 for r in retrieved[:k] if r in relevant)
+                metrics[f"p@{k}"].append(hits / k)
+
             if results:
-                metrics['fqhc_alignment'].append(np.mean([r['fqhc_score'] for r in results[:3]]))
-                metrics['retrieval_time'].append(results[0]['search_time'])
-                metrics['avg_similarity'].append(np.mean([r['similarity'] for r in results[:3]]))
-            
-            if (i + 1) % 5 == 0:
-                print(f"  Processed {i + 1}/{len(test_queries)} queries...")
-        
-        avg_metrics = {k: np.mean(v) for k, v in metrics.items() if v}
-        
-        print(f"\n📊 Chunk-Based RAG Results:")
-        print(f"   • Precision@1: {avg_metrics.get('precision_at_1', 0):.3f}")
-        print(f"   • Precision@3: {avg_metrics.get('precision_at_3', 0):.3f}")
-        print(f"   • Precision@5: {avg_metrics.get('precision_at_5', 0):.3f}")
-        print(f"   • FQHC Alignment: {avg_metrics.get('fqhc_alignment', 0):.3f}")
-        print(f"   • Avg Retrieval Time: {avg_metrics.get('retrieval_time', 0):.3f}s")
-        
-        return avg_metrics
-    
-    def _create_fqhc_test_queries(self) -> List[Dict]:
+                metrics["fqhc_alignment"].append(
+                    np.mean([1 if r.get("is_fqhc_focused") else 0 for r in results[:3]])
+                )
+                metrics["avg_score"].append(
+                    np.mean([r.get("score", 0) for r in results[:3]])
+                )
+
+        avg = {k: round(float(np.mean(v)), 4) for k, v in metrics.items() if v}
+
+        print(f"\n📊 Section-Aware RAG Evaluation:")
+        print(f"   P@1: {avg.get('p@1', 0):.3f}")
+        print(f"   P@3: {avg.get('p@3', 0):.3f}")
+        print(f"   P@5: {avg.get('p@5', 0):.3f}")
+        print(f"   FQHC alignment: {avg.get('fqhc_alignment', 0):.3f}")
+        print(f"   Avg score: {avg.get('avg_score', 0):.3f}")
+
+        return avg
+
+    def _default_queries(self) -> List[Dict]:
         return [
-            {'query': 'diabetes prevention in Federally Qualified Health Centers', 'relevant_grant_ids': ['FQHC_SYNTH_0001', 'FQHC_SYNTH_0010', 'FQHC_SYNTH_0020'], 'type': 'fqhc_chronic_disease'},
-            {'query': 'community health worker programs for underserved populations', 'relevant_grant_ids': ['FQHC_SYNTH_0005', 'FQHC_SYNTH_0015', 'FQHC_SYNTH_0025'], 'type': 'fqhc_intervention'},
-            {'query': 'telehealth implementation in rural community health centers', 'relevant_grant_ids': ['FQHC_SYNTH_0003', 'FQHC_SYNTH_0013', 'FQHC_SYNTH_0023'], 'type': 'fqhc_technology'},
-            {'query': 'health disparities reduction in safety-net clinics', 'relevant_grant_ids': ['FQHC_SYNTH_0007', 'FQHC_SYNTH_0017', 'FQHC_SYNTH_0027'], 'type': 'fqhc_equity'},
-            {'query': 'behavioral health integration in primary care FQHCs', 'relevant_grant_ids': ['FQHC_SYNTH_0009', 'FQHC_SYNTH_0019', 'FQHC_SYNTH_0029'], 'type': 'fqhc_behavioral_health'}
+            {"query": "diabetes prevention community health workers",
+             "relevant_grant_ids": []},
+            {"query": "behavioral health integration FQHC",
+             "relevant_grant_ids": []},
+            {"query": "cancer screening underserved populations",
+             "relevant_grant_ids": []},
+            {"query": "telehealth rural community health centers",
+             "relevant_grant_ids": []},
+            {"query": "CHW interventions Latino patients",
+             "relevant_grant_ids": []},
         ]
-    
-    def create_proper_evaluation(self, num_queries: int = 20) -> List[Dict]:
-        """Create proper evaluation queries that match actual documents"""
-        print(f"\n🎯 Creating proper evaluation from {len(self.data)} documents...")
-        fqhc_docs = self.data[self.data['is_fqhc_focused'] == True]
-        if len(fqhc_docs) < num_queries:
-            num_queries = len(fqhc_docs)
-        
-        eval_set = []
-        for i, (_, doc) in enumerate(fqhc_docs.head(num_queries).iterrows()):
-            full_text = (doc.get('title', '') + ' ' + doc.get('abstract', '')).lower()
-            if 'diabetes' in full_text:
-                query = "diabetes management in community health settings"
-            elif 'hypertension' in full_text or 'blood pressure' in full_text:
-                query = "hypertension control in underserved populations"
-            elif 'depression' in full_text or 'mental health' in full_text:
-                query = "behavioral health integration in primary care"
-            elif 'asthma' in full_text:
-                query = "asthma management in pediatric populations"
-            elif 'cancer' in full_text:
-                query = "cancer screening in community health centers"
-            elif 'hiv' in full_text:
-                query = "HIV prevention and care in safety-net settings"
-            else:
-                words = doc.get('title', '').split()[:4]
-                query = f"{' '.join(words)} in Federally Qualified Health Centers"
-            
-            eval_set.append({
-                "query_id": f"Q{i+1:03d}_PROPER",
-                "query": query,
-                "relevant_grant_ids": [doc['grant_id']],
-                "query_type": "document_based",
-                "condition": doc.get('primary_condition', 'general'),
-                "source_document": doc['grant_id']
-            })
-        
-        os.makedirs('./phase3_results', exist_ok=True)
-        with open('./phase3_results/proper_evaluation.json', 'w') as f:
-            json.dump(eval_set, f, indent=2)
-        print(f"✅ Created {len(eval_set)} proper evaluation queries")
-        return eval_set
-    
-    def evaluate_with_proper_queries(self, num_queries: int = 20) -> Dict:
-        """Evaluate using proper queries (recommended for accurate metrics)"""
-        print("\n🧪 EVALUATION WITH PROPER GROUND TRUTH")
-        eval_path = './phase3_results/proper_evaluation.json'
-        if os.path.exists(eval_path):
-            with open(eval_path, 'r') as f:
-                test_queries = json.load(f)
-            print(f"📋 Loaded existing proper evaluation: {len(test_queries)} queries")
-        else:
-            test_queries = self.create_proper_evaluation(num_queries)
-        return self._run_evaluation_with_queries(test_queries)
-    
-    def _run_evaluation_with_queries(self, test_queries: List[Dict]) -> Dict:
-        metrics = {'precision_at_1': [], 'precision_at_3': [], 'precision_at_5': [],
-                  'fqhc_alignment': [], 'retrieval_time': [], 'avg_similarity': []}
-        
-        for query_data in test_queries:
-            query = query_data.get('query', '')
-            relevant_ids = set(query_data.get('relevant_grant_ids', []))
-            results = self.search(query, top_k=5, fqhc_boost=True)
-            retrieved_ids = [r['grant_id'] for r in results]
-            
-            for k in [1, 3, 5]:
-                top_k_ids = retrieved_ids[:k]
-                relevant_in_top_k = len([id for id in top_k_ids if id in relevant_ids])
-                metrics[f'precision_at_{k}'].append(relevant_in_top_k / k if k > 0 else 0)
-            
-            if results:
-                metrics['fqhc_alignment'].append(np.mean([r['fqhc_score'] for r in results[:3]]))
-                metrics['retrieval_time'].append(results[0]['search_time'])
-                metrics['avg_similarity'].append(np.mean([r['similarity'] for r in results[:3]]))
-        
-        return {k: np.mean(v) for k, v in metrics.items() if v}
-    
-    # ============ INTERACTIVE DEMOS ============
-    
-    def interactive_rfp_matching(self):
-        """Interactive RFP matching demo"""
-        print("\n" + "="*70)
-        print("💼 INTERACTIVE RFP MATCHING DEMO")
-        print("="*70)
-        print("Enter RFP requirements to find matching grant sections")
-        print("Type 'quit' to exit, 'sample' for sample RFP")
-        
-        while True:
-            user_input = input("\n📋 Enter RFP requirement (or 'sample'): ").strip()
-            if user_input.lower() in ['quit', 'exit', 'q']:
-                break
-            if user_input.lower() == 'sample':
-                requirement = "Develop a community health worker program for diabetes prevention in underserved populations with evaluation metrics including HbA1c reduction and cost-effectiveness analysis"
-                print(f"\n📋 Sample RFP: {requirement}")
-            else:
-                requirement = user_input
-            
-            print(f"\n🔍 Searching for: '{requirement[:100]}...'")
-            chunks = self.search(requirement, top_k=3, fqhc_boost=True)
-            
-            if not chunks:
-                print("No matching chunks found. Try more specific requirement.")
-                continue
-            
-            print(f"✅ Found {len(chunks)} relevant chunks:")
-            for i, chunk in enumerate(chunks, 1):
-                print(f"\n{i}. 📄 From: {chunk['document_title']}")
-                print(f"   📅 Year: {chunk['year']} | Grant: {chunk['grant_id']}")
-                print(f"   📊 Similarity: {chunk['similarity']:.3f}")
-                print(f"   🏷️  Section: {chunk['section_name']} ({chunk['chunk_type']})")
-                print(f"   📝 Words: {chunk['word_count']} | FQHC: {chunk['is_fqhc_focused']}")
-                print(f"   💡 Use for: {chunk.get('relevance_explanation', 'General reference')}")
-                print(f"   📋 Text: {chunk['text'][:200]}...")
-            
-            suggested = self._suggest_rfp_sections(chunks)
-            if suggested:
-                print(f"\n🎯 Suggested RFP sections to include:")
-                for section in suggested:
-                    print(f"   • {section}")
-    
+
     def interactive_demo(self):
-        """Interactive demo of chunk-based RAG"""
-        print("\n" + "="*70)
-        print("💬 CHUNK-BASED RAG DEMO")
-        print("="*70)
-        print("Test queries against the chunk-based RAG")
-        print("Type 'quit' to exit, 'rfp' for RFP matching mode")
-        
+        print("\n" + "=" * 70)
+        print("💬 SECTION-AWARE RAG DEMO")
+        print("=" * 70)
+        print("Commands:")
+        print("  <query>                  — search all sections")
+        print("  /aims <query>            — search specific aims only")
+        print("  /significance <query>    — search significance sections")
+        print("  /methods <query>         — search methods sections")
+        print("  /compare <query>         — compare across all sections")
+        print("  /fqhc <query>            — FQHC grants only")
+        print("  /quit                    — exit\n")
+
         while True:
-            query = input("\n🔍 Your question: ").strip()
-            if query.lower() in ['quit', 'exit', 'q']:
+            try:
+                ui = input("Query > ").strip()
+            except (EOFError, KeyboardInterrupt):
                 break
-            if query.lower() == 'rfp':
-                self.interactive_rfp_matching()
-                continue
-            if not query:
-                continue
-            
-            print(f"\n📚 Chunk-Based RAG Searching for: '{query}'")
-            results = self.search(query, top_k=3)
-            
-            for i, result in enumerate(results, 1):
-                print(f"\n{i}. {result['document_title']}")
-                print(f"   📅 Year: {result['year']} | Institute: {result['institute']}")
-                print(f"   📊 Similarity: {result['similarity']:.3f} | Boosted: {result['boosted_similarity']:.3f}")
-                print(f"   🏷️  Section: {result['section_name']} ({result['chunk_type']})")
-                print(f"   🎯 FQHC Score: {result['fqhc_score']:.2f} | FQHC-focused: {result['is_fqhc_focused']}")
-                print(f"   📝 Source: {result['data_source']}")
-                print(f"   📝 Text: {result['text'][:200]}...")
-            
-            if not results:
-                print("No results found. Try a different query.")
+
+            if not ui: continue
+            if ui.lower() in ["/quit", "quit", "exit"]: break
+
+            elif ui.startswith("/aims "):
+                self._print_results(self.search(ui[6:], section_filter="specific_aims"))
+            elif ui.startswith("/significance "):
+                self._print_results(self.search(ui[14:], section_filter="significance"))
+            elif ui.startswith("/methods "):
+                self._print_results(self.search(ui[9:], section_filter="methods"))
+            elif ui.startswith("/compare "):
+                self.compare_sections(ui[9:])
+            elif ui.startswith("/fqhc "):
+                self._print_results(self.search(ui[6:], fqhc_only=True))
+            else:
+                self._print_results(self.search(ui))
+
+    def _print_results(self, results: List[Dict]):
+        print(f"\n{'─'*70}")
+        print(f"📋 {len(results)} results")
+        print(f"{'─'*70}")
+        for i, r in enumerate(results, 1):
+            hv   = "⭐" if r.get("is_high_value") else "  "
+            fqhc = "🏥" if r.get("is_fqhc_focused") else "  "
+            print(f"\n{i}. {hv}{fqhc} [{r['score']:.4f}] "
+                  f"section:{r.get('section_type','?')}")
+            print(f"   Grant:   {r.get('grant_id','N/A')}")
+            if r.get("title"):
+                print(f"   Title:   {r['title'][:70]}")
+            if r.get("text"):
+                print(f"   Text:    {r['text'][:200]}…")
 
 
-# ============ VISUALIZATION FUNCTIONS ============
+# ── Visualization ─────────────────────────────────────────────────────────────
 
-def visualize_phase3_results(rag_system, evaluation_metrics: Dict):
-    """Visualize Phase 3 results"""
+def visualize_phase3_results(rag_system, evaluation_metrics):
+    """Visualize Phase 3 results."""
     try:
         import matplotlib.pyplot as plt
-        import seaborn as sns
-        
+
         fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-        fig.suptitle('Phase 3: Chunk-Based RAG Results', fontsize=16, fontweight='bold')
-        
-        data = rag_system.data
-        chunks_df = rag_system.chunks_df
-        
-        # 1. Dataset composition
+        fig.suptitle("Phase 3: Section-Aware RAG Results", fontsize=16, fontweight="bold")
+
+        data      = getattr(rag_system, "data", pd.DataFrame())
+        chunks_df = getattr(rag_system, "chunks_df", pd.DataFrame())
+
+        # 1. Dataset composition by source
         ax = axes[0, 0]
-        categories = ['FQHC-focused', 'Non-FQHC', 'Synthetic', 'Phase 2 NIH']
-        counts = [
-            data['is_fqhc_focused'].sum(),
-            (~data['is_fqhc_focused']).sum(),
-            (data['data_source'] == 'synthetic_fqhc').sum(),
-            (data['data_source'] == 'phase2_nih').sum()
-        ]
-        bars = ax.bar(categories, counts, color=['green', 'lightblue', 'orange', 'blue'])
-        ax.set_xlabel('Category')
-        ax.set_ylabel('Count')
-        ax.set_title('Enhanced Dataset Composition')
-        for bar, count in zip(bars, counts):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height + 0.01, f'{count}', ha='center', va='bottom')
-        
-        # 2. Chunk type distribution
+        if not data.empty and "data_source" in data.columns:
+            sc = data["data_source"].value_counts()
+            ax.bar(sc.index, sc.values, color=["#4CAF50","#2196F3","#FF9800","#9C27B0"][:len(sc)])
+            ax.set_title("Dataset Composition by Source")
+            ax.set_ylabel("Documents")
+            ax.tick_params(axis="x", rotation=30)
+            for i, v in enumerate(sc.values):
+                ax.text(i, v + 0.5, str(v), ha="center", va="bottom", fontsize=9)
+
+        # 2. Section distribution
         ax = axes[0, 1]
-        if 'chunk_type' in chunks_df.columns:
-            chunk_counts = chunks_df['chunk_type'].value_counts()
-            ax.bar(range(len(chunk_counts)), chunk_counts.values, color='skyblue')
-            ax.set_xlabel('Chunk Type')
-            ax.set_ylabel('Count')
-            ax.set_title('Chunk Type Distribution')
-            ax.set_xticks(range(len(chunk_counts)))
-            ax.set_xticklabels(chunk_counts.index, rotation=45, ha='right')
-        
+        if not chunks_df.empty and "section_type" in chunks_df.columns:
+            sc2 = chunks_df["section_type"].value_counts().head(10)
+            colors = ["gold" if s in HIGH_VALUE_SECTIONS else "skyblue" for s in sc2.index]
+            ax.barh(sc2.index[::-1], sc2.values[::-1], color=colors[::-1])
+            ax.set_title("Section Distribution (gold=high-value)")
+            ax.set_xlabel("Chunks")
+
         # 3. Evaluation metrics
         ax = axes[0, 2]
         if evaluation_metrics:
-            eval_metrics = {
-                'P@1': evaluation_metrics.get('precision_at_1', 0),
-                'P@3': evaluation_metrics.get('precision_at_3', 0),
-                'P@5': evaluation_metrics.get('precision_at_5', 0),
-                'FQHC Align': evaluation_metrics.get('fqhc_alignment', 0)
-            }
-            bars = ax.bar(range(len(eval_metrics)), list(eval_metrics.values()), 
-                        color=['skyblue', 'lightgreen', 'salmon', 'gold'])
-            ax.set_xticks(range(len(eval_metrics)))
-            ax.set_xticklabels(list(eval_metrics.keys()))
-            ax.set_ylabel('Score')
-            ax.set_title('Evaluation Metrics')
-            ax.set_ylim(0, 1)
-            for bar, value in zip(bars, eval_metrics.values()):
-                height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2., height + 0.01, f'{value:.3f}', ha='center', va='bottom')
-        
+            labels = ["P@1", "P@3", "P@5", "FQHC Align"]
+            values = [
+                evaluation_metrics.get("p@1", evaluation_metrics.get("precision_at_1", 0)),
+                evaluation_metrics.get("p@3", evaluation_metrics.get("precision_at_3", 0)),
+                evaluation_metrics.get("p@5", evaluation_metrics.get("precision_at_5", 0)),
+                evaluation_metrics.get("fqhc_alignment", 0),
+            ]
+            bars = ax.bar(labels, values, color=["skyblue","lightgreen","salmon","gold"])
+            ax.set_ylim(0, 1.1)
+            ax.set_title("Evaluation Metrics")
+            for bar, v in zip(bars, values):
+                ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
+                        f"{v:.3f}", ha="center", va="bottom", fontsize=9)
+
         # 4. Chunk size distribution
         ax = axes[1, 0]
-        if 'word_count' in chunks_df.columns:
-            ax.hist(chunks_df['word_count'], bins=30, alpha=0.7, color='lightgreen')
-            ax.set_xlabel('Chunk Size (words)')
-            ax.set_ylabel('Frequency')
-            ax.set_title('Chunk Size Distribution')
-            ax.axvline(x=chunks_df['word_count'].mean(), color='red', linestyle='--', 
-                      label=f'Mean: {chunks_df["word_count"].mean():.0f} words')
+        if not chunks_df.empty and "word_count" in chunks_df.columns:
+            ax.hist(chunks_df["word_count"].dropna(), bins=40, color="lightgreen", alpha=0.8)
+            mean = chunks_df["word_count"].mean()
+            ax.axvline(mean, color="red", linestyle="--", label=f"Mean: {mean:.0f}w")
+            ax.set_title("Chunk Size Distribution")
+            ax.set_xlabel("Words per chunk")
             ax.legend()
-        
-        # 5. System info
+
+        # 5. FQHC vs non-FQHC pie
         ax = axes[1, 1]
-        ax.axis('off')
-        system_info = [
-            ['Model', str(rag_system.model).split('/')[-1][:20] if rag_system.model else 'N/A'],
-            ['Documents', str(len(data))],
-            ['Chunks', str(len(chunks_df))],
-            ['FQHC-focused', str(data['is_fqhc_focused'].sum())],
-            ['Vector Dims', str(rag_system.embeddings.shape[1] if rag_system.embeddings is not None else 'N/A')],
-            ['FAISS Index', str(rag_system.index.ntotal if rag_system.index is not None else 'N/A')],
-            ['Mode', 'LOAD' if hasattr(rag_system, '_load_existing_index') and rag_system.embeddings is not None else 'CREATE']
-        ]
-        table = ax.table(cellText=system_info, loc='center', cellLoc='center')
-        table.auto_set_font_size(False)
-        table.set_fontsize(10)
-        table.scale(1, 1.5)
-        ax.set_title('System Configuration')
-        
-        # 6. RFP capabilities
+        if not data.empty and "is_fqhc_focused" in data.columns:
+            fq = int(data["is_fqhc_focused"].sum())
+            nf = len(data) - fq
+            ax.pie([fq, nf], labels=[f"FQHC ({fq})", f"Non-FQHC ({nf})"],
+                   colors=["#4CAF50","#90CAF9"], autopct="%1.1f%%", startangle=90)
+            ax.set_title("FQHC vs Non-FQHC")
+
+        # 6. System summary table
         ax = axes[1, 2]
-        ax.axis('off')
-        rfp_capabilities = [
-            "📊 CHUNK-BASED RAG FOR RFP MATCHING",
-            "",
-            "Capabilities:",
-            "• Document chunking into sections",
-            "• RFP requirement matching",
-            "• Chunk categorization",
-            "• FQHC relevance boosting",
-            f"• {len(chunks_df)} chunks available",
-            f"• {data['is_fqhc_focused'].sum()} FQHC-focused docs"
+        ax.axis("off")
+        ds = data.get("data_source", pd.Series([])) if not data.empty else pd.Series([])
+        info = [
+            ["Total docs",      str(len(data))],
+            ["Total chunks",    str(len(chunks_df))],
+            ["FQHC docs",       str(int(data["is_fqhc_focused"].sum())) if "is_fqhc_focused" in data.columns else "N/A"],
+            ["PDF full-text",   str(int((ds=="pdf_ingestion").sum()))],
+            ["NIH abstracts",   str(int((ds=="phase2_nih").sum()))],
+            ["Synthetic",       str(int((ds=="synthetic_fqhc").sum()))],
+            ["Section indexes", str(len(getattr(getattr(rag_system,"embedder",None),"section_indexes",{})))],
         ]
-        ax.text(0.5, 0.5, '\n'.join(rfp_capabilities), ha='center', va='center', fontsize=10,
-               bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8))
-        
+        tbl = ax.table(cellText=info, loc="center", cellLoc="center")
+        tbl.auto_set_font_size(False)
+        tbl.set_fontsize(10)
+        tbl.scale(1, 1.6)
+        ax.set_title("System Summary")
+
         plt.tight_layout()
-        os.makedirs('./phase3_results', exist_ok=True)
-        plt.savefig('./phase3_results/phase3_chunk_based_results.png', dpi=300, bbox_inches='tight')
+        os.makedirs(RESULTS_DIR, exist_ok=True)
+        out = f"{RESULTS_DIR}/phase3_results.png"
+        plt.savefig(out, dpi=150, bbox_inches="tight")
         plt.show()
-        
+        print(f"📊 Chart saved to {out}")
+
     except ImportError:
-        print("⚠️  Visualization libraries not available")
+        print("Matplotlib not available — skipping visualization")
 
 
-# ============ MAIN EXECUTION ============
+# Backward-compatible alias used in some notebooks
+def run_phase3_chunking(load_existing_embeddings: bool = False,
+                        phase2_data_path: str = None,
+                        force_rebuild_dataset: bool = False):
+    """Alias for run_phase3() matching original function name."""
+    return run_phase3(
+        load_existing=load_existing_embeddings,
+        phase2_path=phase2_data_path,
+        force_rebuild_dataset=force_rebuild_dataset,
+    )
 
-def run_phase3_chunking(load_existing_embeddings: bool = False, 
-                       phase2_data_path: str = None,
-                       force_rebuild_dataset: bool = False):
-    """
-    RUN CHUNK-BASED PHASE 3
-    
-    Args:
-        load_existing_embeddings: If True, load saved embeddings (5 seconds)
-                                 If False, create new embeddings (90 minutes)
-        phase2_data_path: Path to Phase 2 NIH abstracts CSV
-        force_rebuild_dataset: If True, rebuild enhanced dataset from scratch
-    """
-    print("\n" + "="*70)
-    print("🚀 STARTING PHASE 3: CHUNK-BASED RAG")
-    print("="*70)
-    
-    # Step 1: Initialize chunk-based RAG system
-    print("\n🤖 STEP 1: INITIALIZING CHUNK-BASED RAG")
-    print("-" * 50)
-    
-    try:
-        rag_system = ChunkBasedRAG(
-            load_existing_embeddings=load_existing_embeddings,
-            phase2_data_path=phase2_data_path,
-            force_rebuild_dataset=force_rebuild_dataset
-        )
-        print("✅ Chunk-based RAG initialized successfully")
-    except Exception as e:
-        print(f"❌ Failed to initialize RAG system: {e}")
+
+# ── Main execution ────────────────────────────────────────────────────────────
+
+def run_phase3(load_existing: bool = None,
+               phase2_path: str = None,
+               force_rebuild_dataset: bool = False):
+
+    print("\n" + "=" * 70)
+    print("🚀 STARTING PHASE 3: SECTION-AWARE RAG")
+    print("=" * 70)
+
+    rag = ChunkBasedRAG(
+        load_existing=load_existing,
+        phase2_path=phase2_path,
+        force_rebuild_dataset=force_rebuild_dataset
+    )
+    ok = rag.setup()
+    if not ok:
         return None, None
-    
-    # Step 2: Evaluate performance
-    print("\n🧪 STEP 2: EVALUATING PERFORMANCE")
-    print("-" * 50)
-    evaluation_metrics = rag_system.evaluate()
-    
-    # Step 3: Visualization
-    print("\n📊 STEP 3: GENERATING VISUALIZATIONS")
-    print("-" * 50)
-    visualize_phase3_results(rag_system, evaluation_metrics)
-    
-    # Step 4: Save results
-    print("\n💾 STEP 4: SAVING RESULTS")
-    print("-" * 50)
-    
+
+    print("\n🧪 EVALUATING…")
+    metrics = rag.evaluate()
+
     results = {
-        "phase": "phase3_chunk_based_rag",
-        "timestamp": datetime.now().isoformat(),
-        "mode": "load_existing" if load_existing_embeddings else "create_new",
-        "model": str(rag_system.model).split('/')[-1] if rag_system.model else "unknown",
-        "dataset_stats": {
-            "total_documents": len(rag_system.data),
-            "total_chunks": len(rag_system.chunks_df),
-            "avg_chunks_per_doc": len(rag_system.chunks_df) / len(rag_system.data),
-            "fqhc_focused": int(rag_system.data['is_fqhc_focused'].sum()),
-            "synthetic": int((rag_system.data['data_source'] == 'synthetic_fqhc').sum()),
-            "phase2_nih": int((rag_system.data['data_source'] == 'phase2_nih').sum())
-        },
-        "chunk_stats": {
-            "chunk_types": rag_system.chunks_df['chunk_type'].value_counts().to_dict() if 'chunk_type' in rag_system.chunks_df.columns else {},
-            "avg_chunk_size": rag_system.chunks_df['word_count'].mean() if 'word_count' in rag_system.chunks_df.columns else 0
-        },
-        "evaluation_metrics": evaluation_metrics,
-        "system_info": {
-            "vector_dimensions": rag_system.embeddings.shape[1] if rag_system.embeddings is not None else None,
-            "faiss_index_size": rag_system.index.ntotal if rag_system.index is not None else None,
-            "embeddings_loaded": load_existing_embeddings,
-            "embeddings_saved": os.path.exists('./phase3_results/chunk_embeddings.npy')
-        }
+        "phase":      "phase3_section_aware_rag",
+        "timestamp":  datetime.now().isoformat(),
+        "dataset":    {"total_chunks": len(rag.chunks_df),
+                       "section_types": rag.chunks_df["section_type"]
+                           .value_counts().to_dict()
+                           if "section_type" in rag.chunks_df.columns else {}},
+        "indexes":    list(rag.embedder.section_indexes.keys()),
+        "metrics":    metrics,
     }
-    
-    os.makedirs('./phase3_results', exist_ok=True)
-    with open('./phase3_results/phase3_chunk_based_results.json', 'w') as f:
+
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    with open(f"{RESULTS_DIR}/phase3_results.json", "w") as f:
         json.dump(results, f, indent=2)
-    
-    # Save chunk database (without embeddings)
-    rag_system.chunks_df.to_csv('./phase3_results/document_chunks.csv', index=False)
-    
-    print("\n" + "="*70)
-    print("✅ PHASE 3 CHUNK-BASED RAG COMPLETE!")
-    print("="*70)
-    print("\n📁 Results saved to ./phase3_results/:")
-    print("  • phase3_chunk_based_results.json")
-    print("  • phase3_chunk_based_results.png")
-    print("  • document_chunks.csv (all text chunks)")
-    
-    if load_existing_embeddings:
-        print("  • ✅ Used pre-computed embeddings (5 seconds)")
-    else:
-        print("  • ✅ Created new embeddings (90 minutes) and saved them for future use!")
-        print("  • 💾 FAISS index saved to faiss_index.bin")
-        print("  • 💾 Embeddings saved to chunk_embeddings.npy")
-        print("  • 💾 Chunks+embeddings saved to document_chunks_with_embeddings.csv")
-    
-    print(f"\n🎯 CHUNK-BASED RAG READY FOR RFP MATCHING:")
-    print(f"   1. Enhanced dataset: {len(rag_system.data)} documents")
-    print(f"   2. Created {len(rag_system.chunks_df)} text chunks")
-    print(f"   3. FAISS index with {rag_system.index.ntotal if rag_system.index else 0} chunk embeddings")
-    
-    return rag_system, results
 
+    print("\n" + "=" * 70)
+    print("✅ PHASE 3 COMPLETE")
+    print("=" * 70)
+    print(f"\n📁 Outputs:")
+    print(f"  • {CHUNKS_CSV}")
+    print(f"     ↳ Columns include `section_type` — used by Phase 4 Weaviate filter")
+    print(f"  • {FAISS_DIR}/ — per-section FAISS indexes")
+    print(f"  • {RESULTS_DIR}/phase3_results.json")
+    print(f"\n🔗 Phase 4 change needed:")
+    print(f"   Add Property(name='sectionType', data_type=DataType.TEXT) to Weaviate schema")
+    print(f"   Map chunks_df['section_type'] → Weaviate object property 'sectionType'")
 
-# ============================================================================
-# 🏃‍♂️ MAIN EXECUTION
-# ============================================================================
+    return rag, results
+
 
 if __name__ == "__main__":
-    # Install required packages
-    print("📦 Checking/installing required packages...")
-    required_packages = []
-    if not FAISS_AVAILABLE:
-        required_packages.append("faiss-cpu")
-    try:
-        import matplotlib
-    except ImportError:
-        required_packages.extend(["matplotlib", "seaborn"])
-    if required_packages:
-        print(f"Installing: {', '.join(required_packages)}")
-        import subprocess
-        subprocess.check_call([sys.executable, "-m", "pip", "install"] + required_packages)
-    
-    print("\n" + "="*70)
-    print("🚀 PHASE 3: CHUNK-BASED RAG FOR RFP MATCHING")
-    print("="*70)
-    print("\n📌 Choose mode:")
-    print("   1. FIRST RUN: Create new embeddings (90 minutes)")
-    print("   2. SUBSEQUENT RUNS: Load existing embeddings (5 seconds)")
-    print("-" * 50)
-    
-    # Auto-detect if embeddings exist
-    embeddings_exist = os.path.exists('./phase3_results/chunk_embeddings.npy')
-    
-    if embeddings_exist:
-        print(f"✅ Found existing embeddings! Loading in 5 seconds...")
-        rag_system, results = run_phase3_chunking(load_existing_embeddings=True)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rebuild", action="store_true",
+                        help="Force rebuild dataset + embeddings (use after adding new PDFs)")
+    parser.add_argument("--rebuild-dataset-only", action="store_true",
+                        help="Rebuild dataset cache but reuse embeddings if chunk count matches")
+    args, _ = parser.parse_known_args()
+
+    embeddings_exist = os.path.exists(f"{FAISS_DIR}/global.index")
+    csv_exists       = os.path.exists(CHUNKS_CSV)
+    cache_exists     = os.path.exists("./phase3_data/enhanced_fqhc_dataset.csv")
+
+    # Auto-detect if PDF data is newer than the dataset cache
+    pdf_combined     = "./pdf_ingestion_output/combined_grants.csv"
+    pdf_newer        = False
+    if os.path.exists(pdf_combined) and cache_exists:
+        pdf_mtime   = os.path.getmtime(pdf_combined)
+        cache_mtime = os.path.getmtime("./phase3_data/enhanced_fqhc_dataset.csv")
+        pdf_newer   = pdf_mtime > cache_mtime
+        if pdf_newer:
+            print("🆕 PDF data is newer than dataset cache — will rebuild dataset")
+
+    force_rebuild = args.rebuild or pdf_newer
+
+    if args.rebuild or not embeddings_exist or not csv_exists:
+        print("⚠️  Building embeddings from scratch (~90 min)…")
+        rag, results = run_phase3(load_existing=False, force_rebuild_dataset=force_rebuild)
     else:
-        print(f"⚠️  No existing embeddings found. Creating new ones (90 minutes)...")
-        print(f"   This will only happen once. Future runs will be instant!")
-        rag_system, results = run_phase3_chunking(load_existing_embeddings=False)
-    
-    if rag_system:
-        print("\n" + "="*70)
-        print("🎮 INTERACTIVE CHUNK-BASED RAG DEMO")
-        print("="*70)
-        rag_system.interactive_demo()
-        
-        print("\n" + "="*70)
-        print("✅ PHASE 3 READY FOR RFP MATCHING!")
-        print("="*70)
-        print(f"\n📊 Your RFP Matching Capabilities:")
-        print(f"   • {len(rag_system.chunks_df)} text chunks available")
-        print(f"   • Embeddings: {'LOADED' if rag_system.embeddings is not None else 'N/A'}")
-        print(f"   • FAISS index: {rag_system.index.ntotal if rag_system.index else 0} vectors")
-        print("\n🚀 Try: rag_system.interactive_rfp_matching() for RFP requirements!")
-        print("="*70)
+        print("✅ Found existing embeddings — loading from disk (fast)…")
+        rag, results = run_phase3(load_existing=True, force_rebuild_dataset=force_rebuild)
+
+    if rag:
+        if results:
+            visualize_phase3_results(rag, results.get("metrics", {}))
+        rag.interactive_demo()
