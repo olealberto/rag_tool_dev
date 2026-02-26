@@ -172,7 +172,8 @@ class WeaviateManager:
                       alpha: float = DEFAULT_ALPHA,
                       top_k: int = DEFAULT_TOP_K,
                       section_filter: str = None,
-                      fqhc_only: bool = False) -> List[Dict]:
+                      fqhc_only: bool = False,
+                      grant_id_filter: List[str] = None) -> List[Dict]:
         """
         Hybrid BM25+vector search with optional section and FQHC filters.
 
@@ -195,6 +196,11 @@ class WeaviateManager:
             if fqhc_only:
                 fqhc_f    = Filter.by_property("isFQHC").equal(True)
                 wv_filter = (wv_filter & fqhc_f) if wv_filter else fqhc_f
+
+            if grant_id_filter:
+                from weaviate.classes.query import Filter as F
+                id_f      = Filter.by_property("grantId").contains_any(grant_id_filter)
+                wv_filter = (wv_filter & id_f) if wv_filter else id_f
 
             kwargs = dict(
                 query=query,
@@ -348,16 +354,20 @@ class ResultEnricher:
         return out
 
 
+SYNTHETIC_PREFIXES = ("FQHC_SYNTH_", "SYNTH_")  # grant_id prefixes for synthetic data
+
 class GrantQueryPipeline:
-    def __init__(self, alpha=DEFAULT_ALPHA, top_k=DEFAULT_TOP_K):
-        self.alpha        = alpha
-        self.top_k        = top_k
-        self.weaviate     = WeaviateManager()
-        self.graph_engine = None
-        self.enricher     = None
-        self.model        = None
-        self._ready       = False
-        self._setup_time  = 0
+    def __init__(self, alpha=DEFAULT_ALPHA, top_k=DEFAULT_TOP_K,
+                 exclude_synthetic=True):
+        self.alpha             = alpha
+        self.top_k             = top_k
+        self.exclude_synthetic = exclude_synthetic   # hide synthetic grants by default
+        self.weaviate          = WeaviateManager()
+        self.graph_engine      = None
+        self.enricher          = None
+        self.model             = None
+        self._ready            = False
+        self._setup_time       = 0
 
     def setup(self) -> bool:
         print("\n" + "=" * 70)
@@ -475,6 +485,7 @@ class GrantQueryPipeline:
             g = r.get("grant_id")
             if g and g not in seen:
                 seen.add(g); unique.append(r)
+        unique = self._filter_synthetic(unique)
         if self.enricher: unique = self.enricher.enrich(unique)
         if verbose:        self._print_results(unique)
         return unique
@@ -516,6 +527,7 @@ class GrantQueryPipeline:
             if g and g not in seen:
                 seen.add(g); unique.append(r)
         if fqhc_only: unique = [r for r in unique if r.get("is_fqhc")]
+        unique = self._filter_synthetic(unique)
         if self.enricher: unique = self.enricher.enrich(unique)
         if verbose:
             print(f"\n\u23f1\ufe0f  {time.time()-t:.2f}s")
@@ -564,6 +576,18 @@ class GrantQueryPipeline:
                     print(f"  \u26a0\ufe0f  {os.path.basename(path)} failed: {e}")
         return None
 
+    def _filter_synthetic(self, results: List[Dict]) -> List[Dict]:
+        """Remove synthetic grants from results unless exclude_synthetic is False."""
+        if not self.exclude_synthetic:
+            return results
+        filtered = [r for r in results
+                    if not any(str(r.get("grant_id","")).startswith(p)
+                               for p in SYNTHETIC_PREFIXES)]
+        removed = len(results) - len(filtered)
+        if removed > 0:
+            print(f"  🔬 Filtered {removed} synthetic grants (use exclude_synthetic=False to show)")
+        return filtered
+
     def _print_results(self, results: List[Dict]):
         print(f"\n{chr(0x2500) * 70}")
         print(f"\U0001f4cb RESULTS ({len(results)} total)")
@@ -598,6 +622,7 @@ def interactive_mode(pipeline: GrantQueryPipeline):
     print("  /fqhc <query>              — FQHC-only results")
     print("  /alpha <0-1> <query>       — custom alpha")
     print("  /stats                     — pipeline stats")
+    print("  /synth                     — toggle synthetic grants on/off")
     print("  /quit                      — exit\n")
     print("  Section shorthands: aims, sig, innov, approach, methods, bg, summary\n")
 
@@ -610,9 +635,16 @@ def interactive_mode(pipeline: GrantQueryPipeline):
         if ui.lower() in ["/quit", "/exit", "quit", "exit"]: break
 
         elif ui.lower() == "/stats":
+            synth = "excluded" if pipeline.exclude_synthetic else "included"
             print(f"\n\U0001f4ca Setup: {pipeline._setup_time}s | "
                   f"Alpha: {pipeline.alpha} | Top-K: {pipeline.top_k} | "
-                  f"Graph: {'enabled' if pipeline.graph_engine else 'disabled'}")
+                  f"Graph: {'enabled' if pipeline.graph_engine else 'disabled'} | "
+                  f"Synthetic: {synth}")
+
+        elif ui.lower() == "/synth":
+            pipeline.exclude_synthetic = not pipeline.exclude_synthetic
+            state = "excluded" if pipeline.exclude_synthetic else "included"
+            print(f"  Synthetic grants now {state}")
 
         elif ui.startswith("/compare "):
             pipeline.compare_approaches(ui[9:].strip())
@@ -667,9 +699,12 @@ def main():
     parser.add_argument("--no-graph",   action="store_true")
     parser.add_argument("--compare",    action="store_true")
     parser.add_argument("--setup-only", action="store_true")
+    parser.add_argument("--include-synthetic", action="store_true",
+                        help="Include synthetic grants in results (excluded by default)")
     args = parser.parse_args()
 
-    pipeline = GrantQueryPipeline(alpha=args.alpha, top_k=args.top_k)
+    pipeline = GrantQueryPipeline(alpha=args.alpha, top_k=args.top_k,
+                                  exclude_synthetic=not args.include_synthetic)
     if not pipeline.setup():
         sys.exit(1)
     if args.setup_only:

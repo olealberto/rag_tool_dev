@@ -1,16 +1,30 @@
 {
-  "timestamp": "2026-02-26T02:46:07.175530",
+  "timestamp": "2026-02-26T22:52:03.119572",
   "phase3": {
-    "MAP": 0.0004,
-    "MRR": 0.0222,
+    "MAP": 0.0251,
+    "MRR": 0.1546,
+    "R-Prec": 0.0809,
+    "HR@5": 0.1667,
+    "R@20": 0.0869,
     "section_aware": true
   },
   "phase4": {
-    "MAP": 0.0517,
-    "optimal_alpha": 0.5
+    "MAP": 0.0549,
+    "MRR": 0.2926,
+    "R-Prec": 0.1368,
+    "HR@5": 0.5,
+    "R@20": 0.1412,
+    "optimal_alpha": 0.25
   },
   "phase5": {
-    "MAP": 0.0018,
-    "map_improvement": 0.0014
+    "MAP": 0.1259,
+    "MRR": 0.2966,
+    "R-Prec": 0.1368,
+    "HR@5": 0.5,
+    "R@20": 0.1412,
+    "map_improvement": 0.071,
+    "rprec_improvement": 0.0,
+    "hr5_improvement": 0.0,
+    "r20_improvement": 0.0
   }
 }

@@ -145,17 +145,56 @@ class IRMetrics:
         ideal  = dcg(list(relevant)[:k], relevant, k)
         return actual / ideal if ideal else 0.0
 
+    @staticmethod
+    def r_precision(retrieved, relevant):
+        """Precision at R where R = |relevant|. Robust to relevance set size."""
+        r = len(relevant)
+        if not r: return 0.0
+        return sum(1 for d in retrieved[:r] if d in relevant) / r
+
+    @staticmethod
+    def hit_rate_at_k(retrieved, relevant, k):
+        """Binary: did at least one relevant doc appear in top-k?"""
+        return 1.0 if any(d in relevant for d in retrieved[:k]) else 0.0
+
+    @staticmethod
+    def ndcg_graded(retrieved, relevant_ids_ordered, k):
+        """
+        NDCG with graded relevance based on keyword match count.
+        relevant_ids_ordered: list of (grant_id, grade) tuples, grade 1-4.
+        Falls back to binary if grades not provided.
+        """
+        grade_map = {}
+        if relevant_ids_ordered and isinstance(relevant_ids_ordered[0], tuple):
+            grade_map = {gid: g for gid, g in relevant_ids_ordered}
+        else:
+            grade_map = {gid: 1 for gid in relevant_ids_ordered}
+
+        def dcg(lst, grades, k):
+            return sum(grades.get(d, 0) / np.log2(i + 2)
+                       for i, d in enumerate(lst[:k]))
+
+        actual = dcg(retrieved, grade_map, k)
+        ideal_docs = sorted(grade_map.keys(),
+                            key=lambda d: grade_map[d], reverse=True)
+        ideal = dcg(ideal_docs, grade_map, k)
+        return actual / ideal if ideal else 0.0
+
     @classmethod
     def compute_all(cls, retrieved, relevant_ids):
         relevant = set(relevant_ids)
         m = {}
-        for k in [1, 3, 5, 10]:
-            m[f"P@{k}"]    = cls.precision_at_k(retrieved, relevant, k)
-            m[f"R@{k}"]    = cls.recall_at_k(retrieved, relevant, k)
-            m[f"nDCG@{k}"] = cls.ndcg_at_k(retrieved, relevant, k)
-        m["AP"]     = cls.average_precision(retrieved, relevant)
-        m["RR"]     = cls.reciprocal_rank(retrieved, relevant)
-        m["hits@5"] = sum(1 for r in retrieved[:5] if r in relevant)
+        for k in [1, 3, 5, 10, 20]:
+            m[f"P@{k}"]      = cls.precision_at_k(retrieved, relevant, k)
+            m[f"R@{k}"]      = cls.recall_at_k(retrieved, relevant, k)
+            m[f"nDCG@{k}"]   = cls.ndcg_at_k(retrieved, relevant, k)
+            m[f"HR@{k}"]     = cls.hit_rate_at_k(retrieved, relevant, k)
+        m["AP"]        = cls.average_precision(retrieved, relevant)
+        m["RR"]        = cls.reciprocal_rank(retrieved, relevant)
+        m["R-Prec"]    = cls.r_precision(retrieved, relevant)
+        m["hits@5"]    = sum(1 for r in retrieved[:5] if r in relevant)
+        m["hits@20"]   = sum(1 for r in retrieved[:20] if r in relevant)
+        m["n_relevant"] = len(relevant)   # track set size for context
         return m
 
     @staticmethod
@@ -206,9 +245,12 @@ class DataLoader:
         print(f"  ✅ Abstracts:   {len(self.abstracts_df)} rows  ({p})")
 
     def _load_chunks(self):
-        p = PATHS["chunks_no_emb"]
+        # IMPORTANT: must load same file/order as FAISS index was built from
+        # chunks_with_embeddings (3986 rows) == FAISS index order
+        # chunks_no_emb (4316 rows) is a DIFFERENT order — misaligns FAISS lookups
+        p = PATHS["chunks"]   # 3986 rows, same order as FAISS
         if not os.path.exists(p):
-            p = PATHS["chunks"]
+            p = PATHS["chunks_no_emb"]
         if not os.path.exists(p):
             raise FileNotFoundError("Chunks not found. Run phase3_document_rag.py first")
         self.chunks_df = pd.read_csv(p)
@@ -284,8 +326,13 @@ class GroundTruthBuilder:
         if cache.exists():
             with open(cache) as f:
                 test_set = json.load(f)
-            print(f"  📦 Loaded cached test set: {len(test_set)} queries")
-            return test_set
+            # Rebuild if relevant_ids were capped differently before
+            if test_set and len(test_set[0].get("relevant_ids", [])) > 20:
+                print(f"  🔄 Stale cache (relevant_ids > 20) — rebuilding...")
+                cache.unlink()
+            else:
+                print(f"  📦 Loaded cached test set: {len(test_set)} queries")
+                return test_set
 
         print(f"\n  Building test set from {len(self.df)} abstracts...")
         test_set = []
@@ -296,11 +343,13 @@ class GroundTruthBuilder:
             if len(rel) < min_relevant:
                 print(f"    ⚠️  {q['query_id']} ({q['topic']}): only {len(rel)} — skipping")
                 continue
+            # Cap at 20 relevant — retrieval top_k=10 so P@5/MAP are meaningful
+            # 50+ relevant in a 1797-grant corpus makes MAP artificially low
             test_set.append({
                 "query_id":     q["query_id"],
                 "query":        q["query"],
                 "topic":        q["topic"],
-                "relevant_ids": rel[:50],
+                "relevant_ids": rel[:20],
                 "relevant_count": len(rel),
             })
             print(f"    ✅ {q['query_id']} ({q['topic']}): {len(rel)} relevant")
@@ -353,11 +402,15 @@ class Phase3Evaluator:
         agg["section_aware"] = self.data.section_aware
 
         label = "section-aware ✨" if self.data.section_aware else "flat"
-        print(f"  MAP:    {agg['MAP']:.4f}")
-        print(f"  MRR:    {agg['MRR']:.4f}")
-        print(f"  P@5:    {agg.get('P@5',{}).get('mean',0):.4f}")
-        print(f"  nDCG@5: {agg.get('nDCG@5',{}).get('mean',0):.4f}")
-        print(f"  Index:  {label}")
+        print(f"  MAP:      {agg['MAP']:.4f}")
+        print(f"  MRR:      {agg['MRR']:.4f}")
+        print(f"  R-Prec:   {agg.get('R-Prec',{}).get('mean',0):.4f}  ← robust to relevance set size")
+        print(f"  P@5:      {agg.get('P@5',{}).get('mean',0):.4f}")
+        print(f"  R@20:     {agg.get('R@20',{}).get('mean',0):.4f}")
+        print(f"  HR@5:     {agg.get('HR@5',{}).get('mean',0):.4f}  ← hit rate")
+        print(f"  HR@20:    {agg.get('HR@20',{}).get('mean',0):.4f}")
+        print(f"  nDCG@5:   {agg.get('nDCG@5',{}).get('mean',0):.4f}")
+        print(f"  Index:    {label}")
         print(f"  Avg retrieval time: {agg['avg_retrieval_time_s']:.4f}s")
         return agg
 
@@ -428,6 +481,7 @@ class Phase4Evaluator:
                     retrieval_times.append(time.time() - t0)
                     m = IRMetrics.compute_all(retrieved, q["relevant_ids"])
                     m["query_id"] = q["query_id"]; m["topic"] = q["topic"]
+                    m["retrieved_ids"] = retrieved  # store for Phase5 reuse
                     query_metrics.append(m)
 
                 agg = IRMetrics.aggregate(query_metrics)
@@ -536,19 +590,21 @@ class Phase4Evaluator:
         except: return []
 
     def _print_table(self, rba):
-        print(f"\n  {'─'*72}")
+        print(f"\n  {'─'*90}")
         print(f"  {'Alpha':<8} {'Label':<18} {'MAP':<8} {'MRR':<8} "
-              f"{'P@5':<8} {'R@5':<8} {'nDCG@5':<8} {'Time(s)'}")
-        print(f"  {'─'*72}")
+              f"{'R-Prec':<8} {'P@5':<8} {'R@20':<8} {'HR@5':<8} {'nDCG@5':<8} {'Time(s)'}")
+        print(f"  {'─'*90}")
         for alpha in sorted(rba.keys()):
             r = rba[alpha]
             print(f"  {alpha:<8.2f} {r['label']:<18} "
                   f"{r['MAP']:<8.4f} {r['MRR']:<8.4f} "
+                  f"{r.get('R-Prec',{}).get('mean',0):<8.4f} "
                   f"{r.get('P@5',{}).get('mean',0):<8.4f} "
-                  f"{r.get('R@5',{}).get('mean',0):<8.4f} "
+                  f"{r.get('R@20',{}).get('mean',0):<8.4f} "
+                  f"{r.get('HR@5',{}).get('mean',0):<8.4f} "
                   f"{r.get('nDCG@5',{}).get('mean',0):<8.4f} "
                   f"{r['avg_retrieval_time_s']:.4f}s")
-        print(f"  {'─'*72}")
+        print(f"  {'─'*90}")
 
 
 # ── Phase 5 evaluator (knowledge graph) ──────────────────────────────────────
@@ -574,7 +630,7 @@ class Phase5Evaluator:
         self.data  = data
         self.graph = data.graph
 
-    def evaluate(self, test_set, top_k=10):
+    def evaluate(self, test_set, top_k=10, p4_vector_results=None):
         print(f"\n{'='*70}")
         print("🧪 PHASE 5 EVALUATION: KNOWLEDGE GRAPH AUGMENTATION")
         print(f"{'='*70}")
@@ -591,17 +647,26 @@ class Phase5Evaluator:
               f"{self.graph.number_of_edges()} edges")
         print(f"  Node types: {dict(node_types)}")
 
-        # Weaviate for vector baseline (optional)
+        # Build lookup from p4 vector-only results (avoids re-importing 3986 chunks)
+        p4_lookup = {}
+        if p4_vector_results:
+            for qm in p4_vector_results:
+                if qm.get("retrieved_ids"):
+                    p4_lookup[qm["query_id"]] = qm["retrieved_ids"]
+            print(f"  ✅ Reusing Phase 4 vector results for {len(p4_lookup)} queries")
+
+        # Only spin up Weaviate if p4 results unavailable
         client = collection = None
-        vector_available = False
-        p4 = Phase4Evaluator(self.data)
-        client = p4._connect_weaviate()
-        if client:
-            p4.client = client
-            collection = p4._setup_collection()
-            if collection:
-                imported = p4._import_chunks(collection)
-                vector_available = imported > 0
+        vector_available = bool(p4_lookup)
+        if not vector_available:
+            p4ev = Phase4Evaluator(self.data)
+            client = p4ev._connect_weaviate()
+            if client:
+                p4ev.client = client
+                collection = p4ev._setup_collection()
+                if collection:
+                    imported = p4ev._import_chunks(collection)
+                    vector_available = imported > 0
 
         v_list, e_list, g_list = [], [], []
         times = {"vector": [], "expanded": [], "graph_only": []}
@@ -609,9 +674,11 @@ class Phase5Evaluator:
         for q in test_set:
             print(f"\n  📝 {q['query_id']} ({q['topic']}): {q['query'][:55]}...")
 
-            # Vector
+            # Vector — prefer p4 reuse, fall back to fresh search
             t0 = time.time()
-            if vector_available and collection:
+            if q["query_id"] in p4_lookup:
+                v_ids = p4_lookup[q["query_id"]]
+            elif vector_available and collection:
                 vec = self.data.model.encode(q["query"]).tolist()
                 v_ids = self._weaviate_search(collection, vec, top_k)
             else:
@@ -655,19 +722,28 @@ class Phase5Evaluator:
         map_delta = eagg["MAP"] - vagg["MAP"]
         mrr_delta = eagg["MRR"] - vagg["MRR"]
 
-        print(f"\n  {'─'*65}")
-        print(f"  {'Method':<22} {'MAP':<8} {'MRR':<8} {'P@5':<8} {'nDCG@5':<8} {'Time(s)'}")
-        print(f"  {'─'*65}")
+        rprec_delta = eagg.get("R-Prec",{}).get("mean",0) - vagg.get("R-Prec",{}).get("mean",0)
+        hr5_delta   = eagg.get("HR@5",{}).get("mean",0)   - vagg.get("HR@5",{}).get("mean",0)
+        r20_delta   = eagg.get("R@20",{}).get("mean",0)   - vagg.get("R@20",{}).get("mean",0)
+
+        print(f"\n  {'─'*82}")
+        print(f"  {'Method':<22} {'MAP':<8} {'MRR':<8} {'R-Prec':<8} {'HR@5':<8} {'R@20':<8} {'nDCG@5':<8} Time")
+        print(f"  {'─'*82}")
         for label, agg in [("Vector only", vagg),
                             ("Graph expanded", eagg),
                             ("Graph only", gagg)]:
             print(f"  {label:<22} {agg['MAP']:<8.4f} {agg['MRR']:<8.4f} "
-                  f"{agg.get('P@5',{}).get('mean',0):<8.4f} "
+                  f"{agg.get('R-Prec',{}).get('mean',0):<8.4f} "
+                  f"{agg.get('HR@5',{}).get('mean',0):<8.4f} "
+                  f"{agg.get('R@20',{}).get('mean',0):<8.4f} "
                   f"{agg.get('nDCG@5',{}).get('mean',0):<8.4f} "
                   f"{agg['avg_retrieval_time_s']:.4f}s")
-        print(f"  {'─'*65}")
-        print(f"  Graph expansion MAP Δ: {map_delta:+.4f} "
+        print(f"  {'─'*82}")
+        print(f"  Graph expansion MAP Δ:    {map_delta:+.4f} "
               f"({'✅ positive' if map_delta > 0 else '❌ negative'})")
+        print(f"  Graph expansion R-Prec Δ: {rprec_delta:+.4f}")
+        print(f"  Graph expansion HR@5 Δ:   {hr5_delta:+.4f}")
+        print(f"  Graph expansion R@20 Δ:   {r20_delta:+.4f}")
 
         return {
             "vector_metrics":         vagg,
@@ -675,6 +751,9 @@ class Phase5Evaluator:
             "graph_only_metrics":     gagg,
             "map_improvement":        round(map_delta, 4),
             "mrr_improvement":        round(mrr_delta, 4),
+            "rprec_improvement":      round(rprec_delta, 4),
+            "hr5_improvement":        round(hr5_delta, 4),
+            "r20_improvement":        round(r20_delta, 4),
             "graph_structure":        {"nodes": self.graph.number_of_nodes(),
                                        "edges": self.graph.number_of_edges(),
                                        "node_types": dict(node_types)},
@@ -739,7 +818,7 @@ class Phase5Evaluator:
 # ── Visualization ─────────────────────────────────────────────────────────────
 
 def visualize_results(p3, p4, p5):
-    fig, axes = plt.subplots(2, 3, figsize=(20, 12))
+    fig, axes = plt.subplots(2, 3, figsize=(22, 13))
     fig.suptitle("RAG System Evaluation: Phase 3 → 4 → 5",
                  fontsize=16, fontweight="bold")
 
@@ -747,113 +826,156 @@ def visualize_results(p3, p4, p5):
         v = d.get(key, {})
         return v.get("mean", 0) if isinstance(v, dict) else float(v or 0)
 
-    # 1. Cross-phase metrics
+    p4o = p4.get("optimal_metrics", {}) if p4 else {}
+    p5e = p5.get("graph_expanded_metrics", {}) if p5 else {}
+
+    # ── 1. Cross-phase: MAP / R-Prec / HR@5 / R@20 ───────────────────────────
     ax = axes[0, 0]
-    mk = ["MAP", "MRR", "P@5", "nDCG@5"]
-    p4o = p4.get("optimal_metrics",{}) if p4 else {}
-    p5e = p5.get("graph_expanded_metrics",{}) if p5 else {}
+    mk = ["MAP", "R-Prec", "HR@5", "R@20"]
     vals = [
-        [p3.get("MAP",0), p3.get("MRR",0), gm(p3,"P@5"), gm(p3,"nDCG@5")],
-        [p4o.get("MAP",0), p4o.get("MRR",0), gm(p4o,"P@5"), gm(p4o,"nDCG@5")],
-        [p5e.get("MAP",0), p5e.get("MRR",0), gm(p5e,"P@5"), gm(p5e,"nDCG@5")],
+        [p3.get("MAP",0),      gm(p3,"R-Prec"),  gm(p3,"HR@5"),  gm(p3,"R@20")],
+        [p4o.get("MAP",0),     gm(p4o,"R-Prec"), gm(p4o,"HR@5"), gm(p4o,"R@20")],
+        [p5e.get("MAP",0),     gm(p5e,"R-Prec"), gm(p5e,"HR@5"), gm(p5e,"R@20")],
     ]
-    labels = ["Phase 3 (FAISS)", "Phase 4 (Hybrid)", "Phase 5 (Graph)"]
+    labels = ["Phase 3 (FAISS)", "Phase 4 (Hybrid α=0.25)", "Phase 5 (Graph expanded)"]
     colors = ["#4C72B0", "#DD8452", "#55A868"]
-    x, w  = np.arange(len(mk)), 0.25
+    x, w = np.arange(len(mk)), 0.25
     for i, (v, lbl, c) in enumerate(zip(vals, labels, colors)):
         ax.bar(x + i*w, v, w, label=lbl, color=c, alpha=0.85)
-    ax.set_title("Retrieval Metrics by Phase"); ax.set_xticks(x+w)
-    ax.set_xticklabels(mk); ax.set_ylabel("Score"); ax.set_ylim(0,1)
-    ax.legend(fontsize=8); ax.grid(axis="y", alpha=0.3)
+    ax.set_title("Key Metrics by Phase\n(R-Prec & HR@5 robust to relevance set size)")
+    ax.set_xticks(x + w); ax.set_xticklabels(mk)
+    ax.set_ylabel("Score"); ax.set_ylim(0, 1)
+    ax.legend(fontsize=7); ax.grid(axis="y", alpha=0.3)
 
-    # 2. Alpha tuning
+    # ── 2. Alpha tuning: MAP + R-Prec + HR@5 ─────────────────────────────────
     ax = axes[0, 1]
     if p4 and "results_by_alpha" in p4:
         rba = p4["results_by_alpha"]; alphas = sorted(rba.keys())
-        ax.plot(alphas, [rba[a]["MAP"] for a in alphas], "o-", label="MAP", lw=2)
-        ax.plot(alphas, [rba[a]["MRR"] for a in alphas], "s-", label="MRR", lw=2)
-        ax.plot(alphas, [gm(rba[a],"P@5") for a in alphas], "^-", label="P@5", lw=2)
-        ax.axvline(p4.get("optimal_alpha",0.5), color="red", ls="--", alpha=0.7,
+        ax.plot(alphas, [rba[a]["MAP"] for a in alphas],          "o-", label="MAP",    lw=2)
+        ax.plot(alphas, [gm(rba[a],"R-Prec") for a in alphas],   "s-", label="R-Prec", lw=2)
+        ax.plot(alphas, [gm(rba[a],"HR@5")   for a in alphas],   "^-", label="HR@5",   lw=2)
+        ax.plot(alphas, [gm(rba[a],"R@20")   for a in alphas],   "D-", label="R@20",   lw=2, alpha=0.7)
+        ax.axvline(p4.get("optimal_alpha", 0.5), color="red", ls="--", alpha=0.7,
                    label=f"Optimal α={p4.get('optimal_alpha','?')}")
         ax.set_xlabel("Alpha  (0=BM25  →  1=Vector)")
-        ax.set_ylabel("Score"); ax.set_title("Phase 4: Alpha Tuning")
-        ax.legend(fontsize=8); ax.grid(alpha=0.3); ax.set_xlim(-0.05, 1.05)
+        ax.set_ylabel("Score"); ax.set_title("Phase 4: Alpha Tuning\n(all metrics)")
+        ax.legend(fontsize=7); ax.grid(alpha=0.3); ax.set_xlim(-0.05, 1.05)
     else:
-        ax.text(0.5,0.5,"Phase 4 data\nnot available",ha="center",va="center",
-                transform=ax.transAxes)
+        ax.text(0.5, 0.5, "Phase 4 data\nnot available",
+                ha="center", va="center", transform=ax.transAxes)
         ax.set_title("Phase 4: Alpha Tuning")
 
-    # 3. Per-query AP delta
+    # ── 3. Per-query R-Prec delta (graph expansion) ───────────────────────────
     ax = axes[0, 2]
     if p5 and "per_query" in p5:
-        v_aps = [m["AP"] for m in p5["per_query"].get("vector",[])]
-        e_aps = [m["AP"] for m in p5["per_query"].get("expanded",[])]
-        q_ids = [m["query_id"] for m in p5["per_query"].get("vector",[])]
-        deltas = [e - v for e, v in zip(e_aps, v_aps)]
-        ax.bar(range(len(deltas)), deltas,
-               color=["#55A868" if d > 0 else "#C44E52" for d in deltas], alpha=0.85)
+        v_rp  = [m.get("R-Prec", 0) for m in p5["per_query"].get("vector", [])]
+        e_rp  = [m.get("R-Prec", 0) for m in p5["per_query"].get("expanded", [])]
+        q_ids = [m["query_id"]       for m in p5["per_query"].get("vector", [])]
+        topics= [m["topic"]          for m in p5["per_query"].get("vector", [])]
+        deltas = [e - v for e, v in zip(e_rp, v_rp)]
+        bars = ax.bar(range(len(deltas)), deltas,
+                      color=["#55A868" if d > 0 else "#C44E52" for d in deltas],
+                      alpha=0.85)
         ax.axhline(0, color="black", lw=0.8)
-        ax.set_xticks(range(len(q_ids))); ax.set_xticklabels(q_ids, rotation=45, ha="right", fontsize=7)
-        ax.set_ylabel("AP Improvement"); ax.set_title("Phase 5: Graph Expansion AP Δ per Query")
+        ax.set_xticks(range(len(topics)))
+        ax.set_xticklabels(topics, rotation=40, ha="right", fontsize=7)
+        ax.set_ylabel("R-Precision Improvement")
+        ax.set_title("Phase 5: Graph Expansion R-Prec Δ per Query")
         ax.grid(axis="y", alpha=0.3)
     else:
-        ax.text(0.5,0.5,"Phase 5 data\nnot available",ha="center",va="center",
-                transform=ax.transAxes)
-        ax.set_title("Phase 5: Graph AP Improvement")
+        ax.text(0.5, 0.5, "Phase 5 data\nnot available",
+                ha="center", va="center", transform=ax.transAxes)
+        ax.set_title("Phase 5: Graph R-Prec Improvement")
 
-    # 4. Graph node types
+    # ── 4. Hit Rate @K across phases ──────────────────────────────────────────
     ax = axes[1, 0]
-    if p5 and "graph_structure" in p5:
-        nt = p5["graph_structure"].get("node_types", {})
-        nc = {"grant":"#4C72B0","institute":"#DD8452","year":"#55A868",
-              "condition":"#C44E52","intervention":"#8172B2",
-              "population":"#937860","fqhc_hub":"#DA8BC3"}
-        if nt:
-            ax.bar(nt.keys(), nt.values(),
-                   color=[nc.get(t,"#999") for t in nt.keys()], alpha=0.85)
-            ax.set_title("Knowledge Graph Node Types"); ax.set_ylabel("Count")
-            ax.tick_params(axis="x", rotation=30)
+    ks = [1, 3, 5, 10, 20]
+    p3_hr  = [gm(p3,  f"HR@{k}") for k in ks]
+    p4_hr  = [gm(p4o, f"HR@{k}") for k in ks]
+    p5_hr  = [gm(p5e, f"HR@{k}") for k in ks]
+    if any(p3_hr + p4_hr + p5_hr):
+        ax.plot(ks, p3_hr, "o-", label="Phase 3 (FAISS)",   color="#4C72B0", lw=2)
+        ax.plot(ks, p4_hr, "s-", label="Phase 4 (Hybrid)",  color="#DD8452", lw=2)
+        ax.plot(ks, p5_hr, "^-", label="Phase 5 (Graph+)",  color="#55A868", lw=2)
+        ax.set_xlabel("K"); ax.set_ylabel("Hit Rate")
+        ax.set_title("Hit Rate@K by Phase\n(≥1 relevant in top-K)")
+        ax.legend(fontsize=8); ax.grid(alpha=0.3)
+        ax.set_ylim(0, 1.05); ax.set_xticks(ks)
     else:
-        ax.text(0.5,0.5,"Graph data\nnot available",ha="center",va="center",
-                transform=ax.transAxes)
-        ax.set_title("Graph Node Types")
+        ax.text(0.5, 0.5, "HR@K data\nnot available",
+                ha="center", va="center", transform=ax.transAxes)
+        ax.set_title("Hit Rate@K by Phase")
 
-    # 5. Method comparison
+    # ── 5. Phase 5 full method comparison (MAP / R-Prec / HR@5 / R@20) ───────
     ax = axes[1, 1]
     if p5:
-        methods = ["Vector only","Graph expanded","Graph only"]
-        aggs = [p5.get("vector_metrics",{}), p5.get("graph_expanded_metrics",{}),
-                p5.get("graph_only_metrics",{})]
-        maps_c = [a.get("MAP",0) for a in aggs]
-        mrrs_c = [a.get("MRR",0) for a in aggs]
-        x2, w2 = np.arange(len(methods)), 0.35
-        ax.bar(x2-w2/2, maps_c, w2, label="MAP", color="#4C72B0", alpha=0.85)
-        ax.bar(x2+w2/2, mrrs_c, w2, label="MRR", color="#DD8452", alpha=0.85)
-        ax.set_xticks(x2); ax.set_xticklabels(methods, rotation=15, ha="right", fontsize=8)
-        ax.set_ylabel("Score"); ax.set_title("Phase 5: Method Comparison"); ax.legend()
-        top = max(max(maps_c), max(mrrs_c)) * 1.2 + 0.01
-        ax.set_ylim(0, top if top > 0.01 else 0.1); ax.grid(axis="y", alpha=0.3)
+        methods = ["Vector only", "Graph expanded", "Graph only"]
+        aggs    = [p5.get("vector_metrics",{}),
+                   p5.get("graph_expanded_metrics",{}),
+                   p5.get("graph_only_metrics",{})]
+        metric_vals = {
+            "MAP":    [a.get("MAP", 0)         for a in aggs],
+            "R-Prec": [gm(a, "R-Prec")         for a in aggs],
+            "HR@5":   [gm(a, "HR@5")            for a in aggs],
+            "R@20":   [gm(a, "R@20")            for a in aggs],
+        }
+        x2  = np.arange(len(methods))
+        w2  = 0.18
+        mcolors = ["#4C72B0", "#DD8452", "#55A868", "#C44E52"]
+        for i, (mlabel, mvals) in enumerate(metric_vals.items()):
+            ax.bar(x2 + (i - 1.5)*w2, mvals, w2,
+                   label=mlabel, color=mcolors[i], alpha=0.85)
+        ax.set_xticks(x2)
+        ax.set_xticklabels(methods, rotation=12, ha="right", fontsize=8)
+        ax.set_ylabel("Score"); ax.set_title("Phase 5: Full Method Comparison")
+        ax.legend(fontsize=7); ax.grid(axis="y", alpha=0.3)
+        top = max(v for vals in metric_vals.values() for v in vals) * 1.2 + 0.01
+        ax.set_ylim(0, min(top, 1.05))
     else:
-        ax.text(0.5,0.5,"Phase 5 data\nnot available",ha="center",va="center",
-                transform=ax.transAxes)
+        ax.text(0.5, 0.5, "Phase 5 data\nnot available",
+                ha="center", va="center", transform=ax.transAxes)
+        ax.set_title("Phase 5: Method Comparison")
 
-    # 6. Summary table
+    # ── 6. Summary table ──────────────────────────────────────────────────────
     ax = axes[1, 2]
     ax.axis("off")
-    delta = p5.get("map_improvement",0) if p5 else 0
     rows = [
-        ["Phase 3 MAP",     f"{p3.get('MAP',0):.4f}"],
-        ["Index type",      "section-aware" if p3.get("section_aware") else "flat"],
-        ["Phase 4 MAP",     f"{p4o.get('MAP',0):.4f}"],
-        ["Optimal α",       str(p4.get("optimal_alpha","N/A") if p4 else "N/A")],
-        ["Phase 5 MAP",     f"{p5e.get('MAP',0):.4f}"],
-        ["Graph MAP Δ",     f"{delta:+.4f}" if isinstance(delta,float) else "N/A"],
-        ["Graph nodes",     str(p5.get("graph_structure",{}).get("nodes","N/A") if p5 else "N/A")],
-        ["Queries eval'd",  str(len(p5["per_query"].get("vector",[]) if p5 and "per_query" in p5 else []))],
+        ["Metric",           "Ph3 FAISS", "Ph4 Hybrid", "Ph5 Graph+"],
+        ["MAP",              f"{p3.get('MAP',0):.4f}",
+                             f"{p4o.get('MAP',0):.4f}",
+                             f"{p5e.get('MAP',0):.4f}"],
+        ["R-Precision",      f"{gm(p3,'R-Prec'):.4f}",
+                             f"{gm(p4o,'R-Prec'):.4f}",
+                             f"{gm(p5e,'R-Prec'):.4f}"],
+        ["HR@5",             f"{gm(p3,'HR@5'):.4f}",
+                             f"{gm(p4o,'HR@5'):.4f}",
+                             f"{gm(p5e,'HR@5'):.4f}"],
+        ["R@20",             f"{gm(p3,'R@20'):.4f}",
+                             f"{gm(p4o,'R@20'):.4f}",
+                             f"{gm(p5e,'R@20'):.4f}"],
+        ["MRR",              f"{p3.get('MRR',0):.4f}",
+                             f"{p4o.get('MRR',0):.4f}",
+                             f"{p5e.get('MRR',0):.4f}"],
+        ["nDCG@5",           f"{gm(p3,'nDCG@5'):.4f}",
+                             f"{gm(p4o,'nDCG@5'):.4f}",
+                             f"{gm(p5e,'nDCG@5'):.4f}"],
+        ["Optimal α",        "—",
+                             str(p4.get("optimal_alpha","N/A") if p4 else "N/A"),
+                             "—"],
+        ["Graph MAP Δ",      "—", "—",
+                             f"{p5.get('map_improvement',0):+.4f}" if p5 else "N/A"],
+        ["Graph R-Prec Δ",   "—", "—",
+                             f"{p5.get('rprec_improvement',0):+.4f}" if p5 else "N/A"],
+        ["Graph HR@5 Δ",     "—", "—",
+                             f"{p5.get('hr5_improvement',0):+.4f}" if p5 else "N/A"],
     ]
-    tbl = ax.table(cellText=rows, colLabels=["Metric","Value"],
-                   loc="center", cellLoc="left")
-    tbl.auto_set_font_size(False); tbl.set_fontsize(10); tbl.scale(1.2, 1.9)
+    tbl = ax.table(cellText=rows[1:], colLabels=rows[0],
+                   loc="center", cellLoc="center")
+    tbl.auto_set_font_size(False); tbl.set_fontsize(8); tbl.scale(1.3, 1.65)
+    # Highlight header row
+    for j in range(4):
+        tbl[0, j].set_facecolor("#4C72B0")
+        tbl[0, j].set_text_props(color="white", fontweight="bold")
     ax.set_title("Evaluation Summary", pad=20)
 
     plt.tight_layout()
@@ -880,9 +1002,16 @@ def main():
     if not test_set:
         print("❌ No test queries built"); sys.exit(1)
 
-    p3 = Phase3Evaluator(data).evaluate(test_set)
-    p4 = Phase4Evaluator(data).evaluate(test_set)
-    p5 = Phase5Evaluator(data).evaluate(test_set)
+    EVAL_TOP_K = 20   # retrieve more candidates so MAP/P@5 are meaningful
+    p3 = Phase3Evaluator(data).evaluate(test_set, top_k=EVAL_TOP_K)
+    p4 = Phase4Evaluator(data).evaluate(test_set, top_k=EVAL_TOP_K)
+    # Reuse Phase 4 optimal-alpha per-query results as Phase 5 vector baseline
+    # avoids re-importing 3986 chunks a second time
+    p4_rba = p4.get("results_by_alpha", {}) if p4 else {}
+    best_a  = p4.get("optimal_alpha", 0.25) if p4 else 0.25
+    p4_per_query = p4_rba.get(best_a, {}).get("per_query", [])
+    p5 = Phase5Evaluator(data).evaluate(test_set, top_k=EVAL_TOP_K,
+                                         p4_vector_results=p4_per_query)
 
     print(f"\n{'='*70}")
     print("💾 SAVING RESULTS")
@@ -898,14 +1027,42 @@ def main():
     if p4: save(p4, "phase4_eval.json")
     if p5: save(p5, "phase5_eval.json")
 
+    def _gm(d, key):
+        v = d.get(key, {})
+        return v.get("mean", 0) if isinstance(v, dict) else float(v or 0)
+
+    p4o = p4.get("optimal_metrics", {}) if p4 else {}
+    p5e = p5.get("graph_expanded_metrics", {}) if p5 else {}
+
     comparison = {
         "timestamp": datetime.now().isoformat(),
-        "phase3": {"MAP": p3.get("MAP",0), "MRR": p3.get("MRR",0),
-                   "section_aware": p3.get("section_aware",False)},
-        "phase4": {"MAP": p4.get("optimal_metrics",{}).get("MAP",0) if p4 else 0,
-                   "optimal_alpha": p4.get("optimal_alpha") if p4 else None},
-        "phase5": {"MAP": p5.get("graph_expanded_metrics",{}).get("MAP",0) if p5 else 0,
-                   "map_improvement": p5.get("map_improvement") if p5 else None},
+        "phase3": {
+            "MAP":    p3.get("MAP", 0),
+            "MRR":    p3.get("MRR", 0),
+            "R-Prec": _gm(p3, "R-Prec"),
+            "HR@5":   _gm(p3, "HR@5"),
+            "R@20":   _gm(p3, "R@20"),
+            "section_aware": p3.get("section_aware", False),
+        },
+        "phase4": {
+            "MAP":    p4o.get("MAP", 0),
+            "MRR":    p4o.get("MRR", 0),
+            "R-Prec": _gm(p4o, "R-Prec"),
+            "HR@5":   _gm(p4o, "HR@5"),
+            "R@20":   _gm(p4o, "R@20"),
+            "optimal_alpha": p4.get("optimal_alpha") if p4 else None,
+        },
+        "phase5": {
+            "MAP":    p5e.get("MAP", 0),
+            "MRR":    p5e.get("MRR", 0),
+            "R-Prec": _gm(p5e, "R-Prec"),
+            "HR@5":   _gm(p5e, "HR@5"),
+            "R@20":   _gm(p5e, "R@20"),
+            "map_improvement":   p5.get("map_improvement")   if p5 else None,
+            "rprec_improvement": p5.get("rprec_improvement") if p5 else None,
+            "hr5_improvement":   p5.get("hr5_improvement")   if p5 else None,
+            "r20_improvement":   p5.get("r20_improvement")   if p5 else None,
+        },
     }
     with open(out/"phase_comparison.json","w") as f: json.dump(comparison, f, indent=2)
     print(f"  ✅ {out/'phase_comparison.json'}")
@@ -920,15 +1077,23 @@ def main():
     for f in ["test_set.json","phase3_eval.json","phase4_eval.json",
               "phase5_eval.json","phase_comparison.json","phase_comparison.png"]:
         print(f"   • {f}")
+
     print(f"\n📊 QUICK RESULTS:")
-    if p3: print(f"   Phase 3 MAP: {p3.get('MAP',0):.4f}  "
-                 f"({'section-aware ✨' if p3.get('section_aware') else 'flat'} FAISS)")
-    if p4: print(f"   Phase 4 MAP: {p4.get('optimal_metrics',{}).get('MAP',0):.4f}  "
-                 f"(optimal α={p4.get('optimal_alpha')})")
-    if p5:
-        d = p5.get("map_improvement",0)
-        print(f"   Phase 5 MAP: {p5.get('graph_expanded_metrics',{}).get('MAP',0):.4f}  "
-              f"(graph Δ={d:+.4f})")
+    print(f"  {'Metric':<12} {'Phase 3':>10} {'Phase 4':>10} {'Phase 5':>10}  {'Graph Δ':>10}")
+    print(f"  {'─'*58}")
+    metrics_summary = [
+        ("MAP",    p3.get("MAP",0),    p4o.get("MAP",0),    p5e.get("MAP",0),    p5.get("map_improvement",0)   if p5 else 0),
+        ("R-Prec", _gm(p3,"R-Prec"),  _gm(p4o,"R-Prec"),  _gm(p5e,"R-Prec"),  p5.get("rprec_improvement",0) if p5 else 0),
+        ("HR@5",   _gm(p3,"HR@5"),    _gm(p4o,"HR@5"),    _gm(p5e,"HR@5"),    p5.get("hr5_improvement",0)   if p5 else 0),
+        ("R@20",   _gm(p3,"R@20"),    _gm(p4o,"R@20"),    _gm(p5e,"R@20"),    p5.get("r20_improvement",0)   if p5 else 0),
+        ("MRR",    p3.get("MRR",0),   p4o.get("MRR",0),   p5e.get("MRR",0),   0),
+        ("nDCG@5", _gm(p3,"nDCG@5"), _gm(p4o,"nDCG@5"), _gm(p5e,"nDCG@5"), 0),
+    ]
+    for name, v3, v4, v5, delta in metrics_summary:
+        d_str = f"{delta:+.4f}" if delta else "   —  "
+        print(f"  {name:<12} {v3:>10.4f} {v4:>10.4f} {v5:>10.4f}  {d_str:>10}")
+    if p4: print(f"\n  Optimal α = {p4.get('optimal_alpha')}  "
+                 f"({'section-aware ✨' if p3.get('section_aware') else 'flat'} FAISS index)")
 
 
 if __name__ == "__main__":
