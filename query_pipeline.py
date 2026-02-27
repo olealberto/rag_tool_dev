@@ -209,7 +209,7 @@ class WeaviateManager:
                 limit=top_k,
                 return_metadata=MetadataQuery(score=True),
                 return_properties=["grantId","title","institution","year",
-                                   "isFQHC","text","sectionType","chunkType"],
+                                   "isFQHC","text","sectionType","chunkType","chunkIndex"],
             )
             if wv_filter:
                 kwargs["filters"] = wv_filter
@@ -228,6 +228,7 @@ class WeaviateManager:
                     "text":         str(p.get("text", ""))[:300],
                     "score":        round(min(score, 1.0), 4),
                     "section_type": str(p.get("sectionType", p.get("chunkType", ""))),
+                    "chunk_index":  int(p.get("chunkIndex", 0)),
                     "source":       "hybrid_search",
                     "alpha":        alpha,
                 })
