@@ -24,6 +24,19 @@ COLLECTION_NAME = "GrantChunk"
 EMBEDDING_MODEL = "pritamdeka/S-PubMedBert-MS-MARCO"
 DEFAULT_ALPHA   = 0.25
 DEFAULT_TOP_K   = 10
+PDF_GRANT_DIR   = "./grant_documents/"
+
+
+def build_source_url(grant_id: str, data_source: str = "") -> str:
+    """
+    Returns a local file path for PDF corpus grants,
+    NIH Reporter URL for NIH abstract grants.
+    Checks disk first so graph-expanded results also resolve correctly.
+    """
+    pdf_path = os.path.join(PDF_GRANT_DIR, f"{grant_id}.pdf")
+    if data_source == "pdf_ingestion" or os.path.exists(pdf_path):
+        return pdf_path
+    return f"https://reporter.nih.gov/search-results?query={grant_id}"
 
 
 class WeaviateManager:
@@ -80,7 +93,8 @@ class WeaviateManager:
                         Property(name="isFQHC",      data_type=DataType.BOOL),
                         Property(name="chunkIndex",  data_type=DataType.INT),
                         Property(name="chunkType",   data_type=DataType.TEXT),
-                        Property(name="sectionType", data_type=DataType.TEXT),  # Phase 3 section-aware
+                        Property(name="sectionType", data_type=DataType.TEXT),
+                        Property(name="dataSource",  data_type=DataType.TEXT),
                     ]
                 )
             else:
@@ -126,8 +140,6 @@ class WeaviateManager:
                         vec = vec.tolist()
                     if not isinstance(vec, list) or not vec:
                         failed += 1; continue
-                    # section_type is the Phase 3 section-aware field;
-                    # chunk_type is the older fallback
                     section = str(row.get("section_type",
                                   row.get("chunk_type", "general")))
                     batch.add_object(
@@ -141,6 +153,7 @@ class WeaviateManager:
                             "chunkIndex":  int(row.get("chunk_index", 0) if pd.notna(row.get("chunk_index")) else 0),
                             "chunkType":   section,
                             "sectionType": section,
+                            "dataSource":  str(row.get("data_source", "")),
                         },
                         vector=vec
                     )
@@ -151,14 +164,12 @@ class WeaviateManager:
         print(f"  \u2705 Imported {total} ({failed} failed)")
         return total
 
-    # Canonical section names (Phase 3) + shorthand aliases
     SECTION_ALIASES = {
         "aims":    "specific_aims",
         "sig":     "significance",
         "innov":   "innovation",
         "bg":      "background",
         "summary": "project_summary",
-        # pass-through for full names
         "specific_aims":   "specific_aims",
         "significance":    "significance",
         "innovation":      "innovation",
@@ -174,31 +185,20 @@ class WeaviateManager:
                       section_filter: str = None,
                       fqhc_only: bool = False,
                       grant_id_filter: List[str] = None) -> List[Dict]:
-        """
-        Hybrid BM25+vector search with optional section and FQHC filters.
-
-        section_filter: Phase 3 section name or shorthand —
-            'aims'/'specific_aims', 'sig'/'significance', 'innov'/'innovation',
-            'approach', 'methods', 'bg'/'background', 'summary'/'project_summary'
-        """
         if not self.collection:
             return []
         try:
             from weaviate.classes.query import MetadataQuery, Filter
 
-            # Resolve alias
             section = self.SECTION_ALIASES.get(section_filter, section_filter)
 
-            # Build filter
             wv_filter = None
             if section:
                 wv_filter = Filter.by_property("sectionType").equal(section)
             if fqhc_only:
                 fqhc_f    = Filter.by_property("isFQHC").equal(True)
                 wv_filter = (wv_filter & fqhc_f) if wv_filter else fqhc_f
-
             if grant_id_filter:
-                from weaviate.classes.query import Filter as F
                 id_f      = Filter.by_property("grantId").contains_any(grant_id_filter)
                 wv_filter = (wv_filter & id_f) if wv_filter else id_f
 
@@ -209,7 +209,8 @@ class WeaviateManager:
                 limit=top_k,
                 return_metadata=MetadataQuery(score=True),
                 return_properties=["grantId","title","institution","year",
-                                   "isFQHC","text","sectionType","chunkType","chunkIndex"],
+                                   "isFQHC","text","sectionType","chunkType",
+                                   "chunkIndex","dataSource"],
             )
             if wv_filter:
                 kwargs["filters"] = wv_filter
@@ -217,10 +218,13 @@ class WeaviateManager:
             resp    = self.collection.query.hybrid(**kwargs)
             results = []
             for obj in resp.objects:
-                p     = obj.properties
-                score = getattr(obj.metadata, "score", 0) or 0
+                p           = obj.properties
+                score       = getattr(obj.metadata, "score", 0) or 0
+                grant_id    = str(p.get("grantId", ""))
+                data_source = str(p.get("dataSource", ""))
+
                 results.append({
-                    "grant_id":     str(p.get("grantId", "")),
+                    "grant_id":     grant_id,
                     "title":        str(p.get("title", "")),
                     "institution":  str(p.get("institution", "")),
                     "year":         p.get("year", ""),
@@ -231,6 +235,8 @@ class WeaviateManager:
                     "chunk_index":  int(p.get("chunkIndex", 0)),
                     "source":       "hybrid_search",
                     "alpha":        alpha,
+                    "data_source":  data_source,
+                    "source_url":   build_source_url(grant_id, data_source),
                 })
             return results
         except Exception as e:
@@ -254,10 +260,6 @@ class GraphQueryEngine:
 
     def expand(self, seed_ids: List[str], top_k: int = 5,
                section_hint: str = None) -> List[Dict]:
-        """
-        Expand seed grant IDs via hub nodes.
-        section_hint is stored on results for traceability (e.g. 'specific_aims').
-        """
         seen, scored, paths = set(seed_ids), defaultdict(float), {}
         for gid in seed_ids[:3]:
             if gid not in self.graph: continue
@@ -275,16 +277,17 @@ class GraphQueryEngine:
         for g, s in sorted(scored.items(), key=lambda x: x[1], reverse=True)[:top_k]:
             nd = self.graph.nodes[g]
             results.append({
-                "grant_id":    g,
-                "title":       "",
-                "text":        "",
-                "institution": nd.get("institution", nd.get("institute", "")),
-                "year":        nd.get("year", ""),
-                "is_fqhc":     bool(nd.get("is_fqhc_focused", False)),
-                "score":       round(s, 3),
-                "source":      f"graph_expansion (via {paths[g]})",
-                "shared_hub":  paths[g],
-                "section_hint": section_hint or "",   # ← which section seeded this
+                "grant_id":     g,
+                "title":        "",
+                "text":         "",
+                "institution":  nd.get("institution", nd.get("institute", "")),
+                "year":         nd.get("year", ""),
+                "is_fqhc":      bool(nd.get("is_fqhc_focused", False)),
+                "score":        round(s, 3),
+                "source":       f"graph_expansion (via {paths[g]})",
+                "shared_hub":   paths[g],
+                "section_hint": section_hint or "",
+                "source_url":   build_source_url(g),
             })
         return results
 
@@ -313,12 +316,15 @@ class GraphQueryEngine:
         for g, s in sorted(scores.items(), key=lambda x: x[1], reverse=True):
             nd = self.graph.nodes.get(g, {})
             results.append({
-                "grant_id": g, "title": "", "text": "",
+                "grant_id":  g,
+                "title":     "",
+                "text":      "",
                 "institution": nd.get("institution", nd.get("institute", "")),
-                "year": nd.get("year", ""),
-                "is_fqhc": bool(nd.get("is_fqhc_focused", False)),
-                "score": round(s, 2),
-                "source": "graph_rfp_match",
+                "year":      nd.get("year", ""),
+                "is_fqhc":   bool(nd.get("is_fqhc_focused", False)),
+                "score":     round(s, 2),
+                "source":    "graph_rfp_match",
+                "source_url": build_source_url(g),
             })
         return results
 
@@ -355,14 +361,15 @@ class ResultEnricher:
         return out
 
 
-SYNTHETIC_PREFIXES = ("FQHC_SYNTH_", "SYNTH_")  # grant_id prefixes for synthetic data
+SYNTHETIC_PREFIXES = ("FQHC_SYNTH_", "SYNTH_")
+
 
 class GrantQueryPipeline:
     def __init__(self, alpha=DEFAULT_ALPHA, top_k=DEFAULT_TOP_K,
                  exclude_synthetic=True):
         self.alpha             = alpha
         self.top_k             = top_k
-        self.exclude_synthetic = exclude_synthetic   # hide synthetic grants by default
+        self.exclude_synthetic = exclude_synthetic
         self.weaviate          = WeaviateManager()
         self.graph_engine      = None
         self.enricher          = None
@@ -434,19 +441,11 @@ class GrantQueryPipeline:
               use_graph=True, fqhc_only=False,
               section_filter: str = None,
               verbose=True) -> List[Dict]:
-        """
-        Run a hybrid search query with optional graph expansion.
-
-        section_filter: restrict to a specific grant section —
-            'aims', 'significance'/'sig', 'innovation'/'innov',
-            'approach', 'methods', 'background'/'bg', 'summary'
-        """
         if not self._ready:
             print("\u274c Call setup() first."); return []
         alpha = alpha if alpha is not None else self.alpha
         top_k = top_k if top_k is not None else self.top_k
 
-        # Resolve section alias for display
         section = WeaviateManager.SECTION_ALIASES.get(section_filter, section_filter)
 
         if verbose:
@@ -458,8 +457,6 @@ class GrantQueryPipeline:
             print(f"{'=' * 70}")
         t = time.time()
 
-        # Section-aware query encoding: prepend section prefix to match
-        # how Phase 3 embedded those chunks (e.g. "specific aims: <query>")
         encode_text = f"{section.replace('_',' ')}: {query_text}" if section else query_text
         query_vec   = self.model.encode(encode_text).tolist()
 
@@ -476,8 +473,7 @@ class GrantQueryPipeline:
         graph_r = []
         if use_graph and self.graph_engine and hybrid:
             seeds   = [r["grant_id"] for r in hybrid if r.get("grant_id")]
-            graph_r = self.graph_engine.expand(seeds, top_k=5,
-                                               section_hint=section)
+            graph_r = self.graph_engine.expand(seeds, top_k=5, section_hint=section)
             if verbose: print(f"\U0001f578\ufe0f  Graph expansion: {len(graph_r)} additional results")
 
         all_r        = hybrid + graph_r
@@ -490,6 +486,34 @@ class GrantQueryPipeline:
         if self.enricher: unique = self.enricher.enrich(unique)
         if verbose:        self._print_results(unique)
         return unique
+
+    def discover_grants(self, topic: str, top_k: int = 10,
+                        fqhc_only: bool = False) -> List[str]:
+        """
+        Corpus-level grant discovery for a topic.
+        Returns a ranked list of grant_ids — used by the assistant to seed
+        section-level retrieval with the most relevant grants from the full corpus.
+        """
+        if not self._ready:
+            return []
+        query_vec = self.model.encode(topic).tolist()
+        results   = self.weaviate.hybrid_search(
+            topic, query_vec,
+            alpha    = self.alpha,
+            top_k    = top_k * 3,   # fetch extra to get unique grant_ids
+            fqhc_only= fqhc_only,
+        )
+        results = self._filter_synthetic(results)
+
+        # Deduplicate to one entry per grant, keeping highest score
+        seen, grants = {}, []
+        for r in results:
+            gid = r.get("grant_id")
+            if gid and (gid not in seen or r["score"] > seen[gid]):
+                seen[gid] = r["score"]
+        # Return sorted grant_ids by score
+        ranked = sorted(seen.items(), key=lambda x: x[1], reverse=True)
+        return [gid for gid, _ in ranked[:top_k]]
 
     def rfp_query(self, conditions=None, interventions=None, populations=None,
                   free_text=None, fqhc_only=False,
@@ -553,8 +577,8 @@ class GrantQueryPipeline:
                 title = x.get("title", "")[:50] or x.get("text", "")[:50]
                 print(f"    {i}. [{x['score']:.4f}] {x.get('grant_id')} — {title}...")
         if self.graph_engine:
-            hr   = self.weaviate.hybrid_search(query_text, qv, alpha=0.25, top_k=5)
-            exp  = self.graph_engine.expand([r["grant_id"] for r in hr if r.get("grant_id")], top_k=5)
+            hr  = self.weaviate.hybrid_search(query_text, qv, alpha=0.25, top_k=5)
+            exp = self.graph_engine.expand([r["grant_id"] for r in hr if r.get("grant_id")], top_k=5)
             results["Graph expansion"] = exp
             print(f"\n  Graph expansion (via hub nodes):")
             for i, x in enumerate(exp[:3], 1):
@@ -578,7 +602,6 @@ class GrantQueryPipeline:
         return None
 
     def _filter_synthetic(self, results: List[Dict]) -> List[Dict]:
-        """Remove synthetic grants from results unless exclude_synthetic is False."""
         if not self.exclude_synthetic:
             return results
         filtered = [r for r in results
@@ -586,7 +609,7 @@ class GrantQueryPipeline:
                                for p in SYNTHETIC_PREFIXES)]
         removed = len(results) - len(filtered)
         if removed > 0:
-            print(f"  🔬 Filtered {removed} synthetic grants (use exclude_synthetic=False to show)")
+            print(f"  \U0001f52c Filtered {removed} synthetic grants (use exclude_synthetic=False to show)")
         return filtered
 
     def _print_results(self, results: List[Dict]):
@@ -598,32 +621,34 @@ class GrantQueryPipeline:
             icon = "\U0001f578\ufe0f" if "graph" in src.lower() else "\U0001f50d"
             print(f"\n{i}. {icon}  [score: {r.get('score', 0):.4f}]  {src}")
             print(f"   Grant ID:    {r.get('grant_id', 'N/A')}")
-            if r.get("title"):        print(f"   Title:       {r['title'][:80]}")
-            if r.get("institution"):  print(f"   Institution: {r['institution'][:60]}")
-            if r.get("year"):         print(f"   Year:        {r['year']}")
-            if r.get("section_type"): print(f"   Section:     {r['section_type']}")
-            if r.get("section_hint"): print(f"   Seeded from: {r['section_hint']} section")
-            if r.get("is_fqhc"):      print(f"   \u2705 FQHC-relevant")
+            if r.get("title"):            print(f"   Title:       {r['title'][:80]}")
+            if r.get("institution"):      print(f"   Institution: {r['institution'][:60]}")
+            if r.get("year"):             print(f"   Year:        {r['year']}")
+            if r.get("section_type"):     print(f"   Section:     {r['section_type']}")
+            if r.get("section_hint"):     print(f"   Seeded from: {r['section_hint']} section")
+            if r.get("is_fqhc"):          print(f"   \u2705 FQHC-relevant")
             if r.get("abstract_snippet"): print(f"   Abstract:    {r['abstract_snippet']}...")
+            if r.get("source_url"):       print(f"   \U0001f517 Source:   {r['source_url']}")
 
 
 def interactive_mode(pipeline: GrantQueryPipeline):
     print("\n" + "=" * 70)
     print("\U0001f4ac INTERACTIVE QUERY MODE")
     print("=" * 70)
-    print("  <query>                    — hybrid + graph search (all sections)")
+    print("  <query>                    — hybrid + graph search")
+    print("  /describe <description>    — parse RFP description → section-level chunks")
     print("  /aims <query>              — specific aims section only")
     print("  /methods <query>           — methods section only")
     print("  /significance <query>      — significance section only")
     print("  /approach <query>          — approach section only")
     print("  /background <query>        — background section only")
-    print("  /section <name> <query>    — any section filter")
+    print("  /section <n> <query>       — any section filter")
     print("  /rfp <query>               — structured RFP match")
     print("  /compare <query>           — compare all approaches")
     print("  /fqhc <query>              — FQHC-only results")
     print("  /alpha <0-1> <query>       — custom alpha")
     print("  /stats                     — pipeline stats")
-    print("  /synth                     — toggle synthetic grants on/off")
+    print("  /synth                     — toggle synthetic grants")
     print("  /quit                      — exit\n")
     print("  Section shorthands: aims, sig, innov, approach, methods, bg, summary\n")
 
@@ -647,16 +672,26 @@ def interactive_mode(pipeline: GrantQueryPipeline):
             state = "excluded" if pipeline.exclude_synthetic else "included"
             print(f"  Synthetic grants now {state}")
 
+        elif ui.startswith("/describe "):
+            description = ui[10:].strip()
+            if description:
+                # Import assistant lazily so query_pipeline stays standalone
+                try:
+                    from application_assistant import ApplicationAssistant
+                    assistant = ApplicationAssistant(pipeline)
+                    assistant.describe_application(description, use_llm=False)
+                except ImportError:
+                    print("  ⚠️  application_assistant.py not found — running plain query instead")
+                    pipeline.query(description)
+            else:
+                print("  Usage: /describe <natural language application description>")
+
         elif ui.startswith("/compare "):
             pipeline.compare_approaches(ui[9:].strip())
-
         elif ui.startswith("/fqhc "):
             pipeline.query(ui[6:].strip(), fqhc_only=True)
-
         elif ui.startswith("/rfp "):
             pipeline.rfp_query(free_text=ui[5:].strip())
-
-        # Section shortcut commands
         elif ui.startswith("/aims "):
             pipeline.query(ui[6:].strip(), section_filter="aims")
         elif ui.startswith("/methods "):
@@ -671,22 +706,17 @@ def interactive_mode(pipeline: GrantQueryPipeline):
             pipeline.query(ui[9:].strip(), section_filter="summary")
         elif ui.startswith("/innov "):
             pipeline.query(ui[7:].strip(), section_filter="innov")
-
-        # Generic /section <name> <query>
         elif ui.startswith("/section "):
             parts = ui.split(" ", 2)
             if len(parts) == 3:
                 pipeline.query(parts[2], section_filter=parts[1])
             else:
                 print("  Usage: /section <name> <query>")
-                print("  Names: aims, sig, innov, approach, methods, bg, summary")
-
         elif ui.startswith("/alpha "):
             parts = ui.split(" ", 2)
             if len(parts) == 3:
                 try: pipeline.query(parts[2], alpha=float(parts[1]))
                 except ValueError: print("  Usage: /alpha 0.5 your query")
-
         else:
             pipeline.query(ui)
 
@@ -700,8 +730,7 @@ def main():
     parser.add_argument("--no-graph",   action="store_true")
     parser.add_argument("--compare",    action="store_true")
     parser.add_argument("--setup-only", action="store_true")
-    parser.add_argument("--include-synthetic", action="store_true",
-                        help="Include synthetic grants in results (excluded by default)")
+    parser.add_argument("--include-synthetic", action="store_true")
     args = parser.parse_args()
 
     pipeline = GrantQueryPipeline(alpha=args.alpha, top_k=args.top_k,
