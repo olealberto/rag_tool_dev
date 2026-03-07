@@ -31,8 +31,10 @@ import os
 import re
 import json
 import time
+from pathlib import Path
 from typing import List, Dict, Optional
 from collections import defaultdict
+from datetime import datetime
 
 
 # ============ SECTION DETECTOR ============
@@ -211,12 +213,16 @@ class ApplicationAssistant:
     """
 
     CORPUS_DISCOVERY_SLOTS = 8
-
-    def __init__(self, pipeline, candidates_per_section: int = 3):
+    def __init__(self, pipeline, candidates_per_section: int = 3,
+                 output_dir: str = "/content/rag_tool_dev/assistant_sessions"):
         self.pipeline    = pipeline
         self.n           = candidates_per_section
         self.detector    = SectionDetector()
         self.user_grants: List[str] = []
+        self.output_dir  = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.session_log: List[Dict] = []
+        self.session_start = datetime.now().isoformat()
 
     def set_user_grants(self, grant_ids: List[str]):
         self.user_grants = [str(g) for g in grant_ids]
@@ -366,6 +372,7 @@ class ApplicationAssistant:
                   f"{sum(len(v) for v in results.values())} total candidates")
             print(f"{'=' * 70}")
 
+        self._log_query(topic, funder_type, detected, results, elapsed)
         return results
 
     def interactive(self):
@@ -382,6 +389,7 @@ class ApplicationAssistant:
         print("  /smart <description>       — LLM intent + corpus discovery + chunks")
         print("  /apikey <key>              — set API key for /smart")
         print("  /n <number>                — candidates per section (default 3)")
+        print("  /save                      — save session to JSON now")
         print("  /quit                      — exit\n")
 
         self._llm_api_key = None
@@ -390,9 +398,15 @@ class ApplicationAssistant:
             try:
                 ui = input("Assistant > ").strip()
             except (EOFError, KeyboardInterrupt):
+                self._save_session()
                 break
             if not ui: continue
-            if ui.lower() in ["/quit", "/exit", "quit", "exit"]: break
+            if ui.lower() in ["/quit", "/exit", "quit", "exit"]:
+                self._save_session()
+                break
+
+            elif ui.lower() == "/save":
+                self._save_session()
 
             elif ui.lower() == "/grants":
                 if self.user_grants:
@@ -476,6 +490,53 @@ class ApplicationAssistant:
                 self.find_for_application(topic=ui)
 
     # ── Private helpers ───────────────────────────────────────────────────
+
+    def _log_query(self, topic: str, funder_type: str, sections: List[str],
+                   results: Dict, elapsed: float):
+        """Append a query result to the in-memory session log."""
+        entry = {
+            "timestamp":        datetime.now().isoformat(),
+            "topic":            topic,
+            "funder_type":      funder_type,
+            "sections":         sections,
+            "elapsed_s":        elapsed,
+            "total_candidates": sum(len(v) for v in results.values()),
+            "results": {}
+        }
+        for section, candidates in results.items():
+            entry["results"][section] = [
+                {
+                    "rank":         i + 1,
+                    "grant_id":     c.get("grant_id", ""),
+                    "score":        round(c.get("score", 0), 6),
+                    "title":        c.get("document_title", c.get("title", "")),
+                    "section_type": c.get("section_type", c.get("chunk_type", "")),
+                    "chunk_index":  c.get("chunk_index", ""),
+                    "year":         c.get("year", ""),
+                    "source_url":   c.get("source_url", ""),
+                    "source_pdf":   c.get("source_pdf", ""),
+                    "text":         c.get("text", ""),   # full chunk text
+                }
+                for i, c in enumerate(candidates)
+            ]
+        self.session_log.append(entry)
+
+    def _save_session(self):
+        """Write the full session log to a timestamped JSON file."""
+        if not self.session_log:
+            print("  ℹ️  No queries to save yet.")
+            return
+        ts       = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = self.output_dir / f"session_{ts}.json"
+        payload  = {
+            "session_start": self.session_start,
+            "session_end":   datetime.now().isoformat(),
+            "total_queries": len(self.session_log),
+            "user_grants":   self.user_grants,
+            "queries":       self.session_log,
+        }
+        filename.write_text(json.dumps(payload, indent=2, default=str))
+        print(f"\n  💾 Session saved → {filename}")
 
     def _retrieve_for_section(
         self,
@@ -830,100 +891,9 @@ class ApplicationDescriptionParser:
 
         enriched_parts = [description.strip()]
         extras = conditions + populations + interventions + settings
-        if extras: enriched_parts.append(" ".join(extras))
-
-        # ── Funder-aware vocabulary enrichment ────────────────────────────
-        # Clinical specificity terms are prepended for NIH queries because
-        # BM25 rewards rare, specific terms — generic words like "prevention"
-        # are too common across the corpus to discriminate well.
-        # Community/equity terms are prepended for HRSA/FQHC/nonprofit queries
-        # because those grants don't use clinical terminology but do use
-        # population health and program delivery language.
-        # Both layers are included when context is mixed (e.g. FQHC + diabetes).
-
-        # Clinical specificity layer — condition-specific vocabulary that
-        # rarely appears outside genuinely relevant grants
-        CLINICAL_VOCAB = {
-            "diabetes":          "glycemic HbA1c prediabetes insulin type 2 diabetes glucose",
-            "hypertension":      "blood pressure systolic diastolic antihypertensive cardiovascular",
-            "cancer":            "oncology tumor screening mammogram colonoscopy chemotherapy",
-            "HIV":               "antiretroviral viral load PrEP CD4 HIV transmission",
-            "substance_use":     "opioid buprenorphine methadone naloxone overdose SUD MAT",
-            "behavioral_health": "PHQ-9 GAD-7 psychiatric depression anxiety PTSD crisis",
-            "obesity":           "BMI weight loss lifestyle intervention physical activity caloric",
-            "asthma":            "inhaler spirometry bronchodilator pulmonary FEV1 COPD",
-            "maternal_health":   "prenatal postpartum obstetric birth outcomes neonatal perinatal",
-            "pediatric":         "child development growth adolescent school-age immunization",
-            "infectious_disease":"pathogen surveillance transmission epidemiology incidence",
-            "chronic_disease":   "disease management comorbidity care coordination self-management",
-            "oral_health":       "dental caries periodontal fluoride oral hygiene",
-            "violence":          "trauma-informed ACEs intimate partner safety screening",
-        }
-
-        # Community/program layer — vocabulary for FQHC, nonprofit, and
-        # community-based grants that don't use clinical terminology
-        COMMUNITY_VOCAB = {
-            "CHW":             "community health worker promotora outreach lay health advisor",
-            "telehealth":      "remote monitoring virtual visit mHealth digital health platform",
-            "care_management": "care coordination case management integrated care navigator",
-            "screening":       "early detection preventive care health screening testing outreach",
-            "education":       "health literacy curriculum workshop community education awareness",
-            "peer_support":    "peer specialist lived experience recovery coach peer counselor",
-            "direct_services": "direct care wraparound comprehensive services social services",
-            "capacity_building":"workforce development technical assistance coalition partnership",
-        }
-
-        # Add clinical specificity for matched conditions (always helpful)
-        for cond in conditions:
-            if cond in CLINICAL_VOCAB:
-                enriched_parts.append(CLINICAL_VOCAB[cond])
-
-        # Add community/program vocabulary for matched interventions
-        for intervention in interventions:
-            if intervention in COMMUNITY_VOCAB:
-                enriched_parts.append(COMMUNITY_VOCAB[intervention])
-
-        # Funder-specific framing
-        if funder_type == "NIH":
-            # NIH: emphasize research design and clinical outcomes
-            enriched_parts.append("research design study protocol clinical outcomes measurement")
-            if conditions:
-                enriched_parts.append("disease mechanism pathophysiology biomarker evidence-based")
-        elif funder_type in ("HRSA", "SAMHSA") or is_fqhc:
-            # HRSA/FQHC: emphasize access, underserved populations, service delivery
-            enriched_parts.append(
-                "federally qualified health center community health center "
-                "underserved primary care access safety-net medically underserved"
-            )
-            if populations:
-                enriched_parts.append("health disparities health equity vulnerable population")
-        elif funder_type == "CDC":
-            # CDC: emphasize surveillance, population-level impact, public health
-            enriched_parts.append(
-                "surveillance epidemiology population health public health "
-                "disease burden incidence prevalence community-level"
-            )
-        elif funder_type in ("foundation", "city_public_health"):
-            # Foundation/city: emphasize community impact, equity, program outcomes
-            enriched_parts.append(
-                "community-based organization nonprofit direct services "
-                "program outcomes logic model sustainability equity"
-            )
-
-        # Cross-cutting equity layer — added for any funder when equity is present
-        if is_equity:
-            enriched_parts.append(
-                "health disparities racial equity underserved communities "
-                "social determinants structural barriers"
-            )
-
-        # Nonprofit/CBO layer
-        if is_nonprofit:
-            enriched_parts.append(
-                "community-based organization direct services target population "
-                "program participants organizational capacity"
-            )
-
+        if extras:       enriched_parts.append(" ".join(extras))
+        if is_equity:    enriched_parts.append("health disparities racial equity underserved communities")
+        if is_nonprofit: enriched_parts.append("community-based organization direct services")
         enriched = " ".join(enriched_parts)
 
         sections = self.FUNDER_SECTIONS.get(funder_type, self.FUNDER_SECTIONS["foundation"])
@@ -1133,6 +1103,8 @@ def main():
     parser.add_argument("--grants",     type=str)
     parser.add_argument("--n",          type=int, default=3)
     parser.add_argument("--autodetect", action="store_true")
+    parser.add_argument("--output-dir", type=str,
+                        default="/content/rag_tool_dev/assistant_sessions")
     args = parser.parse_args()
 
     from query_pipeline import GrantQueryPipeline
@@ -1140,7 +1112,8 @@ def main():
     if not pipeline.setup():
         print("\u274c Pipeline setup failed"); return
 
-    assistant = ApplicationAssistant(pipeline, candidates_per_section=args.n)
+    assistant = ApplicationAssistant(pipeline, candidates_per_section=args.n,
+                                     output_dir=args.output_dir)
     if args.grants:       assistant.set_user_grants(args.grants.split(","))
     elif args.autodetect: assistant.find_user_grants()
 
@@ -1152,10 +1125,10 @@ def main():
         else:
             assistant.interactive()
     except KeyboardInterrupt:
+        assistant._save_session()
         print("\n\n\u26a0\ufe0f  Interrupted")
     finally:
         pipeline.close()
-
 
 if __name__ == "__main__":
     main()

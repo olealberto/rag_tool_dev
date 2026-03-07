@@ -254,7 +254,7 @@ class WeaviateManager:
                     "institution":  str(p.get("institution", "")),
                     "year":         p.get("year", ""),
                     "is_fqhc":      bool(p.get("isFQHC", False)),
-                    "text":         str(p.get("text", ""))[:300],
+                    "text":         str(p.get("text", "")),
                     "score":        round(min(score, 1.0), 4),
                     "section_type": str(p.get("sectionType", p.get("chunkType", ""))),
                     "chunk_index":  int(p.get("chunkIndex", 0)),
