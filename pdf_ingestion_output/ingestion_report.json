@@ -1,19 +1,23 @@
 {
-  "ingestion_timestamp": "2026-03-07T02:53:35.879494",
+  "ingestion_timestamp": "2026-03-07T06:07:34.832510",
   "statistics": {
     "success": 0,
-    "skipped": 42,
+    "skipped": 41,
     "failed": 0,
-    "low_quality": 0
+    "low_quality": 0,
+    "validation_failed": 1,
+    "validation_warned": 0
   },
-  "total_documents": 42,
+  "total_documents": 41,
   "fqhc_focused": 1,
   "quality_distribution": {
-    "high": 42
+    "high": 41
   },
   "method_distribution": {
-    "pdfplumber": 29,
+    "pdfplumber": 28,
     "ocr_tesseract": 13
   },
-  "avg_word_count": 18547.071428571428
+  "avg_word_count": 18800.146341463416,
+  "validation_failures": 1,
+  "validation_warnings": 0
 }

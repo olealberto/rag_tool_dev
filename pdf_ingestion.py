@@ -73,6 +73,255 @@ def _setup_ocr() -> bool:
         return False
 
 
+# ── Corpus validator ──────────────────────────────────────────────────────────
+class CorpusValidator:
+    """
+    Validates that a document belongs in the corpus before it is chunked
+    and embedded. Uses a broad, unified domain vocabulary covering:
+
+      - Healthcare and clinical terms
+      - Community services and nonprofit programming
+      - Social determinants and population health
+      - Grant structural signals
+
+    A document passes if it has sufficient combined domain density — it does
+    NOT need to match both health AND community terms. A youth arts grant with
+    strong community services language passes just as a clinical NIH grant does.
+    Only truly off-domain documents (energy, engineering, real estate, etc.)
+    are rejected.
+
+    Use force_ingest=True on NIHGrantPDFIngester to bypass validation entirely.
+    """
+
+    # Unified domain vocabulary — health + community services + nonprofit + SDOH.
+    # OR logic: any term from any category contributes to the domain score.
+    # This allows purely community-focused grants (arts, youth, housing) to pass
+    # alongside clinical health grants, since both can be adapted for FQHC use.
+    DOMAIN_TERMS = [
+        # ── Clinical health ───────────────────────────────────────────────
+        "diabetes", "hypertension", "cancer", "hiv", "depression", "anxiety",
+        "asthma", "obesity", "opioid", "substance use", "mental health",
+        "cardiovascular", "stroke", "maternal", "pediatric", "chronic disease",
+        "infectious", "tuberculosis", "hepatitis", "behavioral health",
+        "health center", "clinic", "hospital", "primary care", "fqhc",
+        "community health", "public health", "patient", "clinical", "medical",
+        "healthcare", "health care", "provider", "physician", "nurse",
+        "pharmacist", "care coordinator", "telehealth", "telemedicine",
+        "health disparity", "health equity", "mortality", "morbidity",
+        "intervention", "treatment", "prevention", "screening", "diagnosis",
+        "medication", "therapy", "counseling", "health promotion",
+        "community health worker", "chw", "care management",
+        # ── Community services and nonprofit programming ───────────────────
+        "nonprofit", "non-profit", "community organization", "community-based",
+        "community services", "direct services", "social services",
+        "program participants", "program activities", "program outcomes",
+        "youth development", "after school", "out of school", "mentoring",
+        "workforce development", "job training", "employment services",
+        "food access", "food insecurity", "nutrition", "food pantry",
+        "housing stability", "affordable housing", "shelter", "transitional",
+        "domestic violence", "survivor", "trauma-informed", "crisis services",
+        "arts program", "arts education", "creative arts", "art therapy",
+        "literacy", "tutoring", "education program", "academic support",
+        "childcare", "early childhood", "head start", "family support",
+        "refugee", "immigrant", "resettlement", "language access",
+        "reentry", "formerly incarcerated", "justice-involved",
+        "community engagement", "civic engagement", "volunteer",
+        "capacity building", "technical assistance", "coalition",
+        # ── Social determinants and population health ─────────────────────
+        "underserved", "low-income", "low income", "medicaid", "uninsured",
+        "minority", "vulnerable population", "at-risk", "marginalized",
+        "racial equity", "social justice", "health equity", "disparity",
+        "social determinants", "sdoh", "food insecurity", "housing instability",
+        "poverty", "economic insecurity", "transportation barrier",
+        "digital divide", "language barrier", "cultural competency",
+        "lived experience", "trusted messenger", "peer support",
+        # ── Grant and proposal structure ──────────────────────────────────
+        "specific aims", "significance", "innovation", "approach",
+        "nih", "hrsa", "samhsa", "cdc", "grant", "funding", "award",
+        "principal investigator", "project director", "program officer",
+        "abstract", "project summary", "project narrative",
+        "study design", "research design", "objective", "goal",
+        "deliverable", "milestone", "evaluation plan", "work plan",
+        "logic model", "theory of change", "scope of work",
+        "target population", "service area", "eligible population",
+        "budget narrative", "budget justification", "sustainability",
+        "organizational capacity", "letters of support", "partnership",
+        "memorandum of understanding", "subcontractor", "fiscal sponsor",
+    ]
+
+    # Grant structural signals — documents missing all of these are probably
+    # not grant applications (e.g. a research paper or news article)
+    GRANT_SIGNALS = [
+        "grant", "funding", "award", "application", "proposal",
+        "budget", "objective", "goal", "target population",
+        "evaluation", "work plan", "deliverable", "milestone",
+        "project summary", "project description", "scope of work",
+        "logic model", "theory of change", "organizational capacity",
+        "specific aims", "significance", "approach", "methods",
+        "principal investigator", "project director",
+    ]
+
+    # Off-domain exclusion clusters — if a document scores 3+ hits in any
+    # single cluster AND has low domain density, it is rejected as off-domain.
+    # This catches documents like energy policy reports that pass grant signal
+    # checks because they use generic funding/budget/objective language.
+    EXCLUSION_CLUSTERS = {
+        "energy": [
+            "wind energy", "solar energy", "fossil fuel", "carbon emission",
+            "kilowatt", "megawatt", "turbine", "wind farm", "renewable energy",
+            "energy efficiency", "utility company", "electricity generation",
+            "natural gas", "coal plant", "energy grid", "power plant",
+        ],
+        "engineering": [
+            "structural engineering", "civil engineering", "load bearing",
+            "tensile strength", "hydraulic system", "mechanical design",
+            "construction materials", "bridge design", "seismic", "geotechnical",
+        ],
+        "real_estate": [
+            "property value", "square footage", "zoning ordinance", "mortgage",
+            "real estate", "landlord", "lease agreement", "property tax",
+            "commercial property", "residential development", "appraisal",
+        ],
+        "agriculture": [
+            "crop yield", "livestock management", "irrigation system", "pesticide",
+            "soil composition", "harvest season", "fertilizer", "crop rotation",
+            "agricultural production", "farming operation", "agroforestry",
+        ],
+        "finance": [
+            "stock market", "equity portfolio", "hedge fund", "derivatives",
+            "securities trading", "asset management", "investment banking",
+            "bond yield", "mutual fund", "financial instrument",
+        ],
+    }
+
+    # Exclusion threshold — hits in a single cluster to trigger rejection
+    EXCLUSION_CLUSTER_THRESHOLD = 3
+
+    # Domain density below which exclusion clusters are checked
+    EXCLUSION_DOMAIN_CEILING    = 0.5   # hits per 100 words
+
+    # Minimum thresholds — loosened to accommodate non-clinical grants
+    MIN_WORDS          = 300     # below this it's probably a cover page or TOC
+    MIN_DOMAIN_DENSITY = 0.003   # domain term hits per word — ~3 per 1000 words
+    MIN_GRANT_SIGNALS  = 1       # at least 1 grant structural signal
+
+    def validate(self, text: str, filename: str) -> Dict:
+        """
+        Returns a validation result dict with:
+          - validation_passed: bool
+          - domain_score: float (domain term hits per 100 words)
+          - grant_signal_count: int
+          - word_count: int
+          - warnings: list of warning strings
+          - rejection_reason: str or None
+        """
+        result = {
+            "validation_passed":  True,
+            "domain_score":       0.0,
+            "grant_signal_count": 0,
+            "word_count":         0,
+            "warnings":           [],
+            "rejection_reason":   None,
+        }
+
+        if not text or not text.strip():
+            result["validation_passed"] = False
+            result["rejection_reason"]  = "empty text — extraction may have failed"
+            return result
+
+        tl         = text.lower()
+        words      = tl.split()
+        word_count = len(words)
+        result["word_count"] = word_count
+
+        # ── Check 1: minimum word count ───────────────────────────────────
+        if word_count < self.MIN_WORDS:
+            result["validation_passed"] = False
+            result["rejection_reason"]  = (
+                f"document too short ({word_count} words, "
+                f"minimum {self.MIN_WORDS}) — may be a cover page or scanned image"
+            )
+            return result
+
+        # ── Check 2: unified domain density (health OR community) ─────────
+        domain_hits  = sum(1 for term in self.DOMAIN_TERMS if term in tl)
+        domain_score = domain_hits / max(word_count / 100, 1)  # hits per 100 words
+        result["domain_score"] = round(domain_score, 4)
+
+        density = domain_hits / max(word_count, 1)
+        if density < self.MIN_DOMAIN_DENSITY:
+            result["validation_passed"] = False
+            result["rejection_reason"]  = (
+                f"low domain score ({domain_score:.2f} hits/100 words, "
+                f"minimum {self.MIN_DOMAIN_DENSITY * 100:.1f}) — "
+                f"document does not appear to be a health or community services grant"
+            )
+            result["warnings"].append(
+                f"Only {domain_hits} domain terms found in {word_count} words"
+            )
+            return result
+
+        # ── Check 3: at least one grant structural signal ─────────────────
+        grant_hits = sum(1 for sig in self.GRANT_SIGNALS if sig in tl)
+        result["grant_signal_count"] = grant_hits
+
+        if grant_hits < self.MIN_GRANT_SIGNALS:
+            result["validation_passed"] = False
+            result["rejection_reason"]  = (
+                f"no grant structure signals found — "
+                f"document may be a research paper, report, or news article "
+                f"rather than a grant application"
+            )
+            result["warnings"].append(
+                "Missing typical grant language (budget, objectives, work plan, etc.)"
+            )
+            return result
+
+        # ── Check 4: off-domain exclusion clusters ────────────────────────
+        # Only run this check when domain density is low — documents with
+        # strong health/community signals are allowed through regardless.
+        if domain_score < self.EXCLUSION_DOMAIN_CEILING:
+            for cluster_name, cluster_terms in self.EXCLUSION_CLUSTERS.items():
+                cluster_hits = sum(1 for term in cluster_terms if term in tl)
+                if cluster_hits >= self.EXCLUSION_CLUSTER_THRESHOLD:
+                    result["validation_passed"] = False
+                    result["rejection_reason"]  = (
+                        f"off-domain content detected: '{cluster_name}' cluster "
+                        f"({cluster_hits} hits) with low health/community domain score "
+                        f"({domain_score:.2f}/100w) — document does not belong in corpus"
+                    )
+                    result["warnings"].append(
+                        f"Strong '{cluster_name}' signal with weak health/community signal"
+                    )
+                    return result
+
+        # ── Soft warnings (pass but flag) ─────────────────────────────────
+        if domain_score < 0.5:
+            result["warnings"].append(
+                f"Low domain density ({domain_score:.2f} hits/100 words) — "
+                f"verify this document is relevant to health or community services"
+            )
+        if grant_hits < 3:
+            result["warnings"].append(
+                f"Few grant structure signals ({grant_hits}) — "
+                f"may be an abstract or summary rather than a full application"
+            )
+
+        return result
+
+    def report(self, filename: str, result: Dict) -> str:
+        """Returns a human-readable one-line validation summary."""
+        status   = "✅ PASSED" if result["validation_passed"] else "❌ FAILED"
+        reason   = f" — {result['rejection_reason']}" if result["rejection_reason"] else ""
+        warnings = f" [{len(result['warnings'])} warning(s)]" if result["warnings"] else ""
+        return (
+            f"  {status}  {filename}  "
+            f"[domain_score={result['domain_score']:.2f}/100w, "
+            f"grant_signals={result['grant_signal_count']}]"
+            f"{reason}{warnings}"
+        )
+
+
 # ── Text extractor ────────────────────────────────────────────────────────────
 class PDFTextExtractor:
     """Three-tier: pdfplumber → pymupdf → pytesseract OCR"""
@@ -360,18 +609,23 @@ class NIHGrantPDFIngester:
 
     def __init__(self, pdf_dir="./grant_documents",
                  output_dir="./pdf_ingestion_output",
-                 min_quality="low", use_ocr=True):
-        self.pdf_dir    = Path(pdf_dir)
-        self.output_dir = Path(output_dir)
+                 min_quality="low", use_ocr=True,
+                 force_ingest=False):
+        self.pdf_dir     = Path(pdf_dir)
+        self.output_dir  = Path(output_dir)
         self.min_quality = min_quality
-        self.extractor  = PDFTextExtractor(use_ocr=use_ocr)
-        self.parser     = NIHSectionParser()
-        self.meta_ex    = NIHMetadataExtractor()
+        self.force_ingest = force_ingest   # bypass corpus validation if True
+        self.extractor   = PDFTextExtractor(use_ocr=use_ocr)
+        self.parser      = NIHSectionParser()
+        self.meta_ex     = NIHMetadataExtractor()
+        self.validator   = CorpusValidator()
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def ingest_all(self, force_reprocess=False) -> pd.DataFrame:
         print(f"\n{'='*70}\n📄 NIH GRANT PDF INGESTION PIPELINE\n{'='*70}")
         print(f"   Source: {self.pdf_dir}\n   Output: {self.output_dir}")
+        if self.force_ingest:
+            print(f"   ⚠️  force_ingest=True — corpus validation bypassed")
 
         pdfs = list(self.pdf_dir.glob("**/*.pdf"))
         if not pdfs:
@@ -382,8 +636,14 @@ class NIHGrantPDFIngester:
         cache = json.loads(cache_path.read_text()) if cache_path.exists() and not force_reprocess else {}
         if cache: print(f"📦 Cache: {len(cache)} previously processed files")
 
-        docs, stats = [], {"success": 0, "skipped": 0, "failed": 0, "low_quality": 0}
+        docs, stats = [], {
+            "success": 0, "skipped": 0, "failed": 0,
+            "low_quality": 0, "validation_failed": 0, "validation_warned": 0,
+        }
         qord = {"high": 3, "medium": 2, "low": 1, "failed": 0}
+
+        # Collect validation failures for summary report
+        validation_failures = []
 
         for i, pdf in enumerate(pdfs):
             print(f"[{i+1}/{len(pdfs)}] {pdf.name}")
@@ -405,6 +665,42 @@ class NIHGrantPDFIngester:
             if qord.get(q, 0) < qord.get(self.min_quality, 1):
                 print(f"  ⚠️  Quality too low ({q})"); stats["low_quality"] += 1; continue
 
+            # ── Corpus validation ─────────────────────────────────────────
+            # Runs after extraction so we have clean text to assess.
+            # Rejected documents are logged but not added to the corpus unless
+            # force_ingest=True is set on the ingester.
+            if not self.force_ingest:
+                vresult = self.validator.validate(doc.get("full_text", ""), pdf.name)
+                doc["validation_passed"]      = vresult["validation_passed"]
+                doc["validation_domain_score"]= vresult["domain_score"]
+                doc["validation_grant_signals"]= vresult["grant_signal_count"]
+                doc["validation_warnings"]    = vresult["warnings"]
+
+                print(self.validator.report(pdf.name, vresult))
+
+                if not vresult["validation_passed"]:
+                    stats["validation_failed"] += 1
+                    validation_failures.append({
+                        "filename":         pdf.name,
+                        "rejection_reason": vresult["rejection_reason"],
+                        "domain_score":     vresult["domain_score"],
+                        "grant_signals":    vresult["grant_signal_count"],
+                        "word_count":       vresult["word_count"],
+                    })
+                    print(f"  🚫 Rejected: {vresult['rejection_reason']}")
+                    print(f"     To override: set force_ingest=True on NIHGrantPDFIngester")
+                    continue
+
+                if vresult["warnings"]:
+                    stats["validation_warned"] += 1
+                    for w in vresult["warnings"]:
+                        print(f"  ⚠️  {w}")
+            else:
+                doc["validation_passed"]       = None   # bypassed
+                doc["validation_domain_score"] = None
+                doc["validation_grant_signals"]= None
+                doc["validation_warnings"]     = ["validation bypassed (force_ingest=True)"]
+
             (self.output_dir / f"{doc['grant_id']}.json").write_text(json.dumps(doc, indent=2))
             cache[fh] = doc["grant_id"]
             docs.append(doc)
@@ -415,6 +711,15 @@ class NIHGrantPDFIngester:
 
         cache_path.write_text(json.dumps(cache, indent=2))
 
+        # ── Validation failure report ─────────────────────────────────────
+        if validation_failures:
+            vf_path = self.output_dir / "validation_failures.json"
+            vf_path.write_text(json.dumps(validation_failures, indent=2))
+            print(f"\n  ⚠️  {len(validation_failures)} document(s) failed corpus validation")
+            print(f"     See: {vf_path}")
+            print(f"     Review these files and either remove them from {self.pdf_dir}/")
+            print(f"     or re-run with force_ingest=True to include them anyway.")
+
         if not docs:
             print("❌ No documents ingested"); return pd.DataFrame()
 
@@ -424,7 +729,9 @@ class NIHGrantPDFIngester:
 
         print(f"\n{'='*70}\n✅ INGESTION COMPLETE\n{'='*70}")
         print(f"   Success:{stats['success']}  Skipped:{stats['skipped']}  "
-              f"Failed:{stats['failed']}  LowQuality:{stats['low_quality']}")
+              f"Failed:{stats['failed']}  LowQuality:{stats['low_quality']}  "
+              f"ValidationFailed:{stats['validation_failed']}  "
+              f"ValidationWarned:{stats['validation_warned']}")
         print(f"   Total:{len(df)}  FQHC:{df['is_fqhc_focused'].sum()}")
         if "extraction_method" in df.columns:
             print("   Methods used:")
@@ -501,7 +808,9 @@ class NIHGrantPDFIngester:
              "method_distribution": df["extraction_method"].value_counts().to_dict()
                  if "extraction_method" in df.columns else {},
              "avg_word_count": float(df["word_count"].mean())
-                 if "word_count" in df.columns else 0}
+                 if "word_count" in df.columns else 0,
+             "validation_failures": stats.get("validation_failed", 0),
+             "validation_warnings": stats.get("validation_warned", 0)}
         (self.output_dir / "ingestion_report.json").write_text(json.dumps(r, indent=2))
         print(f"\n📋 Report: {self.output_dir}/ingestion_report.json")
 
@@ -647,7 +956,8 @@ if __name__ == "__main__":
         pdf_dir="./grant_documents",
         output_dir="./pdf_ingestion_output",
         min_quality="low",
-        use_ocr=True       # set False to skip scanned PDFs
+        use_ocr=True,        # set False to skip scanned PDFs
+        force_ingest=False,  # set True to bypass corpus validation
     )
     df = ingester.ingest_all(force_reprocess=False)
 

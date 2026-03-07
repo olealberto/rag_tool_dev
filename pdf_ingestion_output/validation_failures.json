@@ -1,0 +1,9 @@
+[
+  {
+    "filename": "low_income_wind_energy.pdf",
+    "rejection_reason": "off-domain content detected: 'energy' cluster (9 hits) with low health/community domain score (0.32/100w) \u2014 document does not belong in corpus",
+    "domain_score": 0.3182,
+    "grant_signals": 13,
+    "word_count": 8171
+  }
+]

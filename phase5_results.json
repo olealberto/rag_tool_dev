@@ -1,6 +1,6 @@
 {
   "phase": "phase5",
-  "timestamp": "2026-03-07T02:59:18.575765",
+  "timestamp": "2026-03-07T06:08:00.047993",
   "corpus_fingerprint": "8cf7c72cc28ebf6e",
   "graph_stats": {
     "nodes": 136,
@@ -27,8 +27,8 @@
     "pdf_grants": 92
   },
   "communities": {
-    "count": 6,
-    "modularity": 0.4064
+    "count": 5,
+    "modularity": 0.4152
   },
   "demo_queries": {
     "diabetes_grants": 8,

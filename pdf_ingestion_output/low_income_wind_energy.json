@@ -23,7 +23,12 @@
   "page_count": 20,
   "word_count": 8171,
   "char_count": 54315,
-  "extraction_warnings": [],
-  "ingested_at": "2026-02-22T01:20:49.688402",
-  "processing_time_s": 3.46
+  "ingested_at": "2026-03-07T06:01:41.987595",
+  "processing_time_s": 3.2,
+  "validation_passed": true,
+  "validation_domain_score": 0.3182,
+  "validation_grant_signals": 13,
+  "validation_warnings": [
+    "Low domain density (0.32 hits/100 words) \u2014 verify this document is relevant to health or community services"
+  ]
 }

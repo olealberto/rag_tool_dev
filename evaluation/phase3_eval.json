@@ -169,6 +169,6 @@
   },
   "MAP": 0.0251,
   "MRR": 0.1546,
-  "avg_retrieval_time_s": 0.001,
+  "avg_retrieval_time_s": 0.0008,
   "section_aware": true
 }

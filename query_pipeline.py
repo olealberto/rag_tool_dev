@@ -402,7 +402,8 @@ class GraphQueryEngine:
             elif len(label) <= 4 and label in q.split():
                 matched = True
             # Significant word overlap
-            elif label_sig and q_sig and                  any(lw == qw or (len(lw) > 4 and (lw in qw or qw in lw))
+            elif label_sig and q_sig and \
+                  any(lw == qw or (len(lw) > 4 and (lw in qw or qw in lw))
                      for lw in label_sig for qw in q_sig):
                 matched = True
 
@@ -568,12 +569,28 @@ class GrantQueryPipeline:
             graph_r = self.graph_engine.expand(seeds, top_k=5, section_hint=section)
             if verbose: print(f"\U0001f578\ufe0f  Graph expansion: {len(graph_r)} additional results")
 
+        # ── FIX: score-aware merge so graph results compete on merit ──────
+        # Build a map of hybrid scores for overlap bonus application.
+        hybrid_score_map = {r["grant_id"]: r["score"] for r in hybrid if r.get("grant_id")}
+
         all_r        = hybrid + graph_r
         seen, unique = set(), []
         for r in all_r:
             g = r.get("grant_id")
             if g and g not in seen:
-                seen.add(g); unique.append(r)
+                seen.add(g)
+                # Graph result that overlaps with hybrid — apply overlap bonus
+                # to the hybrid score so the combined signal is reflected.
+                if r.get("source", "").startswith("graph") and g in hybrid_score_map:
+                    r = dict(r)  # avoid mutating the original
+                    r["score"] = round(hybrid_score_map[g] * (1 + self._overlap_bonus), 4)
+                unique.append(r)
+
+        # Re-sort merged list by score so graph-only results compete on their
+        # path-weighted score rather than always trailing hybrid results.
+        unique = sorted(unique, key=lambda x: x.get("score", 0), reverse=True)
+        # ─────────────────────────────────────────────────────────────────
+
         unique = self._filter_synthetic(unique)
         if self.enricher: unique = self.enricher.enrich(unique)
         if verbose:        self._print_results(unique)
@@ -858,7 +875,6 @@ def interactive_mode(pipeline: GrantQueryPipeline):
         elif ui.startswith("/describe "):
             description = ui[10:].strip()
             if description:
-                # Import assistant lazily so query_pipeline stays standalone
                 try:
                     from application_assistant import ApplicationAssistant
                     assistant = ApplicationAssistant(pipeline)

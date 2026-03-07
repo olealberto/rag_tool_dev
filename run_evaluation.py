@@ -37,7 +37,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from pathlib import Path
-from typing import List, Dict, Set, Optional
+from typing import List, Dict, Set, Optional, Tuple
 from datetime import datetime
 from collections import defaultdict
 
@@ -731,11 +731,12 @@ class Phase5Evaluator:
             vm["query_id"] = q["query_id"]; vm["topic"] = q["topic"]
             v_list.append(vm)
 
-            # Graph-expanded (no retrieval scores — positional proxy)
+            # ── FIX: graph-expanded now passes path-weighted scores through
+            # instead of defaulting everything to 1.0
             t0 = time.time()
-            e_ids = self._expand(v_ids[:3], v_ids, top_k)
+            e_ids, e_scores = self._expand_with_scores(v_ids[:3], v_ids, v_scores, top_k)
             times["expanded"].append(time.time() - t0)
-            em = IRMetrics.compute_all(e_ids, q["relevant_ids"])
+            em = IRMetrics.compute_all(e_ids, q["relevant_ids"], e_scores)
             em["query_id"] = q["query_id"]; em["topic"] = q["topic"]
             e_list.append(em)
 
@@ -840,21 +841,40 @@ class Phase5Evaluator:
             return ids, scores
         except: return [], []
 
-    def _expand(self, seed_ids, base_ids, top_k):
+    def _expand_with_scores(self, seed_ids: List[str], base_ids: List[str],
+                             base_scores: List[float], top_k: int) -> Tuple[List[str], List[float]]:
+        """
+        Graph expansion that preserves hybrid scores for base results and assigns
+        path-weighted scores to graph-only additions instead of defaulting to 1.0.
+
+        Score formula for graph-only grants:
+            seed_score * hub_edge_weight * hop_edge_weight * 0.8 decay
+
+        This ensures graph-expanded results compete on actual relevance signal
+        rather than inflating avg_score_top5 with a uniform placeholder.
+        """
+        score_map = dict(zip(base_ids, base_scores)) if base_scores else {}
         expanded, seen = list(base_ids), set(base_ids)
+
         for gid in seed_ids:
             if gid not in self.graph: continue
-            for nbr in self.graph.neighbors(gid):
-                if nbr in seen: continue
-                ntype = self.graph.nodes[nbr].get("type","")
-                if ntype == "grant":
-                    seen.add(nbr); expanded.append(nbr)
-                elif ntype in ["condition","intervention","population"]:
-                    for nbr2 in self.graph.neighbors(nbr):
-                        if nbr2 not in seen and \
-                           self.graph.nodes[nbr2].get("type","") == "grant":
-                            seen.add(nbr2); expanded.append(nbr2)
-        return expanded[:top_k*2]
+            seed_score = score_map.get(gid, 0.0)
+            for hub in self.graph.neighbors(gid):
+                ntype = self.graph.nodes[hub].get("type", "")
+                if ntype not in ["condition", "intervention", "population"]: continue
+                hub_w = float(self.graph.get_edge_data(gid, hub, {}).get("weight", 1.0))
+                for hop in self.graph.neighbors(hub):
+                    if hop in seen: continue
+                    if self.graph.nodes[hop].get("type", "") == "grant":
+                        hop_w = float(self.graph.get_edge_data(hub, hop, {}).get("weight", 1.0))
+                        # Path-weighted score: seed score propagated through edge weights
+                        graph_score = seed_score * hub_w * hop_w * 0.8
+                        score_map[hop] = graph_score
+                        seen.add(hop)
+                        expanded.append(hop)
+
+        scores = [score_map.get(g, 0.0) for g in expanded]
+        return expanded[:top_k * 2], scores[:top_k * 2]
 
     def _graph_only(self, topic):
         hubs = self.TOPIC_MAP.get(topic, [])
