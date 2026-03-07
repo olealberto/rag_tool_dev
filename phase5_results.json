@@ -1,37 +1,39 @@
 {
   "phase": "phase5",
-  "timestamp": "2026-02-25T19:37:46.461072",
-  "corpus_fingerprint": "6ace068bc4738baf",
+  "timestamp": "2026-03-07T02:59:18.575765",
+  "corpus_fingerprint": "8cf7c72cc28ebf6e",
   "graph_stats": {
-    "nodes": 1826,
-    "edges": 16901,
-    "density": 0.010143,
+    "nodes": 136,
+    "edges": 1016,
+    "density": 0.110675,
     "node_types": {
-      "grant": 1797,
-      "year": 2,
-      "condition": 10,
-      "intervention": 8,
-      "population": 8,
+      "grant": 92,
+      "year": 14,
+      "condition": 14,
+      "intervention": 5,
+      "population": 10,
       "fqhc_hub": 1
     },
     "edge_types": {
-      "published_in": 1797,
-      "treats": 2304,
-      "similar_study": 11499,
-      "uses": 198,
-      "targets": 1028,
-      "is_fqhc": 74,
-      "consecutive_year": 1
-    }
+      "published_in": 92,
+      "treats": 171,
+      "uses": 70,
+      "similar_study": 498,
+      "targets": 120,
+      "is_fqhc": 52,
+      "consecutive_year": 13
+    },
+    "nih_grants": 0,
+    "pdf_grants": 92
   },
   "communities": {
-    "count": 11,
-    "modularity": 0.423
+    "count": 6,
+    "modularity": 0.4064
   },
   "demo_queries": {
-    "diabetes_grants": 134,
-    "chw_grants": 14,
-    "latino_grants": 61,
-    "rfp_results": 26
+    "diabetes_grants": 8,
+    "chw_grants": 50,
+    "latino_grants": 17,
+    "rfp_results": 52
   }
 }

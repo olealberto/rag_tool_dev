@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-06T20:45:57.371701",
+  "timestamp": "2026-03-07T03:02:11.681667",
   "phase3": {
     "MAP": 0.0251,
     "MRR": 0.1546,
@@ -11,20 +11,20 @@
     "section_aware": true
   },
   "phase4": {
-    "MAP": 0.0515,
-    "MRR": 0.268,
-    "R-Prec": 0.1003,
-    "HR@5": 0.4167,
-    "R@20": 0.1003,
-    "optimal_alpha": 0.5
+    "MAP": 0.0518,
+    "MRR": 0.2868,
+    "R-Prec": 0.1241,
+    "HR@5": 0.5,
+    "R@20": 0.1285,
+    "optimal_alpha": 0.25
   },
   "phase5": {
-    "MAP": 0.1155,
-    "MRR": 0.2839,
-    "R-Prec": 0.1003,
-    "HR@5": 0.4167,
-    "R@20": 0.1003,
-    "map_improvement": 0.064,
+    "MAP": 0.0518,
+    "MRR": 0.2868,
+    "R-Prec": 0.1241,
+    "HR@5": 0.5,
+    "R@20": 0.1285,
+    "map_improvement": 0.0,
     "rprec_improvement": 0.0,
     "hr5_improvement": 0.0,
     "r20_improvement": 0.0

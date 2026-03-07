@@ -14,6 +14,31 @@ from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from collections import defaultdict
 
+GRAPH_CONFIG_PATH = "./graph_config.json"
+
+
+def _load_augmentation_config() -> dict:
+    """
+    Load augmentation params from graph_config.json if present.
+    Falls back to system defaults silently — graph augmentation is always on.
+    """
+    defaults = {
+        "overlap_bonus":      0.10,
+        "graph_only_penalty": 0.5,
+        "min_graph_hits":     3,
+    }
+    if not os.path.exists(GRAPH_CONFIG_PATH):
+        return defaults
+    try:
+        with open(GRAPH_CONFIG_PATH) as f:
+            cfg = json.load(f)
+        aug = {k: v for k, v in cfg.get("augmentation", {}).items()
+               if not k.startswith("_")}
+        return {**defaults, **aug}
+    except Exception:
+        return defaults
+
+
 PATHS = {
     "abstracts": "./phase2_output/nih_research_abstracts.csv",
     "chunks":    "./phase3_results/document_chunks_with_embeddings.csv",
@@ -328,6 +353,66 @@ class GraphQueryEngine:
             })
         return results
 
+    _MATCH_STOPWORDS = frozenset([
+        "health", "care", "program", "service", "intervention", "community",
+        "patient", "disease", "disorder", "based", "management", "treatment",
+        "prevention", "high", "risk", "population", "setting", "primary",
+        "chronic", "mental", "behavioral",
+    ])
+
+    _LABEL_ALIASES = {
+        "chw":    ["community health worker", "promotora", "lay health",
+                   "outreach worker", "health promoter", "peer navigator"],
+        "hiv":    ["hiv", "aids", "prep", "antiretroviral"],
+        "prep":   ["prep", "pre-exposure"],
+        "cbt":    ["cognitive behavioral", "counseling"],
+        "sdoh":   ["social determinants", "social needs"],
+        "fqhc":   ["federally qualified", "community health center", "fqhc"],
+    }
+
+    def match_nodes_to_query(self, query: str):
+        """
+        Dynamically match graph concept nodes to a query string.
+        Works on any corpus — no hardcoded condition/intervention/population lists.
+        Uses significant-word matching (ignores generic stopwords like "health",
+        "care") to avoid false positives across unrelated topics.
+        Returns (conditions, interventions, populations) as label string lists
+        suitable for passing to rfp_match().
+        """
+        q = query.lower().replace("_", " ")
+        q_sig = [w for w in q.split()
+                 if len(w) > 2 and w not in self._MATCH_STOPWORDS]
+        conditions, interventions, populations = [], [], []
+        for node in self.graph.nodes:
+            ntype = self.graph.nodes[node].get("type", "")
+            if ntype not in ("condition", "intervention", "population"):
+                continue
+            label = node.split("_", 1)[-1].lower().replace("_", " ")
+            label_sig = [w for w in label.split()
+                         if len(w) > 2 and w not in self._MATCH_STOPWORDS]
+
+            matched = False
+            # Full label substring in query
+            if label in q:
+                matched = True
+            # Short acronym / alias match
+            elif label in self._LABEL_ALIASES:
+                if any(alias in q for alias in self._LABEL_ALIASES[label]):
+                    matched = True
+            elif len(label) <= 4 and label in q.split():
+                matched = True
+            # Significant word overlap
+            elif label_sig and q_sig and                  any(lw == qw or (len(lw) > 4 and (lw in qw or qw in lw))
+                     for lw in label_sig for qw in q_sig):
+                matched = True
+
+            if matched:
+                raw = node.split("_", 1)[-1]
+                if ntype == "condition":      conditions.append(raw)
+                elif ntype == "intervention": interventions.append(raw)
+                elif ntype == "population":   populations.append(raw)
+        return conditions, interventions, populations
+
     def graph_stats(self) -> Dict:
         counts = defaultdict(int)
         for _, d in self.graph.nodes(data=True):
@@ -376,6 +461,13 @@ class GrantQueryPipeline:
         self.model             = None
         self._ready            = False
         self._setup_time       = 0
+        # Augmentation params — loaded from graph_config.json, falls back to defaults.
+        # Edit graph_config.json to customise overlap_bonus, graph_only_penalty,
+        # and min_graph_hits for your corpus (advanced mode).
+        _aug = _load_augmentation_config()
+        self._overlap_bonus      = _aug["overlap_bonus"]
+        self._graph_only_penalty = _aug["graph_only_penalty"]
+        self._min_graph_hits     = _aug["min_graph_hits"]
 
     def setup(self) -> bool:
         print("\n" + "=" * 70)
@@ -488,31 +580,122 @@ class GrantQueryPipeline:
         return unique
 
     def discover_grants(self, topic: str, top_k: int = 10,
-                        fqhc_only: bool = False) -> List[str]:
+                        fqhc_only: bool = False,
+                        parsed: Dict = None) -> List[str]:
         """
-        Corpus-level grant discovery for a topic.
-        Returns a ranked list of grant_ids — used by the assistant to seed
-        section-level retrieval with the most relevant grants from the full corpus.
+        Corpus-level grant discovery combining hybrid search + knowledge graph.
+
+        Hybrid search captures lexical/semantic similarity.
+        Graph rfp_match captures structural similarity via shared condition,
+        intervention, and population nodes — complementary signal.
+
+        Both pools are scored, normalized to [0,1], then merged into a single
+        ranked pool. Best top_k grant_ids returned (score-weighted, no fixed
+        per-source slot allocation). Source tag preserved for display.
+
+        Args:
+            topic:   free-text description for hybrid search encoding
+            top_k:   number of grant_ids to return
+            fqhc_only: restrict to FQHC-connected grants in graph
+            parsed:  optional dict from ApplicationDescriptionParser with
+                     conditions / interventions / populations lists for graph
+        Returns:
+            List[str] of grant_ids ranked by combined score (best first)
         """
         if not self._ready:
             return []
-        query_vec = self.model.encode(topic).tolist()
-        results   = self.weaviate.hybrid_search(
-            topic, query_vec,
-            alpha    = self.alpha,
-            top_k    = top_k * 3,   # fetch extra to get unique grant_ids
-            fqhc_only= fqhc_only,
-        )
-        results = self._filter_synthetic(results)
 
-        # Deduplicate to one entry per grant, keeping highest score
-        seen, grants = {}, []
-        for r in results:
+        # ── 1. Hybrid search pool ─────────────────────────────────────────
+        query_vec    = self.model.encode(topic).tolist()
+        hybrid_raw   = self.weaviate.hybrid_search(
+            topic, query_vec,
+            alpha     = self.alpha,
+            top_k     = top_k * 4,
+            fqhc_only = fqhc_only,
+        )
+        hybrid_raw = self._filter_synthetic(hybrid_raw)
+
+        # Deduplicate to best score per grant
+        hybrid_scores: Dict[str, float] = {}
+        for r in hybrid_raw:
             gid = r.get("grant_id")
-            if gid and (gid not in seen or r["score"] > seen[gid]):
-                seen[gid] = r["score"]
-        # Return sorted grant_ids by score
-        ranked = sorted(seen.items(), key=lambda x: x[1], reverse=True)
+            if gid:
+                hybrid_scores[gid] = max(hybrid_scores.get(gid, 0.0), r["score"])
+
+        # ── 2. Graph rfp_match pool ───────────────────────────────────────
+        graph_scores: Dict[str, float] = {}
+        if self.graph_engine:
+            conditions    = (parsed or {}).get("conditions",    [])
+            interventions = (parsed or {}).get("interventions", [])
+            populations   = (parsed or {}).get("populations",   [])
+
+            # Fall back to keyword extraction from topic if no parsed dict
+            if not any([conditions, interventions, populations]):
+                from collections import Counter
+                words = topic.lower().split()
+                COND_HINTS = ["diabetes","hypertension","hiv","cancer","obesity",
+                              "asthma","depression","opioid","maternal","pediatric"]
+                INT_HINTS  = ["chw","telehealth","screening","education",
+                              "harm reduction","care management","peer support"]
+                POP_HINTS  = ["latino","hispanic","african american","black",
+                              "low income","rural","elderly","lgbtq","immigrant"]
+                conditions    = [h for h in COND_HINTS if h in topic.lower()]
+                interventions = [h for h in INT_HINTS  if h in topic.lower()]
+                populations   = [h for h in POP_HINTS  if h in topic.lower()]
+
+            if any([conditions, interventions, populations]):
+                graph_raw = self.graph_engine.rfp_match(
+                    conditions    = conditions,
+                    interventions = interventions,
+                    populations   = populations,
+                    fqhc_only     = fqhc_only,
+                )
+                graph_raw = self._filter_synthetic(graph_raw)
+                for r in graph_raw:
+                    gid = r.get("grant_id")
+                    if gid:
+                        graph_scores[gid] = max(
+                            graph_scores.get(gid, 0.0), r["score"]
+                        )
+
+        # ── 3. Hybrid-primary, graph-augmented merge ─────────────────────
+        # Hybrid scores are the primary signal — graph augments, never re-ranks.
+        # Params loaded from graph_config.json (user-customisable advanced mode).
+        combined: Dict[str, Dict] = {}
+
+        for gid, score in hybrid_scores.items():
+            combined[gid] = {"score": score, "source": "hybrid"}
+
+        # Only augment if graph returned enough hits (min_graph_hits threshold)
+        if len(graph_scores) >= self._min_graph_hits:
+            for gid in graph_scores:
+                if gid in combined:
+                    # Small boost for grants confirmed by both — never reorders
+                    combined[gid]["score"] *= (1 + self._overlap_bonus)
+                else:
+                    # Graph-only grants appended after hybrid with penalty score
+                    min_h = min(hybrid_scores.values()) if hybrid_scores else 0.1
+                    combined[gid] = {
+                        "score": min_h * self._graph_only_penalty,
+                        "source": "graph"
+                    }
+        else:
+            if graph_scores:
+                print(f"  \u2139\ufe0f  Graph returned {len(graph_scores)} hits "
+                      f"(below min_graph_hits={self._min_graph_hits}) \u2014 skipping augmentation")
+
+        # ── 4. Return top_k grant_ids by combined score ───────────────────
+        ranked = sorted(combined.items(), key=lambda x: x[1]["score"], reverse=True)
+
+        # Store source tags for display in assistant
+        self._last_discovery_sources = {gid: meta["source"]
+                                         for gid, meta in combined.items()}
+
+        n_hybrid = sum(1 for m in combined.values() if m["source"] == "hybrid")
+        n_graph  = sum(1 for m in combined.values() if m["source"] == "graph")
+        print(f"  🧭 Discovery pool: {len(combined)} candidates "
+              f"({n_hybrid} hybrid, {n_graph} graph-only)")
+
         return [gid for gid, _ in ranked[:top_k]]
 
     def rfp_query(self, conditions=None, interventions=None, populations=None,

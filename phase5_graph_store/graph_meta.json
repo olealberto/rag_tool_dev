@@ -1,14 +1,14 @@
 {
-  "saved_at": "2026-02-22T08:23:13.164864",
-  "nodes": 1826,
-  "edges": 16901,
+  "saved_at": "2026-03-07T02:59:16.351550",
+  "nodes": 136,
+  "edges": 1016,
   "node_types": {
-    "grant": 1797,
-    "year": 2,
-    "condition": 10,
-    "intervention": 8,
-    "population": 8,
+    "grant": 92,
+    "year": 14,
+    "condition": 14,
+    "intervention": 5,
+    "population": 10,
     "fqhc_hub": 1
   },
-  "corpus_fingerprint": "6ace068bc4738baf"
+  "corpus_fingerprint": "8cf7c72cc28ebf6e"
 }

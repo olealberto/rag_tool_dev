@@ -1,0 +1,378 @@
+{
+  "_comment": "Knowledge graph augmentation config. Edit to customize for your corpus.",
+  "_docs": "Graph augmentation is always active. These settings control how the graph is built and how it augments hybrid search results.",
+  "augmentation": {
+    "_comment": "Controls how graph results are merged with hybrid search scores.",
+    "overlap_bonus": 0.1,
+    "graph_only_penalty": 0.5,
+    "min_graph_hits": 3
+  },
+  "edge_weights": {
+    "_comment": "Weights assigned to edges between grant nodes and concept nodes.",
+    "treats": 1.2,
+    "uses": 1.1,
+    "targets": 1.1,
+    "published_in": 0.6,
+    "similar_to": 0.8,
+    "fqhc_hub": 1.0
+  },
+  "conditions": {
+    "_comment": "Map of condition name \u2192 list of keywords to detect in grant text. Add, remove, or extend entries for your corpus.",
+    "diabetes": [
+      "diabetes",
+      "diabetic",
+      "hba1c",
+      "glycemic",
+      "insulin",
+      "type 2 diabetes",
+      "type ii diabetes",
+      "prediabetes",
+      "diabetes prevention",
+      "glucose"
+    ],
+    "hypertension": [
+      "hypertension",
+      "blood pressure",
+      "cardiovascular",
+      "heart disease",
+      "stroke",
+      "systolic",
+      "antihypertensive",
+      "hypertensive",
+      "cardiac"
+    ],
+    "depression": [
+      "depression",
+      "depressive",
+      "phq-9",
+      "antidepressant",
+      "major depressive",
+      "mood disorder"
+    ],
+    "anxiety": [
+      "anxiety",
+      "gad-7",
+      "panic disorder",
+      "anxious"
+    ],
+    "HIV": [
+      "hiv",
+      "aids",
+      "prep",
+      "antiretroviral",
+      "art",
+      "hiv prevention",
+      "viral load",
+      "cd4"
+    ],
+    "asthma": [
+      "asthma",
+      "inhaler",
+      "bronchial",
+      "pulmonary",
+      "copd",
+      "respiratory",
+      "lung disease"
+    ],
+    "cancer": [
+      "cancer",
+      "oncology",
+      "tumor",
+      "carcinoma",
+      "mammography",
+      "colonoscopy",
+      "cervical",
+      "colorectal"
+    ],
+    "obesity": [
+      "obesity",
+      "bmi",
+      "weight loss",
+      "overweight",
+      "weight management",
+      "bariatric"
+    ],
+    "substance_use": [
+      "substance use",
+      "opioid",
+      "addiction",
+      "naloxone",
+      "buprenorphine",
+      "alcohol use",
+      "drug use",
+      "substance abuse",
+      "suds",
+      "overdose",
+      "methadone",
+      "harm reduction",
+      "recovery",
+      "withdrawal",
+      "stimulant",
+      "fentanyl",
+      "heroin",
+      "cocaine"
+    ],
+    "social_determinants": [
+      "food insecurity",
+      "housing instability",
+      "sdoh",
+      "social determinants",
+      "social needs",
+      "food access",
+      "transportation barrier",
+      "social risk",
+      "unmet social",
+      "housing insecurity",
+      "economic hardship",
+      "utility",
+      "interpersonal violence"
+    ],
+    "behavioral_health": [
+      "behavioral health",
+      "mental health",
+      "psychiatric",
+      "psychosocial",
+      "behavioral disorder",
+      "mental illness",
+      "mental disorder",
+      "co-occurring",
+      "dual diagnosis",
+      "trauma",
+      "ptsd",
+      "crisis intervention"
+    ],
+    "chronic_disease": [
+      "chronic disease",
+      "chronic condition",
+      "comorbidity",
+      "multiple chronic",
+      "disease management",
+      "chronic care"
+    ],
+    "maternal_health": [
+      "maternal",
+      "prenatal",
+      "pregnancy",
+      "postpartum",
+      "birth outcomes",
+      "infant mortality",
+      "obstetric"
+    ],
+    "infectious_disease": [
+      "infectious disease",
+      "sexually transmitted",
+      "sti",
+      "tuberculosis",
+      "hepatitis",
+      "vaccine",
+      "immunization"
+    ]
+  },
+  "interventions": {
+    "_comment": "Map of intervention name \u2192 keywords. Extend with intervention types specific to your grant corpus.",
+    "CHW": [
+      "community health worker",
+      "chw",
+      "promotora",
+      "lay health advisor",
+      "community health educator",
+      "outreach worker",
+      "peer navigator",
+      "health promoter"
+    ],
+    "telehealth": [
+      "telehealth",
+      "telemedicine",
+      "virtual visit",
+      "remote monitoring",
+      "mhealth",
+      "mobile health",
+      "digital health",
+      "text message",
+      "sms",
+      "mobile app",
+      "video visit",
+      "remote care",
+      "electronic health"
+    ],
+    "navigation": [
+      "patient navigation",
+      "navigator",
+      "care coordination",
+      "care manager",
+      "case management",
+      "care coordinator"
+    ],
+    "screening": [
+      "screening program",
+      "preventive screening",
+      "early detection",
+      "health screening",
+      "cancer screening",
+      "diabetes screening",
+      "blood pressure screening"
+    ],
+    "education": [
+      "health education",
+      "health literacy",
+      "patient education",
+      "self-management",
+      "community education",
+      "wellness education"
+    ],
+    "behavioral": [
+      "cognitive behavioral",
+      "cbt",
+      "counseling",
+      "behavioral intervention",
+      "motivational interviewing",
+      "behavior change",
+      "psychotherapy"
+    ],
+    "medication": [
+      "medication adherence",
+      "pharmacist",
+      "medication management",
+      "drug therapy",
+      "prescription",
+      "pharmacotherapy"
+    ],
+    "integrated_care": [
+      "integrated care",
+      "co-located",
+      "collaborative care",
+      "behavioral health integration",
+      "primary care integration",
+      "co-occurring treatment",
+      "whole person care",
+      "team-based care",
+      "interdisciplinary"
+    ],
+    "peer_support": [
+      "peer support",
+      "peer specialist",
+      "peer counselor",
+      "lived experience",
+      "recovery coach",
+      "peer recovery"
+    ],
+    "harm_reduction": [
+      "harm reduction",
+      "syringe services",
+      "needle exchange",
+      "overdose prevention",
+      "naloxone distribution",
+      "safer use"
+    ],
+    "care_management": [
+      "care management",
+      "disease management",
+      "chronic care",
+      "population health management",
+      "registry"
+    ]
+  },
+  "populations": {
+    "_comment": "Map of population name \u2192 keywords. Add populations relevant to your corpus (e.g. veterans, incarcerated, farmworkers).",
+    "Latino": [
+      "latino",
+      "hispanic",
+      "latinx",
+      "spanish speaking",
+      "promotora",
+      "spanish-speaking",
+      "mexican",
+      "puerto rican",
+      "central american",
+      "spanish language"
+    ],
+    "African_American": [
+      "african american",
+      "black",
+      "african-american",
+      "black community",
+      "african american community"
+    ],
+    "pediatric": [
+      "pediatric",
+      "children",
+      "adolescent",
+      "youth",
+      "child health",
+      "school based",
+      "school-based",
+      "teenager",
+      "juvenile",
+      "childhood"
+    ],
+    "geriatric": [
+      "older adult",
+      "geriatric",
+      "elderly",
+      "aging",
+      "senior",
+      "older patient",
+      "aged",
+      "gerontology"
+    ],
+    "rural": [
+      "rural",
+      "appalachian",
+      "frontier",
+      "rural health",
+      "rural community",
+      "remote area",
+      "underserved rural"
+    ],
+    "low_income": [
+      "low-income",
+      "low income",
+      "poverty",
+      "economically",
+      "underserved",
+      "disadvantaged",
+      "below poverty",
+      "200% fpl",
+      "safety net",
+      "uninsured"
+    ],
+    "Medicaid": [
+      "medicaid",
+      "uninsured",
+      "underinsured",
+      "safety-net",
+      "chip",
+      "dual eligible",
+      "medicaid beneficiary"
+    ],
+    "LGBTQ": [
+      "lgbtq",
+      "transgender",
+      "sexual minority",
+      "msm",
+      "gender nonconforming",
+      "queer",
+      "bisexual",
+      "gay",
+      "lesbian",
+      "gender identity"
+    ],
+    "immigrant": [
+      "immigrant",
+      "refugee",
+      "undocumented",
+      "limited english",
+      "lep",
+      "foreign born",
+      "newcomer",
+      "asylum"
+    ],
+    "homeless": [
+      "homeless",
+      "unhoused",
+      "housing instability",
+      "shelter",
+      "transitional housing"
+    ]
+  }
+}
