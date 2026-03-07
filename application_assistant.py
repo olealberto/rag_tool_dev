@@ -263,11 +263,12 @@ class ApplicationAssistant:
         is_fqhc     = parsed.get("is_fqhc", False)
 
         # ── corpus discovery ──────────────────────────────────────────────
-        print(f"  \U0001f50d Discovering relevant grants from corpus...")
+        print(f"  \U0001f50d Discovering relevant grants from corpus (hybrid + graph)...")
         discovered = self.pipeline.discover_grants(
             topic     = topic,
             top_k     = self.CORPUS_DISCOVERY_SLOTS + len(self.user_grants),
             fqhc_only = is_fqhc,
+            parsed    = parsed,
         )
 
         # ── merge: user grants first, corpus fills remaining slots ────────
@@ -276,11 +277,18 @@ class ApplicationAssistant:
         merged     = self.user_grants + corpus_new[:self.CORPUS_DISCOVERY_SLOTS]
 
         if merged:
+            # Retrieve source tags from pipeline if available
+            discovery_sources = getattr(self.pipeline, "_last_discovery_sources", {})
+            n_corpus = len(corpus_new[:self.CORPUS_DISCOVERY_SLOTS])
             print(f"  \U0001f4da Searching {len(merged)} grants "
-                  f"({len(self.user_grants)} user + "
-                  f"{len(corpus_new[:self.CORPUS_DISCOVERY_SLOTS])} discovered)")
+                  f"({len(self.user_grants)} user + {n_corpus} discovered)")
             for g in merged[:6]:
-                tag = " [user]" if g in user_set else " [discovered]"
+                if g in user_set:
+                    tag = " [user]"
+                elif discovery_sources.get(g) == "graph":
+                    tag = " [graph]"
+                else:
+                    tag = " [hybrid]"
                 print(f"     \u2022 {g}{tag}")
             if len(merged) > 6:
                 print(f"     ... and {len(merged) - 6} more")
@@ -822,9 +830,100 @@ class ApplicationDescriptionParser:
 
         enriched_parts = [description.strip()]
         extras = conditions + populations + interventions + settings
-        if extras:       enriched_parts.append(" ".join(extras))
-        if is_equity:    enriched_parts.append("health disparities racial equity underserved communities")
-        if is_nonprofit: enriched_parts.append("community-based organization direct services")
+        if extras: enriched_parts.append(" ".join(extras))
+
+        # ── Funder-aware vocabulary enrichment ────────────────────────────
+        # Clinical specificity terms are prepended for NIH queries because
+        # BM25 rewards rare, specific terms — generic words like "prevention"
+        # are too common across the corpus to discriminate well.
+        # Community/equity terms are prepended for HRSA/FQHC/nonprofit queries
+        # because those grants don't use clinical terminology but do use
+        # population health and program delivery language.
+        # Both layers are included when context is mixed (e.g. FQHC + diabetes).
+
+        # Clinical specificity layer — condition-specific vocabulary that
+        # rarely appears outside genuinely relevant grants
+        CLINICAL_VOCAB = {
+            "diabetes":          "glycemic HbA1c prediabetes insulin type 2 diabetes glucose",
+            "hypertension":      "blood pressure systolic diastolic antihypertensive cardiovascular",
+            "cancer":            "oncology tumor screening mammogram colonoscopy chemotherapy",
+            "HIV":               "antiretroviral viral load PrEP CD4 HIV transmission",
+            "substance_use":     "opioid buprenorphine methadone naloxone overdose SUD MAT",
+            "behavioral_health": "PHQ-9 GAD-7 psychiatric depression anxiety PTSD crisis",
+            "obesity":           "BMI weight loss lifestyle intervention physical activity caloric",
+            "asthma":            "inhaler spirometry bronchodilator pulmonary FEV1 COPD",
+            "maternal_health":   "prenatal postpartum obstetric birth outcomes neonatal perinatal",
+            "pediatric":         "child development growth adolescent school-age immunization",
+            "infectious_disease":"pathogen surveillance transmission epidemiology incidence",
+            "chronic_disease":   "disease management comorbidity care coordination self-management",
+            "oral_health":       "dental caries periodontal fluoride oral hygiene",
+            "violence":          "trauma-informed ACEs intimate partner safety screening",
+        }
+
+        # Community/program layer — vocabulary for FQHC, nonprofit, and
+        # community-based grants that don't use clinical terminology
+        COMMUNITY_VOCAB = {
+            "CHW":             "community health worker promotora outreach lay health advisor",
+            "telehealth":      "remote monitoring virtual visit mHealth digital health platform",
+            "care_management": "care coordination case management integrated care navigator",
+            "screening":       "early detection preventive care health screening testing outreach",
+            "education":       "health literacy curriculum workshop community education awareness",
+            "peer_support":    "peer specialist lived experience recovery coach peer counselor",
+            "direct_services": "direct care wraparound comprehensive services social services",
+            "capacity_building":"workforce development technical assistance coalition partnership",
+        }
+
+        # Add clinical specificity for matched conditions (always helpful)
+        for cond in conditions:
+            if cond in CLINICAL_VOCAB:
+                enriched_parts.append(CLINICAL_VOCAB[cond])
+
+        # Add community/program vocabulary for matched interventions
+        for intervention in interventions:
+            if intervention in COMMUNITY_VOCAB:
+                enriched_parts.append(COMMUNITY_VOCAB[intervention])
+
+        # Funder-specific framing
+        if funder_type == "NIH":
+            # NIH: emphasize research design and clinical outcomes
+            enriched_parts.append("research design study protocol clinical outcomes measurement")
+            if conditions:
+                enriched_parts.append("disease mechanism pathophysiology biomarker evidence-based")
+        elif funder_type in ("HRSA", "SAMHSA") or is_fqhc:
+            # HRSA/FQHC: emphasize access, underserved populations, service delivery
+            enriched_parts.append(
+                "federally qualified health center community health center "
+                "underserved primary care access safety-net medically underserved"
+            )
+            if populations:
+                enriched_parts.append("health disparities health equity vulnerable population")
+        elif funder_type == "CDC":
+            # CDC: emphasize surveillance, population-level impact, public health
+            enriched_parts.append(
+                "surveillance epidemiology population health public health "
+                "disease burden incidence prevalence community-level"
+            )
+        elif funder_type in ("foundation", "city_public_health"):
+            # Foundation/city: emphasize community impact, equity, program outcomes
+            enriched_parts.append(
+                "community-based organization nonprofit direct services "
+                "program outcomes logic model sustainability equity"
+            )
+
+        # Cross-cutting equity layer — added for any funder when equity is present
+        if is_equity:
+            enriched_parts.append(
+                "health disparities racial equity underserved communities "
+                "social determinants structural barriers"
+            )
+
+        # Nonprofit/CBO layer
+        if is_nonprofit:
+            enriched_parts.append(
+                "community-based organization direct services target population "
+                "program participants organizational capacity"
+            )
+
         enriched = " ".join(enriched_parts)
 
         sections = self.FUNDER_SECTIONS.get(funder_type, self.FUNDER_SECTIONS["foundation"])
