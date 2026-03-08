@@ -1,0 +1,253 @@
+{
+  "session_start": "2026-03-08T19:20:06.603363",
+  "session_end": "2026-03-08T19:21:42.311015",
+  "total_queries": 1,
+  "user_grants": [],
+  "queries": [
+    {
+      "timestamp": "2026-03-08T19:21:12.914903",
+      "topic": "liability",
+      "funder_type": "NIH",
+      "sections": [
+        "Specific Aims",
+        "Significance",
+        "Innovation",
+        "Approach",
+        "Methods",
+        "Background"
+      ],
+      "elapsed_s": 1.08,
+      "total_candidates": 18,
+      "results": {
+        "Specific Aims": [
+          {
+            "rank": 1,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9844,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "project_summary",
+            "chunk_index": 0,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Personalized medicine (PM) has the potential to transform medicine and the health care system over the next\ndecade. An overlooked variable that will play an important role in the implementation of PM is the potential for\nlegal liability. Physicians, a key gatekeeper in the uptake of PM, are at the greatest risk of liability. Currently,\nthere is great uncertainty, disagreement and rapid change with regard to the use of PM tests in clinical care. It\nis during this period of uncertainty and change where the potential for liability is at its greatest and thus the\nneed for comprehensive legal research and analysis of the intersection of these issues is most pressing. This\nproposed project seeks to fill the gap in the understanding of PM liability risks by providing legal doctrinal,\nempirical, and policy research on the risks, impacts and possible policy approaches with regard to PM liability. The results of this project can help to better understand and predict the future course of PM and to identify the\nkey legal and policy levers that may be available to ensure that liability plays a beneficial rather than\ndetrimental role in the implementation of PM. This project has five primary objectives. This project will provide\na comprehensive investigation and analysis of potential liability to physicians, first by examining the applicable\nclaims, defenses and doctrines that will, provide the legal framework for liability, and which themselves are\ncurrently undergoing important changes. Second, we will evaluate the potential risks of liability to physicians\nby integrating the doctrinal analysis with the fact patterns and evidence in four likely PM case studies, as well\nas by evaluating liability lessons from the uptake of previous medical technologies and practices."
+          },
+          {
+            "rank": 2,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9831,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 24,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Physicians, hospitals,\nmalpractice insurers, and other PM stakeholders will be making important decision that are currently based on\nincomplete or inaccurate impressions of their liability risks. Moreover, once liability has been established and\nstarts to snowball, it will be too late to take appropriate measures and safeguards to protect against liability. At\nthis critical juncture in the rollout of PM, before widespread liability has taken hold, it would therefore be very\nResearch Strategy Page 48\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\nimportant and useful to comprehensively study and make widely available the best information and projections\nof the risks and relevant factors for liability relating to PM. Because both the likelinood and outcome of PM\nlawsuits will be highly fact- and evidence-dependent, it will be necessary to evaluate liability risks in the context\nof specific examples in which the applicable legal and evidentiary information is assessed and integrated. This\nattempt to predict the risks of PM liability, integrating both legal doctrine and factual evidence, will be the\nsecond objective of this proposal. 4, ts Liability A Problem? The third objective of this project will be to anticipate the potential impacts, both beneficial and detrimental, of\nphysician liability in the PM arena Personal injury liability, including liability for health care professionals, can\nserve an important social purpose to the extent that it induces actors to take appropriate actions to minimize\nunreasonable health risks {Gostin, 2000; Mello, 2006). If individuals are being harmed or denied the best\nhealth care because of the unreasonable failure of physicians to take full advantage of PM knowledge and\ntechnologies, the threat of liability can be an important driver for implementing sooner and more widely such\nbeneficial personalized medicine technologies at the clinical level."
+          },
+          {
+            "rank": 3,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9789,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 28,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Almost no work has\nbeen done on liability prevention in the PM context to date, but some of the ideas that will be explored include\nbetter business models to integrate drugs and companion diagnostic tests, clinical guidelines that recommend\nbest practices, better training of physicians and other health professionals, regulatory changes and other\nResearch Strategy Page 49\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\npossible solutions (Evans, 2007; Roth, 2007; Evans, 2006; Marchant et al., 2006). Finally, there is an important need to educate affected stakeholders and policymakers about the potential risks\nand impacts of liability for PM. For example, physicians, PM policymakers, medical guidelines writers,\nregulators, and medical educators need to have realistic expectations about the potential for liability in this\nsphere as PM emerges as the dominant medical model of this century. Patients, the group who will potentially\nbring such lawsuits, and the stakeholders who could be most affected by both the beneficial and detrimental\npotential impacts of liability, need to be aware of liability issues and become proactive in the inevitable policy\nand legal battles relating to liability. Finally, the practitioners in the legal liability field, including lawyers, expert\nwitnesses and judges, also would benefit from clear and informative information about liability. Thus, the fifth\nobjective of the proposal will be to conduct outreach on the findings of this project to key stakeholder groups\nincluding physicians, patient groups and legal practitioners. ll. Innovation\nMuch research has been done on the scientific, medical, regulatory, economic, educational, intellectual\nproperty, ethical and public policy aspects of personalized medicine. In contrast, very little doctrinal, empirical\nor theoretical work has been done on the issue of liability in the PM field, notwithstanding frequent references\n| to the importance of the issue for PM (e.g., SACGHS, 2008, p."
+          }
+        ],
+        "Significance": [
+          {
+            "rank": 1,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9844,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "project_summary",
+            "chunk_index": 0,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Personalized medicine (PM) has the potential to transform medicine and the health care system over the next\ndecade. An overlooked variable that will play an important role in the implementation of PM is the potential for\nlegal liability. Physicians, a key gatekeeper in the uptake of PM, are at the greatest risk of liability. Currently,\nthere is great uncertainty, disagreement and rapid change with regard to the use of PM tests in clinical care. It\nis during this period of uncertainty and change where the potential for liability is at its greatest and thus the\nneed for comprehensive legal research and analysis of the intersection of these issues is most pressing. This\nproposed project seeks to fill the gap in the understanding of PM liability risks by providing legal doctrinal,\nempirical, and policy research on the risks, impacts and possible policy approaches with regard to PM liability. The results of this project can help to better understand and predict the future course of PM and to identify the\nkey legal and policy levers that may be available to ensure that liability plays a beneficial rather than\ndetrimental role in the implementation of PM. This project has five primary objectives. This project will provide\na comprehensive investigation and analysis of potential liability to physicians, first by examining the applicable\nclaims, defenses and doctrines that will, provide the legal framework for liability, and which themselves are\ncurrently undergoing important changes. Second, we will evaluate the potential risks of liability to physicians\nby integrating the doctrinal analysis with the fact patterns and evidence in four likely PM case studies, as well\nas by evaluating liability lessons from the uptake of previous medical technologies and practices."
+          },
+          {
+            "rank": 2,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9831,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 24,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Physicians, hospitals,\nmalpractice insurers, and other PM stakeholders will be making important decision that are currently based on\nincomplete or inaccurate impressions of their liability risks. Moreover, once liability has been established and\nstarts to snowball, it will be too late to take appropriate measures and safeguards to protect against liability. At\nthis critical juncture in the rollout of PM, before widespread liability has taken hold, it would therefore be very\nResearch Strategy Page 48\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\nimportant and useful to comprehensively study and make widely available the best information and projections\nof the risks and relevant factors for liability relating to PM. Because both the likelinood and outcome of PM\nlawsuits will be highly fact- and evidence-dependent, it will be necessary to evaluate liability risks in the context\nof specific examples in which the applicable legal and evidentiary information is assessed and integrated. This\nattempt to predict the risks of PM liability, integrating both legal doctrine and factual evidence, will be the\nsecond objective of this proposal. 4, ts Liability A Problem? The third objective of this project will be to anticipate the potential impacts, both beneficial and detrimental, of\nphysician liability in the PM arena Personal injury liability, including liability for health care professionals, can\nserve an important social purpose to the extent that it induces actors to take appropriate actions to minimize\nunreasonable health risks {Gostin, 2000; Mello, 2006). If individuals are being harmed or denied the best\nhealth care because of the unreasonable failure of physicians to take full advantage of PM knowledge and\ntechnologies, the threat of liability can be an important driver for implementing sooner and more widely such\nbeneficial personalized medicine technologies at the clinical level."
+          },
+          {
+            "rank": 3,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9789,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 28,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Almost no work has\nbeen done on liability prevention in the PM context to date, but some of the ideas that will be explored include\nbetter business models to integrate drugs and companion diagnostic tests, clinical guidelines that recommend\nbest practices, better training of physicians and other health professionals, regulatory changes and other\nResearch Strategy Page 49\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\npossible solutions (Evans, 2007; Roth, 2007; Evans, 2006; Marchant et al., 2006). Finally, there is an important need to educate affected stakeholders and policymakers about the potential risks\nand impacts of liability for PM. For example, physicians, PM policymakers, medical guidelines writers,\nregulators, and medical educators need to have realistic expectations about the potential for liability in this\nsphere as PM emerges as the dominant medical model of this century. Patients, the group who will potentially\nbring such lawsuits, and the stakeholders who could be most affected by both the beneficial and detrimental\npotential impacts of liability, need to be aware of liability issues and become proactive in the inevitable policy\nand legal battles relating to liability. Finally, the practitioners in the legal liability field, including lawyers, expert\nwitnesses and judges, also would benefit from clear and informative information about liability. Thus, the fifth\nobjective of the proposal will be to conduct outreach on the findings of this project to key stakeholder groups\nincluding physicians, patient groups and legal practitioners. ll. Innovation\nMuch research has been done on the scientific, medical, regulatory, economic, educational, intellectual\nproperty, ethical and public policy aspects of personalized medicine. In contrast, very little doctrinal, empirical\nor theoretical work has been done on the issue of liability in the PM field, notwithstanding frequent references\n| to the importance of the issue for PM (e.g., SACGHS, 2008, p."
+          }
+        ],
+        "Innovation": [
+          {
+            "rank": 1,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9844,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "project_summary",
+            "chunk_index": 0,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Personalized medicine (PM) has the potential to transform medicine and the health care system over the next\ndecade. An overlooked variable that will play an important role in the implementation of PM is the potential for\nlegal liability. Physicians, a key gatekeeper in the uptake of PM, are at the greatest risk of liability. Currently,\nthere is great uncertainty, disagreement and rapid change with regard to the use of PM tests in clinical care. It\nis during this period of uncertainty and change where the potential for liability is at its greatest and thus the\nneed for comprehensive legal research and analysis of the intersection of these issues is most pressing. This\nproposed project seeks to fill the gap in the understanding of PM liability risks by providing legal doctrinal,\nempirical, and policy research on the risks, impacts and possible policy approaches with regard to PM liability. The results of this project can help to better understand and predict the future course of PM and to identify the\nkey legal and policy levers that may be available to ensure that liability plays a beneficial rather than\ndetrimental role in the implementation of PM. This project has five primary objectives. This project will provide\na comprehensive investigation and analysis of potential liability to physicians, first by examining the applicable\nclaims, defenses and doctrines that will, provide the legal framework for liability, and which themselves are\ncurrently undergoing important changes. Second, we will evaluate the potential risks of liability to physicians\nby integrating the doctrinal analysis with the fact patterns and evidence in four likely PM case studies, as well\nas by evaluating liability lessons from the uptake of previous medical technologies and practices."
+          },
+          {
+            "rank": 2,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9831,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 24,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Physicians, hospitals,\nmalpractice insurers, and other PM stakeholders will be making important decision that are currently based on\nincomplete or inaccurate impressions of their liability risks. Moreover, once liability has been established and\nstarts to snowball, it will be too late to take appropriate measures and safeguards to protect against liability. At\nthis critical juncture in the rollout of PM, before widespread liability has taken hold, it would therefore be very\nResearch Strategy Page 48\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\nimportant and useful to comprehensively study and make widely available the best information and projections\nof the risks and relevant factors for liability relating to PM. Because both the likelinood and outcome of PM\nlawsuits will be highly fact- and evidence-dependent, it will be necessary to evaluate liability risks in the context\nof specific examples in which the applicable legal and evidentiary information is assessed and integrated. This\nattempt to predict the risks of PM liability, integrating both legal doctrine and factual evidence, will be the\nsecond objective of this proposal. 4, ts Liability A Problem? The third objective of this project will be to anticipate the potential impacts, both beneficial and detrimental, of\nphysician liability in the PM arena Personal injury liability, including liability for health care professionals, can\nserve an important social purpose to the extent that it induces actors to take appropriate actions to minimize\nunreasonable health risks {Gostin, 2000; Mello, 2006). If individuals are being harmed or denied the best\nhealth care because of the unreasonable failure of physicians to take full advantage of PM knowledge and\ntechnologies, the threat of liability can be an important driver for implementing sooner and more widely such\nbeneficial personalized medicine technologies at the clinical level."
+          },
+          {
+            "rank": 3,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9789,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 28,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Almost no work has\nbeen done on liability prevention in the PM context to date, but some of the ideas that will be explored include\nbetter business models to integrate drugs and companion diagnostic tests, clinical guidelines that recommend\nbest practices, better training of physicians and other health professionals, regulatory changes and other\nResearch Strategy Page 49\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\npossible solutions (Evans, 2007; Roth, 2007; Evans, 2006; Marchant et al., 2006). Finally, there is an important need to educate affected stakeholders and policymakers about the potential risks\nand impacts of liability for PM. For example, physicians, PM policymakers, medical guidelines writers,\nregulators, and medical educators need to have realistic expectations about the potential for liability in this\nsphere as PM emerges as the dominant medical model of this century. Patients, the group who will potentially\nbring such lawsuits, and the stakeholders who could be most affected by both the beneficial and detrimental\npotential impacts of liability, need to be aware of liability issues and become proactive in the inevitable policy\nand legal battles relating to liability. Finally, the practitioners in the legal liability field, including lawyers, expert\nwitnesses and judges, also would benefit from clear and informative information about liability. Thus, the fifth\nobjective of the proposal will be to conduct outreach on the findings of this project to key stakeholder groups\nincluding physicians, patient groups and legal practitioners. ll. Innovation\nMuch research has been done on the scientific, medical, regulatory, economic, educational, intellectual\nproperty, ethical and public policy aspects of personalized medicine. In contrast, very little doctrinal, empirical\nor theoretical work has been done on the issue of liability in the PM field, notwithstanding frequent references\n| to the importance of the issue for PM (e.g., SACGHS, 2008, p."
+          }
+        ],
+        "Approach": [
+          {
+            "rank": 1,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9844,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "project_summary",
+            "chunk_index": 0,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Personalized medicine (PM) has the potential to transform medicine and the health care system over the next\ndecade. An overlooked variable that will play an important role in the implementation of PM is the potential for\nlegal liability. Physicians, a key gatekeeper in the uptake of PM, are at the greatest risk of liability. Currently,\nthere is great uncertainty, disagreement and rapid change with regard to the use of PM tests in clinical care. It\nis during this period of uncertainty and change where the potential for liability is at its greatest and thus the\nneed for comprehensive legal research and analysis of the intersection of these issues is most pressing. This\nproposed project seeks to fill the gap in the understanding of PM liability risks by providing legal doctrinal,\nempirical, and policy research on the risks, impacts and possible policy approaches with regard to PM liability. The results of this project can help to better understand and predict the future course of PM and to identify the\nkey legal and policy levers that may be available to ensure that liability plays a beneficial rather than\ndetrimental role in the implementation of PM. This project has five primary objectives. This project will provide\na comprehensive investigation and analysis of potential liability to physicians, first by examining the applicable\nclaims, defenses and doctrines that will, provide the legal framework for liability, and which themselves are\ncurrently undergoing important changes. Second, we will evaluate the potential risks of liability to physicians\nby integrating the doctrinal analysis with the fact patterns and evidence in four likely PM case studies, as well\nas by evaluating liability lessons from the uptake of previous medical technologies and practices."
+          },
+          {
+            "rank": 2,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9831,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 24,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Physicians, hospitals,\nmalpractice insurers, and other PM stakeholders will be making important decision that are currently based on\nincomplete or inaccurate impressions of their liability risks. Moreover, once liability has been established and\nstarts to snowball, it will be too late to take appropriate measures and safeguards to protect against liability. At\nthis critical juncture in the rollout of PM, before widespread liability has taken hold, it would therefore be very\nResearch Strategy Page 48\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\nimportant and useful to comprehensively study and make widely available the best information and projections\nof the risks and relevant factors for liability relating to PM. Because both the likelinood and outcome of PM\nlawsuits will be highly fact- and evidence-dependent, it will be necessary to evaluate liability risks in the context\nof specific examples in which the applicable legal and evidentiary information is assessed and integrated. This\nattempt to predict the risks of PM liability, integrating both legal doctrine and factual evidence, will be the\nsecond objective of this proposal. 4, ts Liability A Problem? The third objective of this project will be to anticipate the potential impacts, both beneficial and detrimental, of\nphysician liability in the PM arena Personal injury liability, including liability for health care professionals, can\nserve an important social purpose to the extent that it induces actors to take appropriate actions to minimize\nunreasonable health risks {Gostin, 2000; Mello, 2006). If individuals are being harmed or denied the best\nhealth care because of the unreasonable failure of physicians to take full advantage of PM knowledge and\ntechnologies, the threat of liability can be an important driver for implementing sooner and more widely such\nbeneficial personalized medicine technologies at the clinical level."
+          },
+          {
+            "rank": 3,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9789,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 28,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Almost no work has\nbeen done on liability prevention in the PM context to date, but some of the ideas that will be explored include\nbetter business models to integrate drugs and companion diagnostic tests, clinical guidelines that recommend\nbest practices, better training of physicians and other health professionals, regulatory changes and other\nResearch Strategy Page 49\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\npossible solutions (Evans, 2007; Roth, 2007; Evans, 2006; Marchant et al., 2006). Finally, there is an important need to educate affected stakeholders and policymakers about the potential risks\nand impacts of liability for PM. For example, physicians, PM policymakers, medical guidelines writers,\nregulators, and medical educators need to have realistic expectations about the potential for liability in this\nsphere as PM emerges as the dominant medical model of this century. Patients, the group who will potentially\nbring such lawsuits, and the stakeholders who could be most affected by both the beneficial and detrimental\npotential impacts of liability, need to be aware of liability issues and become proactive in the inevitable policy\nand legal battles relating to liability. Finally, the practitioners in the legal liability field, including lawyers, expert\nwitnesses and judges, also would benefit from clear and informative information about liability. Thus, the fifth\nobjective of the proposal will be to conduct outreach on the findings of this project to key stakeholder groups\nincluding physicians, patient groups and legal practitioners. ll. Innovation\nMuch research has been done on the scientific, medical, regulatory, economic, educational, intellectual\nproperty, ethical and public policy aspects of personalized medicine. In contrast, very little doctrinal, empirical\nor theoretical work has been done on the issue of liability in the PM field, notwithstanding frequent references\n| to the importance of the issue for PM (e.g., SACGHS, 2008, p."
+          }
+        ],
+        "Methods": [
+          {
+            "rank": 1,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9708,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 23,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Yet, there are reasons to believe that personalized medicine may present unique liability issues for physicians\ncompared to past medical technologies, although the project will seek to test this hypothesis. Reasons that\nPM may present unique liability dynamics include: (i) unlike other areas of medical practice where specialists\nwith training and experience in the relevant specialty are applying a new technology or procedure, PM will\ninvolve the application of genetic information by physicians in virtually every type of practice, most of whom\nhave no training or expertise in genetics; {ii) there are major uncertainties and disagreements within the\nmedical and scientific communities about the appropriate use of personalized medicine tests at this time\n(Burke et al., 2010), and such uncertainty is known to be a major factor increasing liability risks (Craswell &\nCalfee, 1986); and (iii) the rapid pace of technology change in the personalized medicine results in constantly\nchanging expectations and standards of care that can again greatly increase liability risk (SACGHS, 2008;\nMarchant et al., 2011). In this present and unique environment, where much uncertainty exists about both the appropriate\nimplementation of PM and the risks associated with implementing or not implementing specific PM methods,\nthere is an important need for greater information and guidance on liability risks. Physicians, hospitals,\nmalpractice insurers, and other PM stakeholders will be making important decision that are currently based on\nincomplete or inaccurate impressions of their liability risks. Moreover, once liability has been established and\nstarts to snowball, it will be too late to take appropriate measures and safeguards to protect against liability."
+          },
+          {
+            "rank": 2,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9348,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 19,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "As the scientific knowledge, regulatory approval,\nand commercial availability of pharmacogenomic tests continues to expand, the potential and likelihood for\nliability will likewise continue to grow, especially if physicians are resistant to the uptake of these new\ntechnologies and procedures. Yet, there is considerable uncertainty about the prospects of a medical\nmalpractice or other lawsuit brought by patients or other injured persons against their physician alleging that\ntheir injury was caused or exacerbated by the use or failure to employ PM technologies. The applicable legal\nscenarios, doctrines and evidentiary requirements relevant for PM liability for physicians are relatively\nuncharted, and are not fixed but rather are evolving due to shifting legal and policy trends. The first objective\nof this project will therefore be to identify and evaluate the relevant legal claims, defenses, and doctrines that\nwill be applicable for potential liability lawsuits against physicians relating to PM, including recent doctrinal\nchanges and trends that will significantly affect the liability exposure of physicians. For example, to bring a successful medical malpractice case against a physician, a plaintiff must show that (i)\nthe physician had a duty of care to the plaintiff, (ii) the physician breached that duty, (iii) the plaintiff incurred an\ninjury, and (iv) the physician's breach caused the plaintiff's injury. The key element of liability exposure is the\nstandard of care, which is undergoing rapid and significant doctrinal changes (Gostin & Jacobson, 2006). In\nsome jurisdictions the standard of care is determined by local custom, and if few local physicians are currently\nusing PM tests, a physician who is sued for failing to use adequate methods will not be held to have violated\nthe applicable standard of care."
+          },
+          {
+            "rank": 3,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.8841,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 20,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "The key element of liability exposure is the\nstandard of care, which is undergoing rapid and significant doctrinal changes (Gostin & Jacobson, 2006). In\nsome jurisdictions the standard of care is determined by local custom, and if few local physicians are currently\nusing PM tests, a physician who is sued for failing to use adequate methods will not be held to have violated\nthe applicable standard of care. However, some jurisdictions apply a more objective \u201crisk based\u201d test to\nResearch Strategy Page 47\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\ndetermine the standard of care, where instead of looking to the common practices of the medical profession,\nthe court locks to whether the physician\u2019s conduct was \u201creasonable\u201d as determined by a judge or jury (Helling,\n1974; Peters, 2000). Under this standard, a physician may be held liable even if the medical community at\nlarge has not yet adopted the PM test that a patient claims should have been used. Additionally, some\njurisdictions are now applying a national standard of care rather than a standard based on local practice and\ncustom (Lewis et al., 2007). These shifting definitions of the standard of care, along with new claims (e.g.,\ninformed consent) brought against physicians to skirt medical malpractice defenses, are likely to create\nuncertainty and substantially affect liability risks for physicians relating to PM (Marchant et al. 2006). There are a number of other legal doctrinal trends and changes that will affect PM liability for physicians. New\ncauses of action beyond medical malpractice are emerging in the context of genetics and PM. For example,\nphysicians have been held liable in their handling of genetics by failing to obtain fully informed consent related\nto diagnostic and treatment procedures (Granata v. Fruiterman, 668 S.E.2d 127 (2008)."
+          }
+        ],
+        "Background": [
+          {
+            "rank": 1,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9844,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "project_summary",
+            "chunk_index": 0,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Personalized medicine (PM) has the potential to transform medicine and the health care system over the next\ndecade. An overlooked variable that will play an important role in the implementation of PM is the potential for\nlegal liability. Physicians, a key gatekeeper in the uptake of PM, are at the greatest risk of liability. Currently,\nthere is great uncertainty, disagreement and rapid change with regard to the use of PM tests in clinical care. It\nis during this period of uncertainty and change where the potential for liability is at its greatest and thus the\nneed for comprehensive legal research and analysis of the intersection of these issues is most pressing. This\nproposed project seeks to fill the gap in the understanding of PM liability risks by providing legal doctrinal,\nempirical, and policy research on the risks, impacts and possible policy approaches with regard to PM liability. The results of this project can help to better understand and predict the future course of PM and to identify the\nkey legal and policy levers that may be available to ensure that liability plays a beneficial rather than\ndetrimental role in the implementation of PM. This project has five primary objectives. This project will provide\na comprehensive investigation and analysis of potential liability to physicians, first by examining the applicable\nclaims, defenses and doctrines that will, provide the legal framework for liability, and which themselves are\ncurrently undergoing important changes. Second, we will evaluate the potential risks of liability to physicians\nby integrating the doctrinal analysis with the fact patterns and evidence in four likely PM case studies, as well\nas by evaluating liability lessons from the uptake of previous medical technologies and practices."
+          },
+          {
+            "rank": 2,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9831,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 24,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Physicians, hospitals,\nmalpractice insurers, and other PM stakeholders will be making important decision that are currently based on\nincomplete or inaccurate impressions of their liability risks. Moreover, once liability has been established and\nstarts to snowball, it will be too late to take appropriate measures and safeguards to protect against liability. At\nthis critical juncture in the rollout of PM, before widespread liability has taken hold, it would therefore be very\nResearch Strategy Page 48\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\nimportant and useful to comprehensively study and make widely available the best information and projections\nof the risks and relevant factors for liability relating to PM. Because both the likelinood and outcome of PM\nlawsuits will be highly fact- and evidence-dependent, it will be necessary to evaluate liability risks in the context\nof specific examples in which the applicable legal and evidentiary information is assessed and integrated. This\nattempt to predict the risks of PM liability, integrating both legal doctrine and factual evidence, will be the\nsecond objective of this proposal. 4, ts Liability A Problem? The third objective of this project will be to anticipate the potential impacts, both beneficial and detrimental, of\nphysician liability in the PM arena Personal injury liability, including liability for health care professionals, can\nserve an important social purpose to the extent that it induces actors to take appropriate actions to minimize\nunreasonable health risks {Gostin, 2000; Mello, 2006). If individuals are being harmed or denied the best\nhealth care because of the unreasonable failure of physicians to take full advantage of PM knowledge and\ntechnologies, the threat of liability can be an important driver for implementing sooner and more widely such\nbeneficial personalized medicine technologies at the clinical level."
+          },
+          {
+            "rank": 3,
+            "grant_id": "Marchant_HG006145-01A1_App",
+            "score": 0.9789,
+            "title": "Liability in the delivery of personalized medicine: driver, impediment, or both?",
+            "section_type": "methods",
+            "chunk_index": 28,
+            "year": 2011,
+            "source_url": "./grant_documents/Marchant_HG006145-01A1_App.pdf",
+            "source_pdf": "",
+            "text": "Almost no work has\nbeen done on liability prevention in the PM context to date, but some of the ideas that will be explored include\nbetter business models to integrate drugs and companion diagnostic tests, clinical guidelines that recommend\nbest practices, better training of physicians and other health professionals, regulatory changes and other\nResearch Strategy Page 49\n\nPrincipal Investigator\u2019Program Director (Last, first, middle}: Marchant, Gary\npossible solutions (Evans, 2007; Roth, 2007; Evans, 2006; Marchant et al., 2006). Finally, there is an important need to educate affected stakeholders and policymakers about the potential risks\nand impacts of liability for PM. For example, physicians, PM policymakers, medical guidelines writers,\nregulators, and medical educators need to have realistic expectations about the potential for liability in this\nsphere as PM emerges as the dominant medical model of this century. Patients, the group who will potentially\nbring such lawsuits, and the stakeholders who could be most affected by both the beneficial and detrimental\npotential impacts of liability, need to be aware of liability issues and become proactive in the inevitable policy\nand legal battles relating to liability. Finally, the practitioners in the legal liability field, including lawyers, expert\nwitnesses and judges, also would benefit from clear and informative information about liability. Thus, the fifth\nobjective of the proposal will be to conduct outreach on the findings of this project to key stakeholder groups\nincluding physicians, patient groups and legal practitioners. ll. Innovation\nMuch research has been done on the scientific, medical, regulatory, economic, educational, intellectual\nproperty, ethical and public policy aspects of personalized medicine. In contrast, very little doctrinal, empirical\nor theoretical work has been done on the issue of liability in the PM field, notwithstanding frequent references\n| to the importance of the issue for PM (e.g., SACGHS, 2008, p."
+          }
+        ]
+      }
+    }
+  ]
+}

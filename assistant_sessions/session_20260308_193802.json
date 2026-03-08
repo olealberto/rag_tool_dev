@@ -1,0 +1,665 @@
+{
+  "session_start": "2026-03-08T19:32:52.978242",
+  "session_end": "2026-03-08T19:38:02.525633",
+  "total_queries": 3,
+  "user_grants": [],
+  "queries": [
+    {
+      "timestamp": "2026-03-08T19:33:20.463979",
+      "topic": "deaf",
+      "funder_type": "NIH",
+      "sections": [
+        "Specific Aims",
+        "Significance",
+        "Innovation",
+        "Approach",
+        "Methods",
+        "Background"
+      ],
+      "elapsed_s": 0.84,
+      "total_candidates": 18,
+      "results": {
+        "Specific Aims": [
+          {
+            "rank": 1,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.96,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "specific_aims",
+            "chunk_index": 36,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "Aim 2. Develop a prototype training intervention based on lessons learned from Aim 1, in which the Deaf\n Community Advisors train research assistants to deliver culturally appropriate informed consent in a\n state-of-the-art simulation environment. During an Intervention Development Workshop, our Deaf\n Community Advisors and UMMS investigators will identify aspects of accessible informed consent\n (using personal expertise, community forum evaluations, and focus group themes) and then develop\n five simulation scenarios involving enrolling a Deaf person in a research study using an ASL interpreter. Aim 3. Test the feasibility and acceptance of the prototype intervention via simulation-based training\n sessions with five hearing research assistants who are currently engaged in the informed consent\n process at UMMS, and who have no prior experience working with Deaf individuals. These aims draw on our previous work, Simulation-based Community-engaged Research Intervention for\n Informed Consent Protocol Testing and Training, which incorporated culturally and linguistically competent\n methods into the informed consent process using the expertise of African-American and Latino communities. Our work embodies the true spirit of partnership and has created great excitement in the Deaf community and\n UMMS. Results will support a larger trial of Deaf ACCESS and will produce a product of immediate value with\n much potential for dissemination and replication. This work will lay the foundation for a sustainable program of\n research how we approach and engage the Deaf community in informed consent procedures, and will lead to\n research on improving the accessibility of research procedures beyond informed consent. The long-term result\n will prompt a paradigm shift in how we conduct research in the Deaf community, potentially increasing the\n number of Deaf research participants and, more importantly, moving from Deaf people as research participants\n to Deaf people as investigators actively engaged in biomedical research. Specific Aims Page 41\n\nContact PD/PI: Anderson, Melissa L. B. SIGNIFICANCE \n B1."
+          },
+          {
+            "rank": 2,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.6915,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "specific_aims",
+            "chunk_index": 35,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "This shared history underlies a communal\n feeling of mistrust toward researchers and resistance to enroll in biomedical research. A starting place for addressing issues of inaccessibility and mistrust is the careful reconsideration of the\n traditional informed consent process, specifically the need for adaptations above-and-beyond simple\n translation of materials into ASL. As such, we will lead Deaf ACCESS: Adapting Consent through\n Community Engagement and State-of-the-art Simulation, a community-engaged approach to adapt the\n informed consent process so all required components are properly communicated and understood, and apply\n medical simulation techniques to train those recruiting and enrolling Deaf participants in biomedical research:\n Aim 1. Identify the barriers and facilitators to the full engagement of the Deaf community in research,\n with an emphasis on the informed consent process, via a two-stage, formative assessment:\n a. Deepen the dialogue between the Deaf community and University of Massachusetts Medical\n School (UMMS) by holding four community forums at Deaf community cultural institutions (e.g.,\n Deaf residential schools, Deaf advocacy agencies). The Truth and Reconciliation Model will guide\n the structure of each forum (see section D2a3 for a detailed description). Specific forum questions\n will be developed in collaboration with our team\u2019s four Deaf Community Advisors. b. Gain more insight into the knowledge of, attitudes toward, and experience with informed consent in\n the Deaf community by conducting three focus groups with Deaf adults who are diverse with\n respect to race/ethnicity, educational background, language experiences, and socioeconomic\n status. Focus group questions will be developed from themes that emerge from the community\n forums, as well as from the expertise of our Deaf Community Advisors. Aim 2. Develop a prototype training intervention based on lessons learned from Aim 1, in which the Deaf\n Community Advisors train research assistants to deliver culturally appropriate informed consent in a\n state-of-the-art simulation environment."
+          },
+          {
+            "rank": 3,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.6272,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "specific_aims",
+            "chunk_index": 43,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "Michele Pugnaire, Executive Director of the iCELS simulation facility. We will hire four laypeople from the Deaf community to serve on our research team as Deaf Community\n Advisors. Qualifications include expertise in Deaf cultural norms and access barriers, and ability to use a\n computer. Job postings will be disseminated on Deaf-focused listservs (e.g., MassDeafTerp), Facebook groups\n (e.g., The Voice of the Deaf Community in Massachusetts), and organizations (e.g., MA Commission for the\n Deaf and Hard of Hearing, MA State Association of the Deaf, Worcester Deaf Club). Dr. Anderson has\n successfully used these outreach methods for recruitment on two previous studies. D1b. Preliminary Work. Our proposed study aims draw on our pilot work with the Simulation-based\n Community-engaged Research Intervention for Informed Consent Protocol Testing and Training (SCRIIPTT),\n which was funded through the UMCCTS Community Engagement Core and supported by CHEIR. The goal of\n SCRIIPTT was to incorporate culturally and linguistically competent methods into the informed consent\n Research Strategy Page 43\n\nContact PD/Pl: Anderson, Melissa L. process using expertise of the African-American and Latino communities in MA. The core intervention focused\n on the experiential learning of research assistants in the simulation environment. The formative assessment\n identified barriers and facilitators to community engagement in research, and this knowledge informed our\n development of a prototype intervention. Products from SCRIIPTT include: (1) slides, background material, and\n suggestions for prompting discussion; (2) case studies to guide the simulation process with scenarios based in\n the hospital, clinic, and community settings; and (3) a 37-item checklist for the elements of culturally informed\n consent that serves as a template for debriefing, deliberate practice, and quantitative evaluation. The community served by UMMS participated as an equal partner in SCRIIPTT. The evaluation\n demonstrated that the approach was both feasible and well-received by the participating research assistants."
+          }
+        ],
+        "Significance": [
+          {
+            "rank": 1,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9937,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_narrative",
+            "chunk_index": 24,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "Identified risk factors, especially those relating to literacy and health literacy, that contribute to\n Deaf people\u2019s behavioral health disparities: Our research has contributed to the Deaf health literacy\n literature. We have provided additional evidence of the literacy challenges experienced by Deaf people and\n the role of limited health literacy as a risk factor for poor behavioral health outcomes. Most Deaf people are\n not provided access to a visual, signed language in early childhood. This lack of a fully-accessible first\n language foundation makes subsequent acquisition of written English especially challenging. Also a\n consequence of limited language access during key developmental periods, Deaf people often present with\n gaps in health-related knowledge and are at high risk for health problems associated with low health\n literacy: \n a. Myers C, Clark MD, Musyoka MM, Anderson ML, Gilbert GL, Agyen S, Hauser PC. Black deaf\n individuals' reading skills: influence of ASL, culture, family characteristics, reading experience, and\n education. Am Ann Deaf. 2010 Fall;155(4):449-57. PubMed PMID: 21305979. b. Allen TE, Anderson ML. Deaf students and their classroom communication: an evaluation of higher\n order categorical interactions among school and background characteristics. J Deaf Stud Deaf Educ. 2010 Fall;15(4):334-47. PubMed PMID: 20624758. c. Freel BL, Clark MD, Anderson ML, Gilbert GL, Musyoka MM, Hauser PC. Deaf individuals\u2019 bilingual\n abilities: American Sign Language proficiency, reading skills, and family characteristics. Psychology. 2011; 2(1):18-23. d. Clark MD, Gilbert GG, Anderson ML. Morphological knowledge and decoding skills of deaf readers. Psychology. 2011; 2(2):109-116. 5. Established the reliability and validity of behavioral health measures in Deaf samples: In order to\n document the prevalence of trauma and associated behavioral health problems among Deaf people, we\n first had to establish the psychometric properties of measures to investigate these disparities."
+          },
+          {
+            "rank": 2,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9739,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_summary",
+            "chunk_index": 1,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "The U.S. Deaf community \u2013 a minority group of 500,000 people who use American Sign Language \u2013 is one of\n the most understudied populations in biomedical research. One reason is the frequent use of research\n methods that are not accessible to Deaf people (for example, random-digit-dial telephone surveys). Another\n reason is the major difference in points-of-view between researchers and Deaf people. Researchers often aim\n to \u201ccure\u201d or \u201cfix\u201d hearing loss. Deaf people, however, do not view themselves as needing to be \u201cfixed,\u201d but as\n members of a rich culture with shared experience, history, art, and literature. These barriers have contributed\n to a long history of mistreatment of Deaf people in the research world, resulting in their mistrust of researchers\n and reluctance to participate in biomedical research studies. In response to these issues, we will lead Deaf ACCESS: Adapting Consent through Community Engagement\n and State-of-the-art Simulation. Collaborating with Deaf community members as part of our research team, we\n will adapt informed consent procedures to make them more Deaf-friendly, and then use medical simulation to\n train research assistants how to appropriately recruit and enroll Deaf research participants. We aim to: (1)\n identify the barriers and facilitators to Deaf people\u2019s engagement in biomedical research, with an emphasis on\n the informed consent process, by holding four Deaf community forums and three focus groups at Deaf\n community cultural institutions; (2) develop a training intervention based on lessons learned from Aim 1, in\n which Deaf community members teach research assistants to deliver culturally appropriate informed consent\n using an American Sign Language interpreter; and (3) test the feasibility and acceptance of the intervention\n during simulation-based training sessions with five hearing research assistants who currently conduct informed\n consent at UMass Medical School (and who have no prior experience working with Deaf individuals)."
+          },
+          {
+            "rank": 3,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9638,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "specific_aims",
+            "chunk_index": 37,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "B. SIGNIFICANCE \n B1. Research on Deaf people\u2019s health disparities is severely lacking due to inaccessible research\n methods and the fundamental disconnect between biomedical and cultural views of deafness. Recent\n research employing an American Sign Language (ASL) public health survey identified significant health\n 2, 14 \n disparities experienced by the U.S. Deaf community, a sociolinguistic minority group of 500,000 Americans\n who communicate via ASL. Compared to the general population, Deaf individuals were more likely to be\n obese (34.2% vs. 26.6%), to have attempted suicide in the past year (2.2% vs. 0.4%), and to have experienced\n physical abuse (21.0% vs. 13.9%) and forced sex (20.8% vs. 5.8%). Further research on Deaf health\n disparities is lacking due, in part, to recruitment, sampling, and data collection procedures that are inaccessible\n 3-5 \n to Deaf people. Random-digit-dial surveys fail to sample Deaf ASL users, who use videophones rather than\n standard telephone technology. In-person studies, such as the National Comorbidity Study Replication, often\n sample English users only and make no documentation of accommodations for Deaf individuals. The lack of research within this population is exacerbated by conflicting perspectives on deafness between\n the biomedical research community and the Deaf community. Researchers generally follow the \u201cmedical\n 8-10 \n model\u201d of deafness, focusing on how to \u201ccure\u201d or \u201cfix\u201d hearing loss. Most Deaf community members,\n however, do not believe they are disabled or need to be \u201cfixed\u201d, but that they are members of a minority group\n 8-10 \n with rich culture, shared experience, history, art, and literature. This disconnect has fueled a long history of\n mistreatment against Deaf people in the research world."
+          }
+        ],
+        "Innovation": [
+          {
+            "rank": 1,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9937,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_narrative",
+            "chunk_index": 24,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "Identified risk factors, especially those relating to literacy and health literacy, that contribute to\n Deaf people\u2019s behavioral health disparities: Our research has contributed to the Deaf health literacy\n literature. We have provided additional evidence of the literacy challenges experienced by Deaf people and\n the role of limited health literacy as a risk factor for poor behavioral health outcomes. Most Deaf people are\n not provided access to a visual, signed language in early childhood. This lack of a fully-accessible first\n language foundation makes subsequent acquisition of written English especially challenging. Also a\n consequence of limited language access during key developmental periods, Deaf people often present with\n gaps in health-related knowledge and are at high risk for health problems associated with low health\n literacy: \n a. Myers C, Clark MD, Musyoka MM, Anderson ML, Gilbert GL, Agyen S, Hauser PC. Black deaf\n individuals' reading skills: influence of ASL, culture, family characteristics, reading experience, and\n education. Am Ann Deaf. 2010 Fall;155(4):449-57. PubMed PMID: 21305979. b. Allen TE, Anderson ML. Deaf students and their classroom communication: an evaluation of higher\n order categorical interactions among school and background characteristics. J Deaf Stud Deaf Educ. 2010 Fall;15(4):334-47. PubMed PMID: 20624758. c. Freel BL, Clark MD, Anderson ML, Gilbert GL, Musyoka MM, Hauser PC. Deaf individuals\u2019 bilingual\n abilities: American Sign Language proficiency, reading skills, and family characteristics. Psychology. 2011; 2(1):18-23. d. Clark MD, Gilbert GG, Anderson ML. Morphological knowledge and decoding skills of deaf readers. Psychology. 2011; 2(2):109-116. 5. Established the reliability and validity of behavioral health measures in Deaf samples: In order to\n document the prevalence of trauma and associated behavioral health problems among Deaf people, we\n first had to establish the psychometric properties of measures to investigate these disparities."
+          },
+          {
+            "rank": 2,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9739,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_summary",
+            "chunk_index": 1,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "The U.S. Deaf community \u2013 a minority group of 500,000 people who use American Sign Language \u2013 is one of\n the most understudied populations in biomedical research. One reason is the frequent use of research\n methods that are not accessible to Deaf people (for example, random-digit-dial telephone surveys). Another\n reason is the major difference in points-of-view between researchers and Deaf people. Researchers often aim\n to \u201ccure\u201d or \u201cfix\u201d hearing loss. Deaf people, however, do not view themselves as needing to be \u201cfixed,\u201d but as\n members of a rich culture with shared experience, history, art, and literature. These barriers have contributed\n to a long history of mistreatment of Deaf people in the research world, resulting in their mistrust of researchers\n and reluctance to participate in biomedical research studies. In response to these issues, we will lead Deaf ACCESS: Adapting Consent through Community Engagement\n and State-of-the-art Simulation. Collaborating with Deaf community members as part of our research team, we\n will adapt informed consent procedures to make them more Deaf-friendly, and then use medical simulation to\n train research assistants how to appropriately recruit and enroll Deaf research participants. We aim to: (1)\n identify the barriers and facilitators to Deaf people\u2019s engagement in biomedical research, with an emphasis on\n the informed consent process, by holding four Deaf community forums and three focus groups at Deaf\n community cultural institutions; (2) develop a training intervention based on lessons learned from Aim 1, in\n which Deaf community members teach research assistants to deliver culturally appropriate informed consent\n using an American Sign Language interpreter; and (3) test the feasibility and acceptance of the intervention\n during simulation-based training sessions with five hearing research assistants who currently conduct informed\n consent at UMass Medical School (and who have no prior experience working with Deaf individuals)."
+          },
+          {
+            "rank": 3,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9638,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "specific_aims",
+            "chunk_index": 37,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "B. SIGNIFICANCE \n B1. Research on Deaf people\u2019s health disparities is severely lacking due to inaccessible research\n methods and the fundamental disconnect between biomedical and cultural views of deafness. Recent\n research employing an American Sign Language (ASL) public health survey identified significant health\n 2, 14 \n disparities experienced by the U.S. Deaf community, a sociolinguistic minority group of 500,000 Americans\n who communicate via ASL. Compared to the general population, Deaf individuals were more likely to be\n obese (34.2% vs. 26.6%), to have attempted suicide in the past year (2.2% vs. 0.4%), and to have experienced\n physical abuse (21.0% vs. 13.9%) and forced sex (20.8% vs. 5.8%). Further research on Deaf health\n disparities is lacking due, in part, to recruitment, sampling, and data collection procedures that are inaccessible\n 3-5 \n to Deaf people. Random-digit-dial surveys fail to sample Deaf ASL users, who use videophones rather than\n standard telephone technology. In-person studies, such as the National Comorbidity Study Replication, often\n sample English users only and make no documentation of accommodations for Deaf individuals. The lack of research within this population is exacerbated by conflicting perspectives on deafness between\n the biomedical research community and the Deaf community. Researchers generally follow the \u201cmedical\n 8-10 \n model\u201d of deafness, focusing on how to \u201ccure\u201d or \u201cfix\u201d hearing loss. Most Deaf community members,\n however, do not believe they are disabled or need to be \u201cfixed\u201d, but that they are members of a minority group\n 8-10 \n with rich culture, shared experience, history, art, and literature. This disconnect has fueled a long history of\n mistreatment against Deaf people in the research world."
+          }
+        ],
+        "Approach": [
+          {
+            "rank": 1,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9937,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_narrative",
+            "chunk_index": 24,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "Identified risk factors, especially those relating to literacy and health literacy, that contribute to\n Deaf people\u2019s behavioral health disparities: Our research has contributed to the Deaf health literacy\n literature. We have provided additional evidence of the literacy challenges experienced by Deaf people and\n the role of limited health literacy as a risk factor for poor behavioral health outcomes. Most Deaf people are\n not provided access to a visual, signed language in early childhood. This lack of a fully-accessible first\n language foundation makes subsequent acquisition of written English especially challenging. Also a\n consequence of limited language access during key developmental periods, Deaf people often present with\n gaps in health-related knowledge and are at high risk for health problems associated with low health\n literacy: \n a. Myers C, Clark MD, Musyoka MM, Anderson ML, Gilbert GL, Agyen S, Hauser PC. Black deaf\n individuals' reading skills: influence of ASL, culture, family characteristics, reading experience, and\n education. Am Ann Deaf. 2010 Fall;155(4):449-57. PubMed PMID: 21305979. b. Allen TE, Anderson ML. Deaf students and their classroom communication: an evaluation of higher\n order categorical interactions among school and background characteristics. J Deaf Stud Deaf Educ. 2010 Fall;15(4):334-47. PubMed PMID: 20624758. c. Freel BL, Clark MD, Anderson ML, Gilbert GL, Musyoka MM, Hauser PC. Deaf individuals\u2019 bilingual\n abilities: American Sign Language proficiency, reading skills, and family characteristics. Psychology. 2011; 2(1):18-23. d. Clark MD, Gilbert GG, Anderson ML. Morphological knowledge and decoding skills of deaf readers. Psychology. 2011; 2(2):109-116. 5. Established the reliability and validity of behavioral health measures in Deaf samples: In order to\n document the prevalence of trauma and associated behavioral health problems among Deaf people, we\n first had to establish the psychometric properties of measures to investigate these disparities."
+          },
+          {
+            "rank": 2,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9739,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_summary",
+            "chunk_index": 1,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "The U.S. Deaf community \u2013 a minority group of 500,000 people who use American Sign Language \u2013 is one of\n the most understudied populations in biomedical research. One reason is the frequent use of research\n methods that are not accessible to Deaf people (for example, random-digit-dial telephone surveys). Another\n reason is the major difference in points-of-view between researchers and Deaf people. Researchers often aim\n to \u201ccure\u201d or \u201cfix\u201d hearing loss. Deaf people, however, do not view themselves as needing to be \u201cfixed,\u201d but as\n members of a rich culture with shared experience, history, art, and literature. These barriers have contributed\n to a long history of mistreatment of Deaf people in the research world, resulting in their mistrust of researchers\n and reluctance to participate in biomedical research studies. In response to these issues, we will lead Deaf ACCESS: Adapting Consent through Community Engagement\n and State-of-the-art Simulation. Collaborating with Deaf community members as part of our research team, we\n will adapt informed consent procedures to make them more Deaf-friendly, and then use medical simulation to\n train research assistants how to appropriately recruit and enroll Deaf research participants. We aim to: (1)\n identify the barriers and facilitators to Deaf people\u2019s engagement in biomedical research, with an emphasis on\n the informed consent process, by holding four Deaf community forums and three focus groups at Deaf\n community cultural institutions; (2) develop a training intervention based on lessons learned from Aim 1, in\n which Deaf community members teach research assistants to deliver culturally appropriate informed consent\n using an American Sign Language interpreter; and (3) test the feasibility and acceptance of the intervention\n during simulation-based training sessions with five hearing research assistants who currently conduct informed\n consent at UMass Medical School (and who have no prior experience working with Deaf individuals)."
+          },
+          {
+            "rank": 3,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9638,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "specific_aims",
+            "chunk_index": 37,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "B. SIGNIFICANCE \n B1. Research on Deaf people\u2019s health disparities is severely lacking due to inaccessible research\n methods and the fundamental disconnect between biomedical and cultural views of deafness. Recent\n research employing an American Sign Language (ASL) public health survey identified significant health\n 2, 14 \n disparities experienced by the U.S. Deaf community, a sociolinguistic minority group of 500,000 Americans\n who communicate via ASL. Compared to the general population, Deaf individuals were more likely to be\n obese (34.2% vs. 26.6%), to have attempted suicide in the past year (2.2% vs. 0.4%), and to have experienced\n physical abuse (21.0% vs. 13.9%) and forced sex (20.8% vs. 5.8%). Further research on Deaf health\n disparities is lacking due, in part, to recruitment, sampling, and data collection procedures that are inaccessible\n 3-5 \n to Deaf people. Random-digit-dial surveys fail to sample Deaf ASL users, who use videophones rather than\n standard telephone technology. In-person studies, such as the National Comorbidity Study Replication, often\n sample English users only and make no documentation of accommodations for Deaf individuals. The lack of research within this population is exacerbated by conflicting perspectives on deafness between\n the biomedical research community and the Deaf community. Researchers generally follow the \u201cmedical\n 8-10 \n model\u201d of deafness, focusing on how to \u201ccure\u201d or \u201cfix\u201d hearing loss. Most Deaf community members,\n however, do not believe they are disabled or need to be \u201cfixed\u201d, but that they are members of a minority group\n 8-10 \n with rich culture, shared experience, history, art, and literature. This disconnect has fueled a long history of\n mistreatment against Deaf people in the research world."
+          }
+        ],
+        "Methods": [
+          {
+            "rank": 1,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.816,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "methods",
+            "chunk_index": 55,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "For the post-simulation assessment, we will use both the CAS and the Deaf ACCESS Checklist. D4d. Analyses \n This pilot test will examine feasibility and acceptance of our prototype intervention. Power analyses\n should not be presented in an application for a pilot study that does not propose inferential tests. Instead, we\n based our sample size on accepted best practice for demonstrating feasibility and establishing procedures for\n 40, 41 \n subsequent large-scale studies. Feasibility outcomes include recruitment, retention, engagement,\n participant satisfaction, intervention fidelity, and feasibility of assessment procedures. We will record the\n number of research assistants approached versus enrolled, and any reasons for ineligibility or nonparticipation. We will record number and reasons for failure to complete the intervention. Intervention\n engagement will be ascertained from the measures described above and discussion during the debriefing\n process. Dr. Anderson will directly monitor all intervention sessions and complete a fidelity checklist. Exploratory outcomes include differences in self-assessed and research-team-assessed cultural\n competency before and after the simulation. Both the CAS and Deaf ACCESS Checklist are continuous scale\n measures and can be analyzed either via pre-post differences directly or by analysis of covariance methods. 42, 43 \n We prefer analysis of covariance, as it allows a more general slope and adjustment for baseline values. D5. Intervention Dissemination and Next Steps \n Results from the current study will produce a product of immediate value for Deaf people \u2013 a highly\n accessible, easy-to-disseminate set of guidelines for the enrollment of Deaf people in biomedical research. Results will also inform the most important tangible end product of this study \u2013 a simulation-based intervention\n and protocol that has been pilot tested for feasibility. It will be packaged in a step-by-step manual, which\n describes background information, procedures and protocols, and required resources."
+          },
+          {
+            "rank": 2,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.646,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "methods",
+            "chunk_index": 53,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "used in our preliminary SCRIIPTT work; the pilot nature of the Deaf ACCESS intervention; the length, depth,\n and breadth of each simulation (approximately four hours); and the cost of high-tech simulation techniques. D4b. Procedure \n D4b1. Pre-brief. The intervention will begin with three Deaf Community Advisors providing the research\n assistants with study materials (e.g., project overview, inform consent form) and training in the components of\n culturally and linguistically appropriate informed consent with Deaf people. During this training, research\n assistants will be exposed to experiences with Deaf people in the context of the iCELS simulation laboratory\n and trained how to work with an ASL interpreter (as determined in Aim 2 intervention development work). D4b2. Simulation. Following the pre-brief training, each research assistant will deliver informed consent in\n the iCELS simulation lab to the fourth Deaf Community Advisor, as s/he acts out the scenarios developed in\n Aim 2. An ASL interpreter from our research team will also be present. The setting will be configured to mirror\n real-world informed consent (i.e., a busy hospital setting). The remaining three Deaf Community Advisors will\n observe the simulation real-time in the iCELS viewing room. This encounter will be videotaped through the\n LearningSpace system with playback and review during the debriefing stage. LearningSpace software\n supports high resolution digital video recording, with electronic annotation, real-time viewing and playback in\n the iCELS viewing center and debriefing rooms, as well as secure web based archiving and password\n protected access for remote retrieval and reviewing synchronously or asynchronously. D4b3. Debrief. After the research assistant completes the informed consent encounter, rating sheets will be\n filled out by the Deaf Community Advisor involved in the simulation intervention, the ASL interpreter, and the\n Research Strategy Page 46\n\nContact PD/PI: Anderson, Melissa L. three Deaf Community Advisors observing from the viewing room."
+          },
+          {
+            "rank": 3,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.4316,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "methods",
+            "chunk_index": 54,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "After the research assistant completes the informed consent encounter, rating sheets will be\n filled out by the Deaf Community Advisor involved in the simulation intervention, the ASL interpreter, and the\n Research Strategy Page 46\n\nContact PD/PI: Anderson, Melissa L. three Deaf Community Advisors observing from the viewing room. The research assistant will then be\n debriefed on their performance. Key sections of the videotape will be reviewed. The Deaf Community Advisors\n will provide direct feedback to the research assistant on how to improve performance administering the\n culturally appropriate informed consent protocol. Research assistants will also be able to view their own\n performance and self-assess their strengths and areas for improvement. D4b4. Deliberate practice. Research assistants will have the opportunity to repeat the simulated encounter\n to practice skills that require further development in order to achieve the expected level of competency in the\n informed consent protocol, as determined by the Deaf ACCESS Checklist (described below). D4c. Measures \n After each simulation, the four Deaf Community Advisors and ASL interpreter will rate each research\n assistant\u2019s performance using the Deaf ACCESS Checklist and enter the results into LearningSpace software\n (see section D4b2 for a description). Each research assistant will complete self-assessments before and after\n the simulation. The pre-simulation assessment will include the 20-item Cultural Assessment Survey (CAS),\n which measures attitudes regarding race, cultural and social issues, and self-awareness and knowledge of\n different cultures (e.g., \u201cHow well can you incorporate culturally relevant information into a treatment plan for a\n patient?\u201d). The CAS has content validity and high internal consistency. Trainees will not use the Deaf\n ACCESS Checklist prior to the simulation, as this would disclose the \u201canswers to the test\u201d prior to the\n simulation. For the post-simulation assessment, we will use both the CAS and the Deaf ACCESS Checklist. D4d."
+          }
+        ],
+        "Background": [
+          {
+            "rank": 1,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9937,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_narrative",
+            "chunk_index": 24,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "Identified risk factors, especially those relating to literacy and health literacy, that contribute to\n Deaf people\u2019s behavioral health disparities: Our research has contributed to the Deaf health literacy\n literature. We have provided additional evidence of the literacy challenges experienced by Deaf people and\n the role of limited health literacy as a risk factor for poor behavioral health outcomes. Most Deaf people are\n not provided access to a visual, signed language in early childhood. This lack of a fully-accessible first\n language foundation makes subsequent acquisition of written English especially challenging. Also a\n consequence of limited language access during key developmental periods, Deaf people often present with\n gaps in health-related knowledge and are at high risk for health problems associated with low health\n literacy: \n a. Myers C, Clark MD, Musyoka MM, Anderson ML, Gilbert GL, Agyen S, Hauser PC. Black deaf\n individuals' reading skills: influence of ASL, culture, family characteristics, reading experience, and\n education. Am Ann Deaf. 2010 Fall;155(4):449-57. PubMed PMID: 21305979. b. Allen TE, Anderson ML. Deaf students and their classroom communication: an evaluation of higher\n order categorical interactions among school and background characteristics. J Deaf Stud Deaf Educ. 2010 Fall;15(4):334-47. PubMed PMID: 20624758. c. Freel BL, Clark MD, Anderson ML, Gilbert GL, Musyoka MM, Hauser PC. Deaf individuals\u2019 bilingual\n abilities: American Sign Language proficiency, reading skills, and family characteristics. Psychology. 2011; 2(1):18-23. d. Clark MD, Gilbert GG, Anderson ML. Morphological knowledge and decoding skills of deaf readers. Psychology. 2011; 2(2):109-116. 5. Established the reliability and validity of behavioral health measures in Deaf samples: In order to\n document the prevalence of trauma and associated behavioral health problems among Deaf people, we\n first had to establish the psychometric properties of measures to investigate these disparities."
+          },
+          {
+            "rank": 2,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9739,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "project_summary",
+            "chunk_index": 1,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "The U.S. Deaf community \u2013 a minority group of 500,000 people who use American Sign Language \u2013 is one of\n the most understudied populations in biomedical research. One reason is the frequent use of research\n methods that are not accessible to Deaf people (for example, random-digit-dial telephone surveys). Another\n reason is the major difference in points-of-view between researchers and Deaf people. Researchers often aim\n to \u201ccure\u201d or \u201cfix\u201d hearing loss. Deaf people, however, do not view themselves as needing to be \u201cfixed,\u201d but as\n members of a rich culture with shared experience, history, art, and literature. These barriers have contributed\n to a long history of mistreatment of Deaf people in the research world, resulting in their mistrust of researchers\n and reluctance to participate in biomedical research studies. In response to these issues, we will lead Deaf ACCESS: Adapting Consent through Community Engagement\n and State-of-the-art Simulation. Collaborating with Deaf community members as part of our research team, we\n will adapt informed consent procedures to make them more Deaf-friendly, and then use medical simulation to\n train research assistants how to appropriately recruit and enroll Deaf research participants. We aim to: (1)\n identify the barriers and facilitators to Deaf people\u2019s engagement in biomedical research, with an emphasis on\n the informed consent process, by holding four Deaf community forums and three focus groups at Deaf\n community cultural institutions; (2) develop a training intervention based on lessons learned from Aim 1, in\n which Deaf community members teach research assistants to deliver culturally appropriate informed consent\n using an American Sign Language interpreter; and (3) test the feasibility and acceptance of the intervention\n during simulation-based training sessions with five hearing research assistants who currently conduct informed\n consent at UMass Medical School (and who have no prior experience working with Deaf individuals)."
+          },
+          {
+            "rank": 3,
+            "grant_id": "anderson-melissa-application-1r21015580-01-redacted",
+            "score": 0.9638,
+            "title": "Deaf ACCESS: Adapting Consent through Community Engagement and",
+            "section_type": "specific_aims",
+            "chunk_index": 37,
+            "year": 2015,
+            "source_url": "./grant_documents/anderson-melissa-application-1r21015580-01-redacted.pdf",
+            "source_pdf": "",
+            "text": "B. SIGNIFICANCE \n B1. Research on Deaf people\u2019s health disparities is severely lacking due to inaccessible research\n methods and the fundamental disconnect between biomedical and cultural views of deafness. Recent\n research employing an American Sign Language (ASL) public health survey identified significant health\n 2, 14 \n disparities experienced by the U.S. Deaf community, a sociolinguistic minority group of 500,000 Americans\n who communicate via ASL. Compared to the general population, Deaf individuals were more likely to be\n obese (34.2% vs. 26.6%), to have attempted suicide in the past year (2.2% vs. 0.4%), and to have experienced\n physical abuse (21.0% vs. 13.9%) and forced sex (20.8% vs. 5.8%). Further research on Deaf health\n disparities is lacking due, in part, to recruitment, sampling, and data collection procedures that are inaccessible\n 3-5 \n to Deaf people. Random-digit-dial surveys fail to sample Deaf ASL users, who use videophones rather than\n standard telephone technology. In-person studies, such as the National Comorbidity Study Replication, often\n sample English users only and make no documentation of accommodations for Deaf individuals. The lack of research within this population is exacerbated by conflicting perspectives on deafness between\n the biomedical research community and the Deaf community. Researchers generally follow the \u201cmedical\n 8-10 \n model\u201d of deafness, focusing on how to \u201ccure\u201d or \u201cfix\u201d hearing loss. Most Deaf community members,\n however, do not believe they are disabled or need to be \u201cfixed\u201d, but that they are members of a minority group\n 8-10 \n with rich culture, shared experience, history, art, and literature. This disconnect has fueled a long history of\n mistreatment against Deaf people in the research world."
+          }
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-03-08T19:35:21.854946",
+      "topic": "housing for persons vulnerable to HIV; PrEP pre-exposure prophylaxis adherence support; HIV prevention for Black and Hispanic Latino gay bisexual same-gender-loving men; antiretroviral therapy; homelessness housing instability barrier removal; healthcare engagement retention; Chicago Department of Public Health; community-based housing interventions; sexual health equity",
+      "funder_type": "city_public_health",
+      "sections": [
+        "Statement of Need",
+        "Proposed Solution/Approach",
+        "Work Plan",
+        "Organizational Capacity",
+        "Evaluation Plan",
+        "Budget Narrative"
+      ],
+      "elapsed_s": 2.76,
+      "total_candidates": 18,
+      "results": {
+        "Statement of Need": [
+          {
+            "rank": 1,
+            "grant_id": "5R01MD018539-03",
+            "score": 0.9243,
+            "title": "Ending the HIV Epidemic in Rural America (EHE-RA): Local Interventions, Co-Epidemics, and Social Determinants",
+            "section_type": "methods",
+            "chunk_index": 0,
+            "year": 2024,
+            "source_url": "https://reporter.nih.gov/search-results?query=5R01MD018539-03",
+            "source_pdf": "",
+            "text": "SUMMARY: Despite advances in treatment and prevention over the past decades, human immunodeficiency virus (HIV) imposes substantial burdens in the United States (US). US HIV infections are increasing concentrated in Southern states with a disproportionate number of rural infections, particularly among racial, ethnic, and sexual minorities. Rural epidemics in these states are linked to high-intensity urban epidemics, and driven by racial/ethnic disparities, poverty, inadequate insurance, limited access to healthcare, and housing insecurity. Additionally, the opioid epidemic disproportionately affects rural communities, increases HIV transmission, and hinders HIV control efforts. The Ending the HIV Epidemic (EHE) Initiative seeks to reduce HIV incidence by 90% over a decade. Ending the US HIV epidemic will require interventions tailored to local-level epidemic dynamics that address underlying drivers of transmission. Mathematical models of HIV transmission are powerful tool to forecast epidemics, and can provide evidence-based guidance on the optimal way to prioritize limited public health resources, but these models have focused primarily on urban epidemics. We have previously developed the Johns Hopkins Epidemiologic and Economic Model (JHEEM), a platform for modelling local HIV epidemics. Our objective is to generate projections of local HIV epidemics in states with a high rural burden of HIV to inform policy decisions by local health departments. We will partner health departments in three states where we have established relationships (Alabama, Louisiana, and Mississippi) to develop a suite of transmission models, based on JHEEM, that rigorously leverage local surveillance data to make projections of the HIV epidemic in each state. In Aim 1, we will develop an integrated, statewide modeling approach that links rural and urban regions using mobility data. We will use the models to identify which combinations of HIV testing, pre-exposure prophylaxis (PrEP), and viral suppression \u2013 targeted to which demographic subgroups and geographic regions \u2013 will yield the greatest reductions in incidence and disparities. In Aim 2, we will incorporate three social determinants of health: insurance, access to healthcare, and housing instability, and the racial and ethnic disparities in their distribution across the population. We will project the impact on HIV incidence and disparities of strategies that include both traditional HIV interventions and increase insurance, access to care, or stable housing. In Aim 3, we will expand JHEEM to include the opioid epidemic, and evaluate the potential reductions in HIV incidence achievable by strategies that combine harm reduction for opioid use disorder with HIV control interventions. These aims will yield a comprehensive modeling framework that links traditional HIV interventions with underlying drivers of the epidemic in rural America. Our results will provide data-driven projections, tailored to the specific needs of states, to inform effective deployment of public health resources in ending the HIV epidemic."
+          },
+          {
+            "rank": 2,
+            "grant_id": "5R01DA057350-02",
+            "score": 0.8529,
+            "title": "Computational modeling to evaluate socio-structural interventions for HIV and substance use",
+            "section_type": "methods",
+            "chunk_index": 0,
+            "year": 2024,
+            "source_url": "https://reporter.nih.gov/search-results?query=5R01DA057350-02",
+            "source_pdf": "",
+            "text": "Background: Black sexual and gender minorities (SGM) are disproportionately affected by HIV and existing disparities could be exacerbated by increases in substance use disorders, as shifting trends in the opioid epidemic have been accompanied by increases in methamphetamine and polysubstance use among Black SGM. Evidence suggests that factors such as housing instability, incarceration, and unemployment may pose significant barriers to engagement in HIV prevention and care for Black SGM, and these factors are also associated with methamphetamine use. Because such interventions are resource intensive and logistically challenging, particularly for vulnerable communities who are often highly mobile and less likely to engage in research in traditional settings, guidance is needed at the intervention development stage to determine the most impactful and efficient intervention strategies. Agent-based models (ABMs) can be used to virtually evaluate candidate interventions to facilitate more efficient and timely intervention development. Because they allow for the conduct of counterfactual experiments, ABMs can also facilitate identification of effects that would be difficult to identify using traditional statistical approaches and can provide valuable insights to understand causal mechanisms that give rise to complex systems. Objective: Building on an existing ABM platform, this proposal will utilize multiple existing data sources to characterize relationships among socio-structural stressors, substance use, mental health, and HIV prevention and care continuum outcomes among Black SGM. We will combine methods from epidemiology, ABM, and robust decision making (RDM) to understand the potential impact of structural interventions for reducing substance use, overdose, and HIV transmission. Methods: We will apply statistical and computational methods to better understand how socio-structural factors, substance use, and mental health impact engagement in HIV prevention and care continuums. We will then conduct a series of experiments to evaluate how socio-structural factors impact the uptake of existing biomedical interventions and compare outcomes under scenarios with different combinations of interventions using RDM. Significance: A better understanding of where and how to focus intervention efforts offers potential to improve substance use and HIV prevention and care outcomes for Black SGM. Once developed, our methods and models can be adapted to other geographic areas to reflect local prevention priorities and can serve as an example application of epidemiology, ABM, and RDM methods to advance HIV and substance use prevention science."
+          },
+          {
+            "rank": 3,
+            "grant_id": "5R01DA058965-02",
+            "score": 0.8447,
+            "title": "Achieving Equity in Patient Outcome Reporting for Timely Assessments of Life with HIV and Substance Use (ePORTAL HIV-S)",
+            "section_type": "methods",
+            "chunk_index": 0,
+            "year": 2024,
+            "source_url": "https://reporter.nih.gov/search-results?query=5R01DA058965-02",
+            "source_pdf": "",
+            "text": "PROJECT SUMMARY Substance use disorder (SUD) and HIV are synergistic epidemics (syndemics) disproportionately affecting Black Americans. Structural racism related to inadequate access to healthcare, stigma, and criminalization, especially among those with intersectional identities related to gender and sexual minorities, further exacerbate disparities in HIV and SUD outcomes. SUD is often unrecognized and untreated among PLWH. Only about half of HIV care sites routinely screen and refer to SUD treatment. In preliminary work, we found that nearly half of patients assessed in an HIV clinic waiting room met criteria for a SUD, but 65% had not been diagnosed with SUD. A promising strategy to address structural barriers to SUD screening for PLWH is use of electronic patient portals. Portals are secure websites that give patients access to health information and allow for secure messaging with providers. They are associated with improved health outcomes and patient engagement. Importantly, while most SUD screening currently occurs during clinic visits, portals can be utilized for SUD screening to reach patients who miss clinic visits, which is more common among people with HIV and SUD. Our preliminary work has demonstrated the potential of the portal for use in a population health approach to behavioral health screening, but minoritized populations are less likely to enroll in portals. Approaches are need to enhance engagement of Black PLWH for utilization of the portal for SUD screening. Beyond SUD screening, Black PLWH face structural barriers to SUD treatment, including the lack of treatment centers in communities with higher proportions of Black residents. However, a new model of treatment (Collaborative Care Model (CoCM)) integrates a social work care manager and consulting psychiatrist into the primary setting and has been shown improve SUD outcomes. CoCM for SUD could address treatment barriers related to stigma and structural racism for Black PLWH and SUD. This proposal will implement and evaluate multi-level interventions to decrease barriers to SUD screening (clinic-based, in-person) and treatment (referral-focused), a program we call ePORTAL HIV-S. ePORTAL HIV- S will be implemented at the Chicago Department of Public Health-funded South Side Health Home (S2H2), the main provider of HIV prevention and care services for Chicago\u2019s South Side, a majority Black community disproportionately impacted by HIV and SUD. Alongside our Community Advisory Board, we propose to carry out 4 aims: 1) Design and implement a strategy to increase patient portal engagement among Black PLWH; 2) Perform a randomized controlled trial to assess effectiveness of population health vs. usual (clinic-visit) SUD screening among PLWH in an HIV clinic; 3) Implement and evaluate CoCM for SUD in an HIV clinic; and 4) Develop an implementation guide for external dissemination of ePORTAL HIV-S. Our ultimate goal is to achieve health equity in SUD screening and treatment among Black PLWH."
+          }
+        ],
+        "Proposed Solution/Approach": [
+          {
+            "rank": 1,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.8086,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "bibliography",
+            "chunk_index": 83,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "d. Ying R, Sharma M, Heffron R, Celum C, Baeten JM, et al. Cost-effectiveness of pre-exposure\n prophylaxis targeted to high-risk serodiscordant couples as a bridge to sustained ART use in Kampala,\n Uganda. J Int AIDS Soc. 2015;18:20013. doi: 10.7448/IAS.18.4.20013. PMCID: 4509901. 3. Behavioral and social science to understand use of PrEP and ART for HIV-1 prevention. The\n development of PrEP and ART as novel HIV-1 prevention interventions has revealed that these strategies\n operate within a complex behavioral context. Working with a multidisciplinary group of collaborators, we\n have explored adherence to these interventions and drivers of adherence/nonadherence, sexual behavior\n (including risk compensation), and the individual, dyadic, and societal factors that influence prevention use. These studies have used multiple methods: intensive adherence monitoring, quantitative and qualitative\n data collection, and mHealth approaches. This work is integral to understanding how to develop new\n prevention tools and how to deliver effective ones for the greatest impact. a. Haberer JE, Baeten JM, Campbell J, et al. Adherence to antiretroviral prophylaxis for HIV prevention:\n a substudy cohort within a clinical trial of serodiscordant couples in East Africa. PLoS Med. 2013;10:e1001511. doi: 10.1371/journal.pmed.1001511. PMCID: 3769210. b. Curran K, Mugo NR, Kurth A, Ngure K, Heffron R, Donnell D, Celum C, Baeten JM. Daily short\n message service surveys to measure sexual behavior and pre-exposure prophylaxis use among\n Kenyan men and women. AIDS Behav. 2013;17:2977-85. PMCID: 3812384. c. Mugwanya K, Donnell D, Celum C, Thomas KK, Ndase P, Mugo N, Katabira E, Ngure K, Baeten JM;\n Partners PrEP Study Team. Sexual behaviour of heterosexual men and women receiving antiretroviral\n pre-exposure prophylaxis for HIV prevention. Lancet Infect Dis. 2013;13:1021-8. PMCID: 3920826. d. Curran K, Ngure K, Shell-Duncan B, Vusha S, Mugo NR, Heffron R, Celum C, Baeten JM."
+          },
+          {
+            "rank": 2,
+            "grant_id": "5K23NR020445-02",
+            "score": 0.7945,
+            "title": "Centering Those Engaged in Transactional Sex: A PrEP Innovation for Getting To Zero",
+            "section_type": "methods",
+            "chunk_index": 0,
+            "year": 2023,
+            "source_url": "https://reporter.nih.gov/search-results?query=5K23NR020445-02",
+            "source_pdf": "",
+            "text": "Getting to Zero (GTZ) new HIV infections by 2030 is a public health priority. Increasing HIV prevention, self- management, and harm reduction among at-risk populations is critical. HIV prevalence in sex workers is 12 times greater than the general population, highlighting the need for targeted prevention efforts. Increasing optimal use of pre-exposure prophylaxis (PrEP) in this population will advance progress toward GTZ 2030. Community empowerment interventions reduce HIV risk among sex workers because interventions are collaboratively designed, implemented, and evaluated by the target population. A community-empowered PrEP navigation approach may be feasible and acceptable among sex workers. One such approach is a group healthcare model called Centering Healthcare (Centering), which originated as a group prenatal care model and has since been modified for various patient populations. Centering's three core components: healthcare, interactive learning, and community building, disrupt typical healthcare power hierarchies by creating a respectful and collaborative interactive learning environment that honors group needs. The model's positive impact links self-management goals and health assessment with interactive activities to foster health promotion. Using an implementation science framework and building on Centering intervention effectiveness, this study will be the first to evaluate whether Centering is feasible and acceptable for PrEP education, navigation, and adherence among sex workers. Preliminary qualitative research with 39 sex workers in Chicago highlighted that stigma and healthcare discrimination dissuaded sex workers from regularly accessing HIV prevention information, services, and treatment. In collaboration with sex workers and a Community Advisory Board (CAB), we culturally adapted the Centering curriculum and facilitator's guide to meet the stated needs of sex workers. Guided by an Exploration, Preparation, Implementation, Sustainment framework (EPIS), the overall goal of this study is to expand on my formative research and evaluate if this culturally adapted Centering PrEP (C-PrEP+) model is feasible and acceptable for addressing education, navigation and PrEP adherence needs of HIV negative sex workers in Chicago. Specific aims of this study are to 1. Produce an implementation plan for integrating C-PrEP+ into a Federally Qualified Health Care (FQHC) system. 2. Conduct a pilot feasibility and acceptability trial of C-PrEP+. 3. Complete an evaluation of C-PrEP+ to document implementation barriers and facilitators. The research plan will be augmented by expert mentoring and didactic research training at University of Illinois Chicago and University of California San Francisco. This proposal, mentoring, and coursework will provide essential career development in: 1. Quantitative methods, 2. Health intervention study design, preparation, implementation, and 3. Mixed-methodological evaluation. This foundation will uniquely position the PI to lead a fully powered multi-site RCT to determine if C-PrEP+ is an efficacious and sustainable model to address HIV prevention among sex workers."
+          },
+          {
+            "rank": 3,
+            "grant_id": "5R01MH131476-03",
+            "score": 0.7399,
+            "title": "Implementation of a triadic network case management intervention for younger Black sexual minority men",
+            "section_type": "methods",
+            "chunk_index": 0,
+            "year": 2024,
+            "source_url": "https://reporter.nih.gov/search-results?query=5R01MH131476-03",
+            "source_pdf": "",
+            "text": "We will conduct a Hybrid Type II effectiveness-implementation randomized controlled trial of a Case Management Dyad (CM2) intervention, an evidence-based triadic social work intervention that uses a case manager dyad to engage younger Black sexual minority men (YBSMM) aged 18-35 in economic stability services. CM2 innovates on existing care continuum engagement models by (1) prioritizing resource counseling to improve HIV care and prevention continuum outcomes, and (2) utilizing a triadic network approach where a client meets with a dyadic case management team in tandem\u2013forming a triad with the client\u2013which provides additional supports for the client and the case managers. CM2 is timely given that intensive interventions are critical for engaging community members who have not benefited from existing Getting to Zero efforts. CM2 will also test robust implementation strategies to support CM2 implementation and to enhance the professional development and prevent burnout in the HIV front-line workforce, some of whom are directly impacted by HIV. The CM2 intervention and associated implementation strategies emerge from prior work conducted by the Investigative Team. We will build upon these experiences, infrastructures, and relationships to evaluate the effectiveness and implementation of CM2 among N=180 YBSMM. Data collection, at baseline, and every 6 months over 18 months, will include surveys and electronic medical record data. To study implementation, we will use the Consolidated Framework for Implementation Research as the determinant framework and RE-AIM as the evaluation framework. The specific aims are to: (Aim 1a) Evaluate the primary (financial well-being, food security) and secondary (integrated PrEP persistence/viral load suppression) effectiveness of CM2 vs routine Ryan White Non-Medical Case Management and PrEP Resource Counseling among YBSMM; (Aim 1b). Evaluate the effectiveness (time to successful resource referral completion, CM job satisfaction, CM burnout and CM-client relationship) of the CM2 intervention vs. routine Ryan White Case Management and/or PrEP Resource Counseling among case manager study participants; (Aim 2a) Determine the extent to which financial well-being and food security mediate the relationship between CM2 and downstream 18-month integrated care continuum outcomes; (Aim 2b) Explore potential differential effects of CM2 on primary (resource) and secondary (care continuum) outcomes, based on mental health, substance use, housing, employment and HIV serostatus; and (Aim 3) Evaluate implementation strategies and outcomes at both YBSMM and case manager levels using RE- AIM to study reach, adoption, implementation, and maintenance. Implementation strategies include individual and dyadic supervision, team consultation, and a train-the-trainer model, and implementation outcomes are acceptability, feasibility, appropriateness, feasibility, fidelity and cost. If successful, CM2 will intensify existing case management resource support systems, which will not only impact the lives and care continua of YBSMM, but also fulfill an ending the epidemic priority of revitalizing and sustaining the HIV frontline workforce."
+          }
+        ],
+        "Work Plan": [
+          {
+            "rank": 1,
+            "grant_id": "1R01MH134262-01",
+            "score": 0.6315,
+            "title": "J-RISE: Relevant Implementation Strategies to Eliminate the social and structural barriers to HIV services among Justice-involved Black men who have sex with men",
+            "section_type": "specific_aims",
+            "chunk_index": 0,
+            "year": 2023,
+            "source_url": "https://reporter.nih.gov/search-results?query=1R01MH134262-01",
+            "source_pdf": "",
+            "text": "Project Summary Justice-involved Black men who have sex with men (BMSM) are particularly vulnerable to HIV, and oftentimes experience delayed uptake and benefit from available HIV services. Status neutral interventions for justice- involved BMSM are pertinent and urgently needed to address the social and structural barriers to HIV services (e.g., unemployment) experienced by this population. Our collaborative has prioritized four status neutral interventions (i.e., transitional case management [TCM], employment navigation [EN], contingency management intervention [CMI], and employer outreach and support [EOS). Combining these interventions together will maximize their independent effectiveness and provide significant promise for improving access to HIV and employment-related services for justice-involved BMSM. We will utilize seven prioritized bundled implementation strategies to support the adoption, implementation, and sustainability of status neutral interventions within community and criminal justice settings. The overarching goals of the planned multi-site type 2 hybrid effectiveness-implementation study, J-RISE: Relevant Implementation Strategies to Eliminate the social and structural barriers to HIV services among Justice-involved BMSM is to simultaneously evaluate the effectiveness and implementation of two packaged status neutral interventions within justice and community settings to improve access to HIV and employment-related services. J-RISE is led by an academic, community, and criminal justice collaborative and conducted in three Ending the HIV Epidemic (EHE) jurisdictions in Illinois and Louisiana. Aim 1. Evaluate the effectiveness of two packaged status neutral interventions (TCM versus TCM+EN+CMI) on primary outcomes (linkages to HIV care, PrEP care, and employment-related services within 90 days) and secondary outcomes (receipt of mental health and substance use services, retention in HIV care, viral suppression, PrEP persistence, and sustained employment) among justice-involved BMSM. Aim 2. Evaluate the bundled implementation strategies and implementation outcomes at multiple levels using CFIR, RE-AIM, and MIPA. Key implementation outcomes include acceptability, adoption, costs, fidelity, penetration, and sustainability. J-RISE will generate novel information about the utility of our chosen implementation strategies as well as critical information about the effectiveness and cost of packaged status neutral interventions to optimize HIV and employment-related outcomes for justice-involved BMSM in multiple EHE jurisdictions."
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5946,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "bibliography",
+            "chunk_index": 78,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "My work is highly multidisciplinary and collaborative in\n nature, as reflected in the breadth of research questions and methods, diversity of funding sources (within the\n past five years: NIH institutes NIAID, NICHD, NIDDK, NIMH, NINR, FIC, CDC, USAID, Bill & Melinda Gates\n Foundation), and number of collaborators (more than four dozen in the past five years). I was co-PI for the\n Partners PrEP Study, the phase III, placebo-controlled trial of oral tenofovir-based pre-exposure prophylaxis\n (PrEP) for HIV-1 prevention among HIV-1 seronegative members of HIV-1 serodiscordant couples in Kenya\n and Uganda, which in 2011 demonstrated definitive HIV-1 protection of PrEP in heterosexual populations. We\n have followed the Partners PrEP Study with a multidisciplinary, implementation science study of PrEP and\n antiretroviral therapy (ART) for HIV-1 prevention among East African HIV-1 serodiscordant couples (the\n Partners Demonstration Project; role: PI) and new projects to deliver PrEP to young women at risk. Additional\n work has explored social and behavioral factors that support or undermine adherence to PrEP and ART, innate\n and acquired immunologic characteristics related to HIV-1 protection, and the clinical safety of PrEP. Microbicides hold substantial promise as an HIV-1 prevention strategy and I served as chair of MTN020/ASPIRE, a multisite phase III trial that demonstrated the efficacy and safety of the dapivirine vaginal ring\n for HIV-1 prevention in women (published NEJM 2016). I will also chair the follow-up study \u2013 MTN-025 or\n the HIV Open-Label Prevention Extension (HOPE) trial- that will evaluate how to optimize adherence to and\n delivery of the dapivirine vaginal ring via an open-label design. I am thrilled to serve as co-investigator on Dr."
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5626,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "significance",
+            "chunk_index": 142,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "3A1. The PrEP clinical trials revealed the critical importance of evaluating adherence using\n pharmacologic measures: Massive advances in HIV prevention have been demonstrated over the past 5\n years. Pre-exposure prophylaxis (PrEP) with oral tenofovir disoproxil fumarate/emtricitabine (TDF/FTC) was\n effective in placebo-controlled trials at preventing HIV acquisition among at-risk individuals, including men\n who have sex with men (MSM)1,4 and women, heterosexual men and women,2,3 and \n intravenous drug users.5 PrEP, now broadly \n recommended by the Centers for Disease \n Control and Prevention (CDC)51 and the World \n Health Organization (WHO),6 is entering an \n exciting phase of global expansion. The oral TDF/FTC-based PrEP trials \n highlighted three major lessons (Figure 1): 1) \n there is a profound relationship between \n adherence and effectiveness;52 2) self-reported \n adherence can be a poor predictor of actual \n use;7,8,53 and 3) daily pill-taking can be difficult, \n making long-acting methods desirable.10 The \n second wave of evaluation for oral PrEP and \n next-generation prevention modalities must \n incorporate these lessons of \u201cPrEP 1.0\u201d. Pharmacologic measures, which integrate \n both behavior (adherence) and exposure \n (pharmacokinetics), assess drug concentrations \n in a biomatrix such as plasma, peripheral blood \n mononuclear cells (PBMCs), dried blood spots \n (DBS) or hair. Substantial discordance between \n self-reported measures of adherence and drug detection in trials, such as the global iPrEx study,1,54 the FEMPrEP study,7 Partners PrEP,2,55,56 and VOICE,8,57 have highlighted the critical importance of incorporating\n objective pharmacologic measures of exposure when interpreting PrEP effectiveness.54,55,58,59 For\n instance, the efficacy of TDF/FTC in the global iPrEx trial rose from 44% overall to an estimated 92% among\n those with detectable blood drug levels.1 Despite high rates of self-reported adherence to study product in\n FEM-PrEP7 and VOICE8 (two trials in young, sexually active women in Africa), these trials demonstrated no\n efficacy of daily TDF/FTC in reducing HIV acquisition."
+          }
+        ],
+        "Organizational Capacity": [
+          {
+            "rank": 1,
+            "grant_id": "5R01MH123388-03",
+            "score": 0.5458,
+            "title": "Violence and viral suppression among men living with HIV",
+            "section_type": "methods",
+            "chunk_index": 0,
+            "year": 2023,
+            "source_url": "https://reporter.nih.gov/search-results?query=5R01MH123388-03",
+            "source_pdf": "",
+            "text": "There is increasing evidence that men who have sex with men (MSM) experience dual epidemics of HIV and intimate partner violence (IPV), yet understanding of the synergies between these two epidemics is underdeveloped. Gay, bisexual and other men who have sex with men (GBMSM) continue to be the risk group most severely affected by HIV in the United States. In parallel, estimated prevalence for receipt of IPV among MSM range from 12% to 78%. Emergent evidences demonstrates associations between the experience of IPV among MSM and the risk of HIV acquisition or participation in risk behaviors that heighten the risk of HIV (i.e. substance use), but the relationship between the experience of IPV for MSM living with HIV and HIV clinical care is less understood. The overwhelming majority of evidence linking IPV and sub-optimal HIV care comes from studies of heterosexual women. A recent meta-analysis showed that women's experience of IPV was associated with 55% lower odds of self-reported adherence and 36% decreased odds of viral suppression. The four studies that have looked at associations between clinical care and IPV for men living with HIV have all been hampered by methodological limitations: cross-sectional study designs with clinic-based populations that limit the ability to draw conclusions as to how IPV affects engagement in HIV care for partnered men living with HIV. We propose an innovative 24-month cohort study of HIV-positive MSM, coupled with nested qualitative data, to identify the pathways and points of intervention between IPV and HIV care for US MSM. The proposed research activities include a prospective 24-month cohort of 300 HIV-positive partnered MSM (>18 years) recruited through a combination of online and venue-based recruitment methods in Atlanta, GA and Detroit, MI. The cohort study will employ a measure of IPV developed specifically to capture IPV as experienced by MSM, and will consider the experience of IPV (victimization, perpetration and bidirectional IPV), and severity and frequency of IPV as drivers of engagement in HIV care. Biomarkers of viral load and adherence to ARV will be collected from all participants. The overall aim of the proposed activities is to provide new knowledge of how victimization or perpetration of IPV shapes engagement in HIV care and is associated with the ability to achieve and maintain viral suppression."
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5325,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "bibliography",
+            "chunk_index": 82,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "d. Mugwanya KK, Wyatt C, Celum C, Donnell D, Mugo NR, Tappero J, Kiarie J, Ronald A, Baeten JM;\n Partners PrEP Study Team. Changes in glomerular kidney function among HIV-1 uninfected men and\n women receiving emtricitabine-tenofovir disoproxil fumarate preexposure prophylaxis: a randomized\n clinical trial. JAMA Int Med. 2015;175:245-54. PMCID: 4354899. 2. Implementation science to optimize HIV-1 prevention delivery. Achieving public health impact with\n HIV-1 prevention interventions will require implementation science to efficiently and effectively deliver these\n strategies. We are currently conducting a multidisciplinary, implementation science study of PrEP and\n antiretroviral therapy (ART) for HIV-1 prevention among East African HIV-1 serodiscordant couples (the\n Partners Demonstration Project; role: PI); we recently reported that the integrated delivery of PrEP and\n Biosketches Page 48\n\nContact PD/PI: Gandhi, Monica \n ART in this population reduced incident HIV-1 by 96% (Baeten, CROI 2015). I have led or co-led multiple\n studies to define optimized prevention delivery, including epidemiologic analyses, mathematical modeling,\n delivery science, and cost-estimation studies. I serve as Vice Chair of the Department of Global Health at\n the University of Washington, the first program in the world to offer a PhD in Implementation Science. b. Hallett T, Baeten JM, Heffron R, et al. Optimal uses of antiretrovirals for prevention in HIV-1\n serodiscordant heterosexual couples in South Africa: a modelling study. PLoS Med. 2011;8:e1001123. doi: 10.1371/journal.pmed.1001123. PMCID: 3217021. c. Kahle E, Hughes J, Lingappa J, John-Stewart G, Celum C, Nakku-Joloba E, Njuguna S, Mugo N,\n Bukusi E, Manongi R, Baeten JM; Partners in Prevention HSV/HIV Transmission Study and the\n Partners PrEP Study Teams. An empiric risk scoring tool for identifying high-risk heterosexual HIV-1serodiscordant couples for targeted HIV-1 prevention. J Acquir Immune Defic Syndr. 2013;62:339-47. PMCID: 3620695. d. Ying R, Sharma M, Heffron R, Celum C, Baeten JM, et al."
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5314,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "project_summary",
+            "chunk_index": 1,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Three lessons of the PrEP (pre-exposure prophylaxis) clinical trials - that adherence is critical to effectiveness,\n that pharmacologic adherence measures are more reliable than self-report, and that daily pill-taking is difficult\n \u2013must be applied to the next phase of HIV prevention research. This phase will investigate oral PrEP roll-out\n and optimization in high incidence settings, as well as novel long-acting methods for preventing HIV infection,\n such as injectables or vaginal rings. The vaginal ring prevented HIV acquisition in two recent trials, but poor\n adherence to consistent ring insertion dampened overall effectiveness. Injectable PrEP with long-acting\n cabotegravir is of interest, but will require adequate drug levels to be effective, especially at the end of dosing\n intervals and with missed visits. Pharmacologic metrics integrate biology (pharmacokinetics, PK) and behavior\n (adherence) and will be crucial to interpreting effectiveness with real-world oral PrEP, rings and injectables. Our group has helped pioneer the use of small hair samples (which are easy to collect, store and ship) to\n monitor exposure (PK) and adherence to antiretrovirals (ARVs). During the first funding period of this R01,\n we made significant progress on our original aims, demonstrating that hair levels of ARVs, which monitor\n long-term exposure, are stronger predictors of treatment success than self-reported adherence (or plasma\n levels) in HIV-infected pregnant women, children, and adults. We have also shown preliminary utility of hair\n levels of tenofovir (TFV)/emtricitabine (FTC) to monitor adherence and toxicities with oral PrEP. This proposal will leverage three important trials to explore key knowledge gaps that will arise in the\n next phase of HIV prevention work: The Sustainable East Africa Research in Community Health (SEARCH)\n trial (Dr. Havlir, chair and co-I) has just launched a large study providing oral PrEP to at-risk individuals in 16\n communities in Africa."
+          }
+        ],
+        "Evaluation Plan": [
+          {
+            "rank": 1,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5267,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "bibliography",
+            "chunk_index": 86,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Complete List of Published Work in MyBibliography (from >160 peer-reviewed publications):\n http://www.ncbi.nlm.nih.gov/myncbi/browse/collection/41428984/ \n D. Research Support \n Ongoing Research Support (selected) \n NIH/NIMH R01 MH095507 Baeten (PI) 08/10/11 \u2013 07/31/21\n Optimizing antiretroviral-based HIV prevention for HIV serodiscordant couples \n We proposed a series of integrated studies to optimize targeted delivery and sustained use of antiretroviral\n HIV-1 prevention in African HIV-1 serodiscordant couples. Role: Principal Investigator \n NIH/NIAID R01 AI096968 Baeten, Lund (PIs) 04/01/12 \u2013 03/31/17\n PrEP and protective immune responses against HIV-1 \n We propose to explore anti-HIV-1 responses in HIV-1 exposed but uninfected persons receiving PrEP,\n evaluate the relationship between anti-HIV-1 immune responses and protection against HIV-1 acquisition, and\n test mucosal samples from persons on PrEP to evaluate immune responses at the site of HIV-1 exposure. Role: Co-Principal Investigator (multiple PI mechanism) \n USAID APS-OAA-14-000076 Baeten, Celum (PIs) 07/01/15 \u2013 06/30/20\n Biosketches Page 50\n\nContact PD/PI: Gandhi, Monica \n Scaleable, effective delivery of microbicides and PrEP for young women in Kenya and South Africa\n We propose to develop and evaluate effective, scalable strategies that are context-specific and\n responsive for closing critical gaps in microbicide and PrEP delivery for African women in high HIV incidence\n settings. Role: Co-Principal Investigator \n CDC U48 DP 005013 Harris (PI) 09/03/14 \u2013 09/29/19\n SIP 14-023 project: Health promotion and disease prevention research centers: special interest project\n competitive supplements (SIPs) \n The project will conduct series of innovative clinical and biologic studies to understand the effect of progestinbased contraception on HIV-1 transmission and disease. Role: Project Co-Principal Investigator (for SIP 14-023) \n NIH/NIMH MH098744 Haberer (PI) 06/04/13 \u2013 05/31/18\n Real-world adherence to HIV PrEP in serodiscordant African couples \n The goal of this project is to determine if people can and will adhere adequately enough to PrEP in the \u201creal\n world\u201d to be protected against HIV seroconversion."
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5194,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "project_summary",
+            "chunk_index": 2,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "This proposal will leverage three important trials to explore key knowledge gaps that will arise in the\n next phase of HIV prevention work: The Sustainable East Africa Research in Community Health (SEARCH)\n trial (Dr. Havlir, chair and co-I) has just launched a large study providing oral PrEP to at-risk individuals in 16\n communities in Africa. The HIV Open-Label Prevention Extension (HOPE) study in the Microbicide Trials\n Network (MTN) (Dr. Baeten, chair and co-I) will assess open-label use of the dapivirine vaginal ring. The\n Long-Acting Antiretroviral Therapy in Non-adherent HIV-Infected Individuals Trial (A5359, Dr. CastilloMancilla, co-chair and co-I)) in the AIDS Clinical Trials Group (ACTG) will examine long-acting injectables in\n HIV-infected patients with a history of poor adherence. All 3 trials will collect hair and plasma for drug levels,\n and track robust outcomes, to allow us to 1) investigate hair levels as metrics of adherence with the vaginal\n ring and oral PrEP in Africa and examine patterns of adherence (e.g. daily, around periods of risk, just prior to\n visits) by combining data in plasma and hair; and 2) examine hair levels as easy-to-collect metrics for PK\n monitoring with the use of injectables. The overarching goal of this renewal is to develop an integrated\n package of highly predictive biologic adherence and pharmacokinetic measures spanning PrEP delivery\n methods and optimization strategies. Defining predictors and patterns of adherence to oral PrEP and rings, as\n well as metrics to monitor PK with injectables, will inform public health interventions in HIV prevention. Project Summary/Abstract Page 8\n\nContact PD/PI: Gandhi, Monica \n PUBLIC HEALTH RELEVANCE/"
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5083,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "bibliography",
+            "chunk_index": 80,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Gandhi and other collaborators (see my and other MTN leaders\u2019 letters of support) to\n help implement the study within MTN-025 and participate in the analyses and interpretation of results. B. Positions and Honors \n Positions and Employment \n 07/2008-06/2011 Assistant Professor, Departments of Global Health and Medicine \n Biosketches Page 47\n\nContact PD/PI: Gandhi, Monica \n Adjunct Assistant Professor, Department of Epidemiology \n University of Washington, Seattle, WA \n 07/2011-06/2014 Associate Professor, Departments of Global Health and Medicine \n Adjunct Associate Professor, Department of Epidemiology \n University of Washington, Seattle, WA \n 07/2014-present Professor, with tenure, Departments of Global Health, Medicine, and Epidemiology\n Vice Chair, Department of Global Health (since 07/2015) \n University of Washington, Seattle, WA \n Honors \n 1994, 1995 Sigma Xi, Phi Beta Kappa \n 2001 Outstanding Student Award, Department of Epidemiology \n 2002 Alpha Omega Alpha \n 2010 American Sexually Transmitted Diseases Association Young Investigator Award\n 2012 POZ Magazine 100 Leaders in HIV \n 2013 Outstanding Mentor Award, University of Washington School of Public Health\n 2013 Association of Schools of Public Health Award for Distinguished Research in Public Health\n 2015 University of Washington School of Medicine Alumni Association Early Achievement Award\n Other \n Editorial Board, AIDS (2008-present); Editorial Board, AIDS & Behavior (2012-present)\n NIH standing study section member: AIDS Clinical Studies and Epidemiology (ACE) (2015-present)\n NIH implementation science study sections (ZAI1 BP-A J2 1, ZRG1 AARR-F [90] S) (2011-present)\n C. Contribution to Science \n 1. Pre-exposure prophylaxis (PrEP) for HIV-1 prevention. PrEP, in which an HIV-1 uninfected person\n uses an antiretroviral medication as chemoprophylaxis to prevention HIV-1 acquisition, is a new, proven\n prevention strategy. Our Partners PrEP Study demonstrated that PrEP was efficacious for HIV-1 protection\n in heterosexual populations and the results of the Partners PrEP Study contributed directly to US FDA\n approval of PrEP for HIV-1 prevention and normative guidance from CDC and WHO to make PrEP part of\n HIV-1 prevention worldwide."
+          }
+        ],
+        "Budget Narrative": [
+          {
+            "rank": 1,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5242,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "project_narrative",
+            "chunk_index": 3,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Pre-exposure prophylaxis (PrEP) with oral tenofovir (TFV) disoproxil fumarate/emtricitabine (TDF/FTC)\n works, but measuring PrEP drug levels to assess adherence in the PrEP trials helped us understand that 1)\n drug levels measure adherence better than self-report; and 2) it is difficult to take a pill every day. New ways\n to prevent HIV will involve testing a vaginal ring that is inserted monthly or injections of a long-acting\n antiretroviral (like cabotegravir), but we must examine drug levels in the human body when studying these\n novel tools to truly understand how well they work. This study will look at drug levels in small hair samples\n in three important trials (studying oral PrEP in Africa; the dapivirine vaginal ring in Africa under real-world\n conditions; and injectable agents in the U.S.) to see if hair measures can monitor the effectiveness of HIV\n prevention delivered via exciting new modalities and in high-incidence settings. Project Narrative Page 9\n\nContact PD/PI: Gandhi, Monica \n FACILITIES AND RESOURCES \n SITE: University of California, San Francisco (UCSF) \n UCSF: The University of California, San Francisco (UCSF), one of the ten campuses of the University of\n California, is devoted solely to graduate education and research in the health sciences. UCSF is one of the\n leading biomedical research and health science education centers in the world. The university is a major health\n care delivery center in northern California with a high volume of regional, national, and international patient\n referrals. UCSF is home to 16 research institutes, 1,500 laboratories, more than 5,000 ongoing research\n projects, and a library with a state-of-the-art computing and communications infrastructure. In 2006, UCSF\n applied for and was successfully awarded an NIH Center for Translational Sciences (CTSI), which is dedicated\n to research and education in clinical and translational science at UCSF, at affiliated institutions, and in\n participating communities."
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5095,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "bibliography",
+            "chunk_index": 81,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "PrEP, in which an HIV-1 uninfected person\n uses an antiretroviral medication as chemoprophylaxis to prevention HIV-1 acquisition, is a new, proven\n prevention strategy. Our Partners PrEP Study demonstrated that PrEP was efficacious for HIV-1 protection\n in heterosexual populations and the results of the Partners PrEP Study contributed directly to US FDA\n approval of PrEP for HIV-1 prevention and normative guidance from CDC and WHO to make PrEP part of\n HIV-1 prevention worldwide. We have published more than three dozen manuscripts from the Partners\n PrEP Study, addressing key questions for this new prevention strategy: adherence, the relationship\n between adherence and effectiveness, clinical safety, and antiretroviral resistance. I have led this work,\n along with a large, multinational and multidisciplinary team, and I have participated in national and\n international discussions to develop guidelines for PrEP clinical provision and implementation. Moreover, I\n recently chaired the MTN-020 or ASPIRE study, which (along with the RING trial), showed the efficacy of\n the dapivirine vaginal ring in reducing rates of HIV-1 acquisition in young women for the first time and am\n chairing the open-label phase of this study (MTN-025) now (relevant to Aim 2 of this R01 renewal). b. Baeten JM, Donnell D, Ndase P, et al. Antiretroviral prophylaxis for HIV prevention in heterosexual\n men and women. N Engl J Med. 2012;367:399-410. PMCID: 3770474. c. Mugo NR, Hong T, Celum C, Donnell D, Bukusi EA, John-Stewart G, Wangisi J, Were E, Heffron R,\n Matthews L, Morrison S, Ngure K, Baeten JM; Partners PrEP Study Team. Pregnancy incidence and\n outcomes among women receiving preexposure prophylaxis for HIV prevention: a randomized,\n placebo-controlled trial. JAMA. 2014;312:362-71. PMCID: 25038355. d. Mugwanya KK, Wyatt C, Celum C, Donnell D, Mugo NR, Tappero J, Kiarie J, Ronald A, Baeten JM;\n Partners PrEP Study Team."
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.4369,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "specific_aims",
+            "chunk_index": 138,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "After the efficacy of oral pre-exposure prophylaxis (PrEP) was demonstrated in multiple trials,1-5 the World\n Health Organization cited broad indications for global roll-out.6 Three lessons of the PrEP clinical trials - that\n adherence is critical to effectiveness,7,8 that objective adherence measures are more reliable than self-report,9\n and that daily pill-taking is challenging10 \u2013must be applied to the next phase of prevention research. This phase\n will investigate best practices for oral PrEP roll-out and optimization in high incidence settings, as well as\n novel long-acting methods for preventing HIV infection, such as injectables or vaginal rings. The dapivirine\n vaginal ring reduced rates of HIV acquisition in two recent trials,11,12 but poor adherence to consistent ring\n use dampened overall effectiveness.13 Injectable PrEP with long-acting cabotegravir is of great interest,14,15 but\n will require adequate drug levels to be effective,16 especially at the end of dosing intervals17 and when visits\n are missed. Pharmacologic measures that integrate behavior (adherence) and biology (pharmacokinetics [PK])\n will be crucial to interpreting and optimizing effectiveness during PrEP roll-out and with long-acting modalities. Pharmacologic assays monitor adherence and exposure by measuring drug levels in a biologic matrix. Our group at UCSF has advanced the field of antiretroviral (ARV) monitoring via hair levels.18-44 The\n concentration of a medication in hair, which is easy to collect, store and ship29, reflects drug uptake from the\n systemic circulation over weeks to months.18 Moreover, combining different pharmacologic measures (e.g. levels in plasma, hair, or vaginal rings) can help assess patterns of adherence.45-48 This R01 renewal, which\n addresses key knowledge gaps for the roll-out of oral PrEP, vaginal rings and injectables, builds on the\n productivity, infrastructure, and investment in its predecessor."
+          }
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-03-08T19:36:38.237514",
+      "topic": "non-communicable diseases; health disparities; clinical epidemiology; public health policy evaluation; health care systems; Latin America; U.S. Hispanic/Latino populations; obesity; diabetes; cardiovascular disease; cancer; chronic kidney disease; measurement validation; health services research; intervention evaluation; health access; comparative analysis; Puerto Rico",
+      "funder_type": "NIH",
+      "sections": [
+        "Specific Aims",
+        "Significance",
+        "Innovation",
+        "Approach"
+      ],
+      "elapsed_s": 1.81,
+      "total_candidates": 12,
+      "results": {
+        "Specific Aims": [
+          {
+            "rank": 1,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.75,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "specific_aims",
+            "chunk_index": 141,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "women < 25 years). A\n threshold for dapivirine exposure in hair associated with a low risk of HIV acquisition will be determined. AIM 3: To examine the utility of hair levels for PK monitoring of LA cabotegravir in a diverse population\n (A5359). We will assess real-world factors associated with PK variability to CAB, examine hair levels between\n injections via segmental analysis, and examine correlations between CAB levels in hair and plasma at the end\n of dosing intervals, all to provide evidence for exposure monitoring using hair levels with injectable PrEP. The overarching goal of this proposal, harnessing work from the first R01, is to develop an integrated\n package of highly predictive biologic adherence measures spanning PrEP delivery methods and\n optimization strategies. Defining predictors and patterns of adherence to oral PrEP and rings, as well as\n metrics to monitor PK with injectables, will inform precision public health interventions in HIV prevention. Specific Aims Page 134\n\nContact PD/PI: Gandhi, Monica \n 3. RESEARCH STRATEGY \n 3"
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.6399,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "specific_aims",
+            "chunk_index": 139,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Our group at UCSF has advanced the field of antiretroviral (ARV) monitoring via hair levels.18-44 The\n concentration of a medication in hair, which is easy to collect, store and ship29, reflects drug uptake from the\n systemic circulation over weeks to months.18 Moreover, combining different pharmacologic measures (e.g. levels in plasma, hair, or vaginal rings) can help assess patterns of adherence.45-48 This R01 renewal, which\n addresses key knowledge gaps for the roll-out of oral PrEP, vaginal rings and injectables, builds on the\n productivity, infrastructure, and investment in its predecessor. We have published 20 papers from the\n first grant25-44 demonstrating important uses for hair measures in treatment -where hair levels are stronger\n predictors of outcomes22-27 than self-reported adherence22,23,25 or plasma levels24,27- and with oral PrEP.39-43\n We will leverage three important trials in this proposal (with chairs as co-investigators) to explore crucial\n unanswered questions on adherence to and effectiveness of oral PrEP in Africa and extend the\n investigation of hair measures to vaginal rings and long-acting injectables. The Sustainable East Africa\n Research in Community Health (SEARCH) trial49,50 has just launched a large study providing PrEP to at-risk\n individuals in 16 communities in Africa. The HIV Open-Label Prevention Extension (HOPE/Microbicide Trials\n Network-025) study will assess open-label use of the dapivirine vaginal ring.11,12 The Long-Acting Antiretroviral\n Therapy in Non-adherent HIV-Infected Individuals Trial (A5359) in the AIDS Clinical Trials Group (ACTG) will\n examine long-acting (LA) injectables in HIV-infected patients with a history of poor adherence. All 3 trials will\n collect hair and plasma, and track robust outcomes, to allow investigation of our key hypotheses and aims. We hypothesize that hair concentrations, coupled with shorter-term measures, in large studies of PrEP (both\n oral and the dapivirine vaginal ring) will allow us to better predict effectiveness and assess patterns of\n adherence45 (e.g."
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.608,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "specific_aims",
+            "chunk_index": 138,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "After the efficacy of oral pre-exposure prophylaxis (PrEP) was demonstrated in multiple trials,1-5 the World\n Health Organization cited broad indications for global roll-out.6 Three lessons of the PrEP clinical trials - that\n adherence is critical to effectiveness,7,8 that objective adherence measures are more reliable than self-report,9\n and that daily pill-taking is challenging10 \u2013must be applied to the next phase of prevention research. This phase\n will investigate best practices for oral PrEP roll-out and optimization in high incidence settings, as well as\n novel long-acting methods for preventing HIV infection, such as injectables or vaginal rings. The dapivirine\n vaginal ring reduced rates of HIV acquisition in two recent trials,11,12 but poor adherence to consistent ring\n use dampened overall effectiveness.13 Injectable PrEP with long-acting cabotegravir is of great interest,14,15 but\n will require adequate drug levels to be effective,16 especially at the end of dosing intervals17 and when visits\n are missed. Pharmacologic measures that integrate behavior (adherence) and biology (pharmacokinetics [PK])\n will be crucial to interpreting and optimizing effectiveness during PrEP roll-out and with long-acting modalities. Pharmacologic assays monitor adherence and exposure by measuring drug levels in a biologic matrix. Our group at UCSF has advanced the field of antiretroviral (ARV) monitoring via hair levels.18-44 The\n concentration of a medication in hair, which is easy to collect, store and ship29, reflects drug uptake from the\n systemic circulation over weeks to months.18 Moreover, combining different pharmacologic measures (e.g. levels in plasma, hair, or vaginal rings) can help assess patterns of adherence.45-48 This R01 renewal, which\n addresses key knowledge gaps for the roll-out of oral PrEP, vaginal rings and injectables, builds on the\n productivity, infrastructure, and investment in its predecessor."
+          }
+        ],
+        "Significance": [
+          {
+            "rank": 1,
+            "grant_id": "r01-gandhi-application",
+            "score": 1.0,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "significance",
+            "chunk_index": 142,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "3A1. The PrEP clinical trials revealed the critical importance of evaluating adherence using\n pharmacologic measures: Massive advances in HIV prevention have been demonstrated over the past 5\n years. Pre-exposure prophylaxis (PrEP) with oral tenofovir disoproxil fumarate/emtricitabine (TDF/FTC) was\n effective in placebo-controlled trials at preventing HIV acquisition among at-risk individuals, including men\n who have sex with men (MSM)1,4 and women, heterosexual men and women,2,3 and \n intravenous drug users.5 PrEP, now broadly \n recommended by the Centers for Disease \n Control and Prevention (CDC)51 and the World \n Health Organization (WHO),6 is entering an \n exciting phase of global expansion. The oral TDF/FTC-based PrEP trials \n highlighted three major lessons (Figure 1): 1) \n there is a profound relationship between \n adherence and effectiveness;52 2) self-reported \n adherence can be a poor predictor of actual \n use;7,8,53 and 3) daily pill-taking can be difficult, \n making long-acting methods desirable.10 The \n second wave of evaluation for oral PrEP and \n next-generation prevention modalities must \n incorporate these lessons of \u201cPrEP 1.0\u201d. Pharmacologic measures, which integrate \n both behavior (adherence) and exposure \n (pharmacokinetics), assess drug concentrations \n in a biomatrix such as plasma, peripheral blood \n mononuclear cells (PBMCs), dried blood spots \n (DBS) or hair. Substantial discordance between \n self-reported measures of adherence and drug detection in trials, such as the global iPrEx study,1,54 the FEMPrEP study,7 Partners PrEP,2,55,56 and VOICE,8,57 have highlighted the critical importance of incorporating\n objective pharmacologic measures of exposure when interpreting PrEP effectiveness.54,55,58,59 For\n instance, the efficacy of TDF/FTC in the global iPrEx trial rose from 44% overall to an estimated 92% among\n those with detectable blood drug levels.1 Despite high rates of self-reported adherence to study product in\n FEM-PrEP7 and VOICE8 (two trials in young, sexually active women in Africa), these trials demonstrated no\n efficacy of daily TDF/FTC in reducing HIV acquisition."
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.821,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "significance",
+            "chunk_index": 154,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Assessing patterns of exposure to oral PrEP or the\n vaginal ring among specific groups in high-incidence settings can inform the development of\n subsequent adherence interventions tailored to different patterns of drug-taking. 3A6. Embedding hair measures in three important trials will provide insight on adherence and\n exposure, and thereby effectiveness, with \u201cPrEP 2.0\u201d \n SEARCH PrEP study: The Sustainable East Africa Research in Community Health \n (SEARCH) study is a collaboration conducting community-based research in East Africa\n (principal investigators Diane Havlir MD (co-I on this proposal), Maya Petersen MD, PhD,\n Moses Kamya MBChB, MPH, PhD).49,50,111-118 The original study randomized 32 communities in Uganda and\n Kenya (~340,000 individuals) to receive universal HIV testing and treatment versus standard of care. In the\n second phase, the study will evaluate how to deliver PrEP on a population level, targeting high-risk\n individuals and investigating novel delivery mechanisms. In phase 2, the 32 communities will all receive\n universal HIV treatment via streamlined care and will be re-randomized to the next intervention, the provision\n of targeted PrEP to individuals with high-risk profiles. Plasma and hair samples for drug levels, as well as selfassessments of risk and self-reported adherence, will be collected at each visit. HIV incidence at 3 years (the\n primary outcome) will be compared among intervention and control communities. MTN-025 or HOPE study: The HIV Open-Label Prevention Extension (HOPE) study \n (chaired by Jared Baeten MD, PhD, co-I on this application) in the Microbicide Trials\n Network (MTN-025) will examine the dapivirine vaginal ring in an open-label trial for safety, adherence and\n efficacy in preventing HIV acquisition. Participants will receive a vaginal ring containing 25mg of dapivirine to\n be replaced each month over a total period of 12 months. Hair, plasma and used rings will be collected at each\n visit and analyzed for dapivirine levels."
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.5271,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "significance",
+            "chunk_index": 149,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "To this\n point, in a recent phase 2a safety and pharmacokinetic study (\u00c9CLAIR study)17 of high-dose long-acting\n cabotegravir delivered every 12 weeks, plasma levels at the end of the dosing interval were lower in 70%\n of participants than had been predicted by early phase 1 PK models.82 We will examine factors that\n influence PK variability to CAB, as well as the utility of hair levels (and their combination with plasma levels) for\n PK monitoring with injectable cabotegravir. Aim 3 is meant to be \u201cforward thinking\u201d. If PK metrics will be\n essential to monitor with LA CAB, especially in the context of prevention, studies to define those metrics will\n Research Strategy Page 136\n\nContact PD/PI: Gandhi, Monica \n facilitate roll-out, with monitoring tools in place, once results from the clinical trials are finalized. 3A4. Hair levels have advantages as a tool for monitoring adherence and exposure to \u201cPrEP 2.0\u201d\n The limitations of more \u201csubjective\u201d methods to monitor antiretroviral adherence in HIV treatment and\n prevention settings, such as self-report and pill counts, are well-described.9,40,53,88-94 Self-report is subject to\n social desirability93 and recall bias, pill counts are subject to manipulation,8,95-97 and medication electronic\n monitoring systems (MEMS), like the other measures, cannot measure actual drug ingestion or exposure.98\n Pharmacologic adherence monitoring, especially for PrEP40 and other disease states (e.g. latent\n tuberculosis infection treatment36,37) where a surrogate biomarker of adherence or response (e.g. HIV viral\n loads) cannot be measured, is therefore crucial. Plasma drug levels, although frequently incorporated in the clinical trials of oral PrEP1,5,7,8 represent only\n the most recent doses taken,55,99-101 and are susceptible to significant intra-individual (day-to-day) variability\n (Figure 2).99 Moreover, a plasma \n level on a single day may not \n reflect typical patterns of use."
+          }
+        ],
+        "Innovation": [
+          {
+            "rank": 1,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.8123,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "innovation",
+            "chunk_index": 132,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Summary of Direct Costs (DC) from all sites: \n Description Year 1 Year 2 Year 3 Year 4 Year 5 TOTAL \n UCSF - DC \n University of \n Washington \u2013 \n UC Denver \u2013 \n Subtotal DC \n from All Sites \n Summary of Direct and F&A costs: \n Description Year 1 Year 2 Year 3 Year 4 Year 5 TOTAL \n UCSF - Direct \n Costs \n University of \n Washington - \n total costs \n UC Denver - \n total costs \n Subtotal \n UCSF\u2019s DC \n (inclusive of \n subs\u2019 total \n costs) \n UCSF - F&A \n Costs \n Total Costs \n Budget Justification Attachment Page 94\n\nContact PD/PI: Gandhi, Monica \n Budget Justification \n University of Washington \n Personnel \n Jared Baeten, MD, PhD, Co-Investigator (0.60 Calendar Months, years 1 \u2013 5). Dr. Baeten is Professor and\n Vice Chair in the Department of Global Health with additional full appointments in the Departments of Medicine\n and Epidemiology at the University of Washington. He is an infectious disease physician with extensive\n experience in clinical epidemiology research in resource-limited settings. He has worked for the past 17 years\n on epidemiologic studies defining risk factors for HIV-1 acquisition and transmission using data from large\n prospective African cohort studies. His work bridges biomedical intervention studies (particularly large-scale\n clinical trials), observational epidemiology (of risk factors for HIV-1 acquisition, correlates of genital HIV-1\n shedding, and the interaction between sexually transmitted infections and HIV-1), implementation science (to\n deliver effective HIV-1 prevention interventions), studies at the interface between laboratory science and HIV-1\n epidemiology (particularly studies of virologic and immunologic factors that influence of HIV-1 pathogenesis),\n and behavioral epidemiology (particularly of sexual behavior and adherence to HIV-1 prevention). He has\n received funding from diverse sources (four institutes at the National Institutes of Health [NIAID, NICHD, NIMH,\n NINR], other governmental funding [USAID], and private funding [the Bill & Melinda Gates Foundation]), attesting\n to the multidisciplinary and multifaceted nature of his work."
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.7278,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "innovation",
+            "chunk_index": 133,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "His work bridges biomedical intervention studies (particularly large-scale\n clinical trials), observational epidemiology (of risk factors for HIV-1 acquisition, correlates of genital HIV-1\n shedding, and the interaction between sexually transmitted infections and HIV-1), implementation science (to\n deliver effective HIV-1 prevention interventions), studies at the interface between laboratory science and HIV-1\n epidemiology (particularly studies of virologic and immunologic factors that influence of HIV-1 pathogenesis),\n and behavioral epidemiology (particularly of sexual behavior and adherence to HIV-1 prevention). He has\n received funding from diverse sources (four institutes at the National Institutes of Health [NIAID, NICHD, NIMH,\n NINR], other governmental funding [USAID], and private funding [the Bill & Melinda Gates Foundation]), attesting\n to the multidisciplinary and multifaceted nature of his work. He has extensive experience with studies of HIV-1\n serodiscordant couples, including co- and lead investigator roles in the Partners in Prevention HSV/HIV\n Transmission Study (co-investigator), Couples Observational Study (project director), Partners PrEP Study (cochair), and Partners Demonstration Project (chair). In addition, he has led or collaborated on complimentary\n research about factors that influence uptake and use of HIV-1 prevention in couples, including fertility intentions,\n HIV-1 risk perceptions and preferences, and adherence. Additional work focuses on the development of new\n HIV-1 prevention strategies for women, including topical microbicides (through the NIH-funded Microbicides\n Trials Network, in which he serves as Protocol Chair for MTN-020/ASPIRE, a phase III trial of the dapivirine\n vaginal ring for HIV-1 prevention), and studies exploring the relationship between hormonal contraceptive use\n and HIV-1 risk. He is a member of the leadership team for the ECHO trial, a randomized trial of contraceptives\n to compare HIV incidence in 12 sites in East and southern Africa. He will bring his extensive experience in\n designing, implementing, and analyzing complex multi-center international HIV-1 prevention research to this\n study. As co-Investigator, Dr."
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.6532,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "innovation",
+            "chunk_index": 130,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "This application proposes four major innovations (Figure 3) with the already novel technique of analyzing ARV\n concentrations in hair samples to advance this methodology into the next phase of HIV prevention work. We\n propose to \u201cextend\u201d hair levels to novel and exciting modalities of antiretroviral delivery, such as vaginal\n rings and injectables, for the first time (I). We propose to incorporate this measure into a large-scale PrEP\n study in East Africa which aims to establish practice paradigms for the roll-out of oral PrEP in a variety of\n high-risk populations (young women, mobile populations, fisherfolk, etc.) (II). Although rarely employed to date,\n the incorporation of both short and long-term measures of adherence into oral PrEP and vaginal PrEP trials,\n and the triangulation of these measures during study analysis, as proposed here, should help assess\n patterns of adherence to PrEP (oral or rings) in Africa (e.g. daily, at time of risk, multiweek holidays),48 which\n will be necessary to understand69 when designing precision public health interventions for HIV prevention (III). Finally, although hair concentrations and other pharmacologic measures assess adherence, they also serve as\n measures of pharmacokinetics, which will be essential to incorporate during the investigation and roll-out of\n injectable ARVs, especially at the end of the dosing interval and in the context of prevention. We\n propose to study hair levels as a metric for drug exposure to LA-CAB in a study for the first time (IV). Research Strategy Page 138\n\nContact PD/PI: Gandhi, Monica \n emphasis on adherence, optimization of current antiretroviral therapies, PrEP and pharmacogenomics. Dr. Castillo-Mancilla is an investigator in the Adult AIDS Clinical Trials Group (ACTG) and the Co-Chair of the\n Long-Acting Antiretroviral Therapy in Non-adherent HIV-Infected Individuals Trial (A5359), in which Aim 3\n will be based."
+          }
+        ],
+        "Approach": [
+          {
+            "rank": 1,
+            "grant_id": "r01-gandhi-application",
+            "score": 1.0,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "approach",
+            "chunk_index": 159,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "Finally, we\n examined patterns of adherence to oral TDF/FTC by combining both hair and plasma measures in VOICE.48\n 1st R01 Aims 2, 3: Hair levels in treatment and maternal-child patterns: We have shown that hair levels are\n strong independent predictors of virologic suppression in HIV treatment,22-27 providing pharmacodynamic\n relevance for the longitudinal exposure data provided by hair samples. Hair levels predict outcomes better than\n self-reported adherence22,23,25 or single plasma ARV levels24,27 in children and adults. Hair ARV levels in HIVpositive women strongly predict virologic outcomes during pregnancy and breastfeeding.25 Moreover, hair\n levels in neonates reflect exposure to maternal ARVs in utero and hair levels in infants reflect exposure to\n maternal ARVs during breastfeeding.28,30 We further demonstrated that hair levels of ARVs increase\n following adherence interventions in both the U.S.34 and Kenya.35 We developed low-cost ARV assays in\n hair.33 Finally, we have extended our hair methods to monitor adherence/exposure to TB treatment.36-38\n PRELIMINARY DATA FOR THIS RENEWAL APPLICATION: \n 3C2. Acceptability of hair collection in SEARCH \n As of this proposal date, SEARCH phase 2 (Aim 1) has launched and PrEP initiated in the community Nsiika in\n western Uganda. Persons at high risk (via self-identification or the SEARCH risk score), were offered PrEP. To\n date, 113 persons were initiated on PrEP (60 female; 65% <35 years) and all but one provided hair for PK\n analysis at the 1 month visit. In a separate study in SEARCH communities (The Mobility in SEARCH Study,\n PI Carol Camlin, R01MH104132; co-I Gandhi), hair samples have been collected from 837 participants as of\n August 2016; 95.8% (837/874) of those enrolled consented to hair collection and 94.6% of those contacted\n (837/885) consented, leading to an overall acceptability rate of ~95% for hair collection in SEARCH."
+          },
+          {
+            "rank": 2,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.4826,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "approach",
+            "chunk_index": 160,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "To\n date, 113 persons were initiated on PrEP (60 female; 65% <35 years) and all but one provided hair for PK\n analysis at the 1 month visit. In a separate study in SEARCH communities (The Mobility in SEARCH Study,\n PI Carol Camlin, R01MH104132; co-I Gandhi), hair samples have been collected from 837 participants as of\n August 2016; 95.8% (837/874) of those enrolled consented to hair collection and 94.6% of those contacted\n (837/885) consented, leading to an overall acceptability rate of ~95% for hair collection in SEARCH. MTN-025 (Aim 2) has just launched (end August 2016) and enrollment for A5359 (Aim 3) will begin in 2017. Research Strategy Page 139\n\nContact PD/PI: Gandhi, Monica"
+          },
+          {
+            "rank": 3,
+            "grant_id": "r01-gandhi-application",
+            "score": 0.1277,
+            "title": "Hair Extensions: Using Hair Levels to Interpret Adherence, Effectiveness and",
+            "section_type": "approach",
+            "chunk_index": 158,
+            "year": 2016,
+            "source_url": "./grant_documents/r01-gandhi-application.pdf",
+            "source_pdf": "",
+            "text": "1st R01 Aim 1: Hair concentrations with oral PrEP: In a formative study, in which TDF was given to HIVuninfected volunteers via directly observed dosing of 2, 4 and 7 doses/week (with wash-out periods), we found\n a strong linear relationship between TDF dose and TFV hair concentrations.39 This study enables us to\n estimate TDF dosing patterns from hair concentrations in various studies.42 We examined factors contributing\n to TDF exposure in women.44 We have also evaluated relationships between hair levels and other metrics of\n adherence in the phase II International AIDS Vaccine Initiative (IAVI) PrEP trials.40 In iPrEx OLE, a large PrEP\n demonstration project,71 we showed strong correlations between hair levels of TFV/FTC and DBS levels of\n TFV-diphosphate /FTC-triphosphate.41 Recently, we showed a strong association between higher levels of\n TFV/FTC in hair and greater declines in renal function in iPrEx OLE (Gandhi et al, Lancet HIV paper in press,\n Appendix A)42, showing for the first time that hair levels can monitor for toxicities on PrEP. Finally, we\n examined patterns of adherence to oral TDF/FTC by combining both hair and plasma measures in VOICE.48\n 1st R01 Aims 2, 3: Hair levels in treatment and maternal-child patterns: We have shown that hair levels are\n strong independent predictors of virologic suppression in HIV treatment,22-27 providing pharmacodynamic\n relevance for the longitudinal exposure data provided by hair samples. Hair levels predict outcomes better than\n self-reported adherence22,23,25 or single plasma ARV levels24,27 in children and adults."
+          }
+        ]
+      }
+    }
+  ]
+}
