@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG Embedding Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --border: #1e2d45;
+    --accent1: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --glow1: rgba(0,212,255,0.15);
+    --glow2: rgba(124,58,237,0.15);
+    --glow3: rgba(16,185,129,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    border: 1px solid var(--accent1);
+    padding: 4px 12px;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.1s forwards;
+  }
+
+  h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+
+  h1 span { color: var(--accent1); }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 8px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.3s forwards;
+  }
+
+  /* Main flow diagram */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch;
+  }
+
+  /* Stage blocks */
+  .stage {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .stage.visible {
+    animation: fadeUp 0.5s forwards;
+  }
+
+  .stage-inner {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 20px 24px;
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    cursor: default;
+  }
+
+  .stage-inner:hover {
+    border-color: var(--accent1);
+    box-shadow: 0 0 30px var(--glow1);
+  }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .stage-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 24px;
+  }
+
+  .stage-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .stage-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .stage-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-left: 72px;
+  }
+
+  /* Color themes per stage */
+  .stage-input .stage-icon  { background: rgba(0,212,255,0.12); }
+  .stage-input .stage-title { color: var(--accent1); }
+  .stage-input:hover .stage-inner { border-color: var(--accent1); box-shadow: 0 0 30px var(--glow1); }
+
+  .stage-tokenize .stage-icon  { background: rgba(245,158,11,0.12); }
+  .stage-tokenize .stage-title { color: var(--accent4); }
+  .stage-tokenize .stage-inner:hover { border-color: var(--accent4); box-shadow: 0 0 30px rgba(245,158,11,0.15); }
+
+  .stage-bert .stage-icon  { background: rgba(124,58,237,0.15); }
+  .stage-bert .stage-title { color: var(--accent2); }
+  .stage-bert .stage-inner:hover { border-color: var(--accent2); box-shadow: 0 0 30px var(--glow2); }
+
+  .stage-pool .stage-icon  { background: rgba(16,185,129,0.12); }
+  .stage-pool .stage-title { color: var(--accent3); }
+  .stage-pool .stage-inner:hover { border-color: var(--accent3); box-shadow: 0 0 30px var(--glow3); }
+
+  .stage-embed .stage-icon  { background: rgba(0,212,255,0.12); }
+  .stage-embed .stage-title { color: var(--accent1); }
+
+  /* Token visualization */
+  .tokens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: 72px;
+    margin-top: 10px;
+  }
+
+  .token {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(245,158,11,0.3);
+    color: var(--accent4);
+    background: rgba(245,158,11,0.06);
+    animation: tokenPop 0.3s backwards;
+  }
+
+  .token.special {
+    border-color: rgba(124,58,237,0.4);
+    color: var(--accent2);
+    background: rgba(124,58,237,0.08);
+  }
+
+  /* BERT layer visualization */
+  .bert-layers {
+    margin-left: 72px;
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bert-layer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bert-layer-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 70px;
+  }
+
+  .bert-layer-bar {
+    height: 20px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, rgba(124,58,237,0.6), rgba(0,212,255,0.3));
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .bert-layer-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+  }
+
+  .bert-layer-info {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Vector visualization */
+  .vector-display {
+    margin-left: 72px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .vector-row {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+
+  .vector-cell {
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 7px;
+    color: rgba(255,255,255,0.7);
+    transition: transform 0.2s;
+  }
+
+  .vector-cell:hover { transform: scale(1.3); }
+
+  .vector-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 110px;
+  }
+
+  .vector-dots {
+    font-size: 16px;
+    color: var(--muted);
+    padding: 0 4px;
+    line-height: 1;
+  }
+
+  /* Arrow connector */
+  .arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+    position: relative;
+  }
+
+  .arrow-line {
+    width: 2px;
+    height: 24px;
+    background: linear-gradient(to bottom, var(--border), var(--accent1));
+    position: relative;
+  }
+
+  .arrow-line::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--accent1);
+  }
+
+  .arrow-label {
+    position: absolute;
+    right: calc(50% + 16px);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* Split view for hybrid */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    align-items: start;
+    margin: 0;
+  }
+
+  .split-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+  }
+
+  .split-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent4);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 0.1em;
+  }
+
+  /* Result panel */
+  .result-panel {
+    background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(124,58,237,0.05));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 0;
+  }
+
+  .result-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent1);
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .result-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .result-item-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .result-item-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Hybrid section */
+  .hybrid-section {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 20px 24px;
+    position: relative;
+  }
+
+  .hybrid-section:hover {
+    border-color: var(--accent4);
+    box-shadow: 0 0 30px rgba(245,158,11,0.1);
+  }
+
+  .hybrid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-left: 36px;
+    margin-top: 10px;
+  }
+
+  .hybrid-col {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .hybrid-col-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  .hybrid-col-title.bm25 { color: var(--accent4); }
+  .hybrid-col-title.vec  { color: var(--accent1); }
+
+  .hybrid-col-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .alpha-formula {
+    margin-top: 12px;
+    margin-left: 36px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent3);
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 6px;
+    padding: 8px 14px;
+    display: inline-block;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes tokenPop {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .pulse { animation: pulse 2s infinite; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .stage-desc, .tokens, .bert-layers, .vector-display { margin-left: 0; margin-top: 8px; }
+    .hybrid-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="badge">S-PubMedBERT-MS-MARCO</div>
+    <h1>Embedding Model <span>Architecture</span></h1>
+    <p class="subtitle">How grant text becomes searchable vectors in the RAG pipeline</p>
+  </header>
+
+  <div class="flow">
+
+    <!-- Stage 1: Input -->
+    <div class="stage stage-input" style="animation-delay:0.1s">
+      <div class="stage-inner">
+        <div class="stage-header">
+          <span class="stage-num">01</span>
+          <div class="stage-icon">📄</div>
+          <div>
+            <div class="stage-title">RAW GRANT TEXT INPUT</div>
+          </div>
+        </div>
+        <div class="stage-desc">
+          Grant abstracts, aims, and section chunks ingested from 42 PDF files. Chunks are section-prefixed (e.g. <code style="color:var(--accent1);font-size:11px">[AIMS]</code>, <code style="color:var(--accent1);font-size:11px">[METHODS]</code>) to preserve document structure. Total corpus: 3,986 chunks across 1,889 unique grant IDs.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><span class="arrow-label">section-prefixed text</span></div>
+
+    <!-- Stage 2: Tokenization -->
+    <div class="stage stage-tokenize" style="animation-delay:0.2s">
+      <div class="stage-inner">
+        <div class="stage-header">
+          <span class="stage-num">02</span>
+          <div class="stage-icon">✂️</div>
+          <div>
+            <div class="stage-title">WORDPIECE TOKENIZATION</div>
+          </div>
+        </div>
+        <div class="stage-desc">
+          Text is split into subword tokens using BERT's WordPiece vocabulary (30,522 tokens). Rare or complex biomedical terms are decomposed into known subwords, preserving semantic meaning while handling out-of-vocabulary words.
+        </div>
+        <div class="tokens">
+          <span class="token special">[CLS]</span>
+          <span class="token">community</span>
+          <span class="token">health</span>
+          <span class="token">work</span>
+          <span class="token">##ers</span>
+          <span class="token">reduce</span>
+          <span class="token">diabetes</span>
+          <span class="token">risk</span>
+          <span class="token">among</span>
+          <span class="token">low</span>
+          <span class="token">-</span>
+          <span class="token">income</span>
+          <span class="token special">[SEP]</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><span class="arrow-label">token IDs + attention mask</span></div>
+
+    <!-- Stage 3: BERT Encoder -->
+    <div class="stage stage-bert" style="animation-delay:0.3s">
+      <div class="stage-inner">
+        <div class="stage-header">
+          <span class="stage-num">03</span>
+          <div class="stage-icon">🧠</div>
+          <div>
+            <div class="stage-title">PubMedBERT TRANSFORMER ENCODER</div>
+          </div>
+        </div>
+        <div class="stage-desc">
+          12 stacked transformer layers, each with 12 attention heads (768 hidden dimensions). Pre-trained exclusively on PubMed abstracts — no general web text. Each layer refines contextual token representations through self-attention.
+        </div>
+        <div class="bert-layers">
+          <div class="bert-layer">
+            <span class="bert-layer-label">Layer 1–2</span>
+            <div class="bert-layer-bar" style="width:40%"></div>
+            <span class="bert-layer-info">syntactic patterns</span>
+          </div>
+          <div class="bert-layer">
+            <span class="bert-layer-label">Layer 3–6</span>
+            <div class="bert-layer-bar" style="width:65%"></div>
+            <span class="bert-layer-info">semantic relationships</span>
+          </div>
+          <div class="bert-layer">
+            <span class="bert-layer-label">Layer 7–9</span>
+            <div class="bert-layer-bar" style="width:80%"></div>
+            <span class="bert-layer-info">biomedical entity linking</span>
+          </div>
+          <div class="bert-layer">
+            <span class="bert-layer-label">Layer 10–12</span>
+            <div class="bert-layer-bar" style="width:95%"></div>
+            <span class="bert-layer-info">passage relevance (MS-MARCO fine-tune)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><span class="arrow-label">768-dim token embeddings</span></div>
+
+    <!-- Stage 4: Pooling -->
+    <div class="stage stage-pool" style="animation-delay:0.4s">
+      <div class="stage-inner">
+        <div class="stage-header">
+          <span class="stage-num">04</span>
+          <div class="stage-icon">🎯</div>
+          <div>
+            <div class="stage-title">MEAN POOLING → SENTENCE VECTOR</div>
+          </div>
+        </div>
+        <div class="stage-desc">
+          All token embeddings are averaged (mean pooling) into a single 768-dimensional sentence vector. This collapses the variable-length token sequence into a fixed-size representation of the entire chunk's meaning.
+        </div>
+        <div class="vector-display">
+          <div class="vector-row">
+            <span class="vector-label">grant chunk vector</span>
+            <div class="vector-cell" style="background:rgba(16,185,129,0.7)">0.31</div>
+            <div class="vector-cell" style="background:rgba(16,185,129,0.4)">−0.12</div>
+            <div class="vector-cell" style="background:rgba(16,185,129,0.9)">0.87</div>
+            <div class="vector-cell" style="background:rgba(16,185,129,0.2)">0.04</div>
+            <div class="vector-cell" style="background:rgba(16,185,129,0.6)">0.59</div>
+            <div class="vector-cell" style="background:rgba(16,185,129,0.3)">−0.22</div>
+            <span class="vector-dots">···</span>
+            <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">×768 dims</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><span class="arrow-label">L2-normalized unit vector</span></div>
+
+    <!-- Stage 5: Weaviate index -->
+    <div class="stage stage-embed" style="animation-delay:0.5s">
+      <div class="stage-inner">
+        <div class="stage-header">
+          <span class="stage-num">05</span>
+          <div class="stage-icon">🗄️</div>
+          <div>
+            <div class="stage-title">WEAVIATE HNSW VECTOR INDEX</div>
+          </div>
+        </div>
+        <div class="stage-desc">
+          All 3,986 chunk vectors are stored in Weaviate using HNSW (Hierarchical Navigable Small World) indexing. At query time, approximate nearest-neighbor search retrieves the top-k most semantically similar chunks in milliseconds via cosine similarity.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><span class="arrow-label">cosine similarity scores</span></div>
+
+    <!-- Stage 6: Hybrid fusion -->
+    <div class="stage" style="animation-delay:0.6s">
+      <div class="hybrid-section">
+        <div class="stage-header">
+          <span class="stage-num">06</span>
+          <div class="stage-icon" style="background:rgba(245,158,11,0.12)">⚡</div>
+          <div>
+            <div class="stage-title" style="color:var(--accent4);font-family:'Space Mono',monospace;font-size:13px;font-weight:700">HYBRID SEARCH FUSION  (optimal α = 0.25)</div>
+          </div>
+        </div>
+        <div class="hybrid-row">
+          <div class="hybrid-col">
+            <div class="hybrid-col-title bm25">BM25 KEYWORD (75%)</div>
+            <div class="hybrid-col-desc">Term frequency × inverse document frequency over section-prefixed text. Exact NIH grant ID matching, funding mechanism codes, clinical terminology. Strong on precise biomedical vocabulary.</div>
+          </div>
+          <div class="hybrid-col">
+            <div class="hybrid-col-title vec">VECTOR SEMANTIC (25%)</div>
+            <div class="hybrid-col-desc">PubMedBERT cosine similarity in 768-dim space. Captures paraphrasing, synonymy, and cross-topic relationships. Generalizes beyond exact term matches.</div>
+          </div>
+        </div>
+        <div class="alpha-formula">
+          score = (1 − α) × BM25_norm + α × vector_sim &nbsp;|&nbsp; α = 0.25
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><span class="arrow-label">ranked grant results</span></div>
+
+    <!-- Result -->
+    <div class="stage" style="animation-delay:0.7s">
+      <div class="result-panel">
+        <div class="result-title">▸ PHASE 4 EVALUATION RESULTS AT α = 0.25</div>
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-item-label">MAP</div>
+            <div class="result-item-value">0.0518 <span style="color:var(--accent3);font-size:11px">↑ 106% vs vector-only</span></div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">MRR</div>
+            <div class="result-item-value">0.2868 <span style="color:var(--accent3);font-size:11px">↑ 85% vs vector-only</span></div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">HR@5</div>
+            <div class="result-item-value">0.50 <span style="color:var(--accent3);font-size:11px">↑ 200% vs vector-only</span></div>
+          </div>
+          <div class="result-item">
+            <div class="result-item-label">Score Gap</div>
+            <div class="result-item-value">−0.083 <span style="color:var(--accent3);font-size:11px">↑ from −0.231</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end flow -->
+</div><!-- end container -->
+
+<script>
+  // Staggered entrance animations
+  const stages = document.querySelectorAll('.stage');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  stages.forEach((s, i) => {
+    s.style.animationDelay = `${0.1 + i * 0.08}s`;
+    observer.observe(s);
+  });
+
+  // Token pop delays
+  document.querySelectorAll('.token').forEach((t, i) => {
+    t.style.animationDelay = `${0.4 + i * 0.04}s`;
+  });
+
+  // Vector cell color on hover
+  document.querySelectorAll('.vector-cell').forEach(cell => {
+    cell.addEventListener('mouseenter', () => {
+      cell.style.background = 'rgba(0,212,255,0.7)';
+    });
+    cell.addEventListener('mouseleave', () => {
+      cell.style.background = '';
+    });
+  });
+</script>
+</body>
+</html>
